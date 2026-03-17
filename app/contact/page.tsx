@@ -249,7 +249,7 @@ export default function ContactPage() {
 
               <div className="mt-5 flex flex-wrap gap-3">
                 <a
-                  href="https://www.facebook.com/pandiefoundation"
+                  href="https://facebook.com/pandiefoundation"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] px-4 py-3 text-sm font-semibold text-[#214c34] transition hover:bg-[#214c34] hover:text-white"
