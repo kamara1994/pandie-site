@@ -5,6 +5,7 @@ export default function Hero() {
   return (
     <section className="w-full bg-white">
       <div className="relative h-[500px] w-full overflow-hidden sm:h-[540px] lg:h-[600px] xl:h-[640px]">
+        
         {/* Main hero image — KEEP ORIGINAL LOOK */}
         <div className="absolute inset-0 scale-[1.8] sm:scale-[1.6] lg:scale-[1.4] xl:scale-[1.3]">
           <Image
@@ -16,10 +17,11 @@ export default function Hero() {
           />
         </div>
 
-        {/* Right content panel */}
-        <div className="absolute bottom-0 right-0 top-0 flex w-[320px] flex-col justify-center overflow-hidden sm:w-[370px] lg:w-[420px] xl:w-[460px]">
-          {/* Background image */}
-          <div className="absolute inset-0">
+        {/* Right content panel — HOVER ZOOM ENABLED */}
+        <div className="group absolute bottom-20 right-10 top-20 flex w-[320px] flex-col justify-center overflow-hidden transition-transform duration-500 ease-out hover:scale-[1.02] sm:w-[370px] lg:w-[420px] xl:w-[460px]">
+          
+          {/* Background image with zoom on hover */}
+          <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105">
             <Image
               src="/laugingchildren.png"
               alt="Laughing children"

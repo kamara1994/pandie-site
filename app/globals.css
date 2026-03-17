@@ -1,29 +1,41 @@
 @import "tailwindcss";
 
+/* ===============================
+   ROOT THEME VARIABLES
+================================= */
+
 :root {
-  --background: #f5f3ee;
-  --foreground: #1f2a1f;
+  --background: #f5f3ee;   /* Soft warm neutral */
+  --foreground: #1f2a1f;   /* Deep elegant text */
 }
 
-* {
+/* ===============================
+   GLOBAL RESET & BASE
+================================= */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html,
 body {
   width: 100%;
-  overflow-x: hidden;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
+  line-height: 1.6;
 }
 
+/* Prevent containers from overflowing */
 main,
 section,
 header,
@@ -32,11 +44,23 @@ div {
   max-width: 100%;
 }
 
-img {
+/* ===============================
+   MEDIA
+================================= */
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
   max-width: 100%;
   height: auto;
-  display: block;
 }
+
+/* ===============================
+   TYPOGRAPHY
+================================= */
 
 h1,
 h2,
@@ -45,4 +69,39 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading), serif;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* ===============================
+   FALLING LOGO ANIMATION
+================================= */
+
+@keyframes fall {
+  0% {
+    transform: translateY(-120px) rotate(0deg);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 0.25;
+  }
+
+  90% {
+    opacity: 0.2;
+  }
+
+  100% {
+    transform: translateY(110vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Utility class for falling elements */
+.animate-fall {
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+  pointer-events: none;
 }
