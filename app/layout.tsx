@@ -18,10 +18,45 @@ const openSans = Open_Sans({
 
 export const metadata: Metadata = {
   title: "Pandie Foundation",
-  description: "Pandie - The Mother of All Foundation",
+  description:
+    "Pandie Foundation is a nonprofit supporting vulnerable children in Sierra Leone through education, nutrition, healthcare, and compassionate care.",
+
+  /* ⭐ GOOGLE SEARCH ICON (FAVICON) */
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
+
+  /* ⭐ SOCIAL SHARING PREVIEW */
+  openGraph: {
+    title: "Pandie Foundation",
+    description:
+      "Supporting vulnerable children in Sierra Leone through education, nutrition, healthcare, and protection.",
+    url: "https://pandiefoundation.org",
+    siteName: "Pandie Foundation",
+    images: [
+      {
+        url: "https://pandiefoundation.org/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Pandie Foundation",
+      },
+    ],
+    type: "website",
+  },
+
+  /* ⭐ TWITTER / X PREVIEW */
+  twitter: {
+    card: "summary_large_image",
+    title: "Pandie Foundation",
+    description:
+      "Supporting vulnerable children in Sierra Leone through education, nutrition, healthcare, and protection.",
+    images: ["https://pandiefoundation.org/logo.png"],
+  },
 };
 
-/* ⭐ ORGANIZATION SCHEMA */
+/* ⭐ ORGANIZATION SCHEMA FOR GOOGLE */
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "NGO",
@@ -32,8 +67,8 @@ const organizationSchema = {
   image: "https://pandiefoundation.org/logo.png",
   description:
     "Pandie Foundation is a nonprofit organization supporting vulnerable children in Sierra Leone through education, nutrition, medical assistance, and compassionate care.",
-  email: "kamarajosephallan@gmail.com",
-  telephone: "+1-208-419-5855",
+  email: "info@pandiefoundation.org",
+  telephone: "+1-307-257-0001",
   founder: {
     "@type": "Person",
     name: "Joseph Allan Kamara",
@@ -48,9 +83,9 @@ const organizationSchema = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={`${playfair.variable} ${openSans.variable}`}>
