@@ -58,16 +58,45 @@ let _client: AnyClient | null = null;
 export function getDb(): AnyClient | null {
   if (_client) return _client;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const rawUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
+  const rawKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
 
-  if (!url || !key) {
-    // Supabase not yet configured — donation records fall back to console.log
+  if (!rawUrl || !rawKey) {
     return null;
   }
 
-  // createClient<any> gives an untyped client; our interfaces enforce shape above
-  _client = createClient<any>(url, key, { // eslint-disable-line @typescript-eslint/no-explicit-any
+  // Normalise URL — remove trailing slash before handing to supabase-js
+  const url = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
+
+  if (!url.startsWith("https://")) {
+    console.error(
+      "[Supabase] NEXT_PUBLIC_SUPABASE_URL must start with https://. Got:",
+      url.slice(0, 40),
+    );
+    return null;
+  }
+
+  // Detect non-JWT key format.
+  // @supabase/supabase-js sends the key as `Authorization: Bearer {key}` to PostgREST.
+  // PostgREST validates the token as a signed JWT containing a `role` claim.
+  // The newer sb_secret_... key format is NOT a JWT and will cause PostgREST to return
+  // "Invalid path specified in request URL" instead of a clean 401.
+  // The correct key is the service_role JWT from:
+  //   Supabase Dashboard → Settings → Data API → Project API Keys → service_role
+  //   (starts with eyJ...)
+  if (!rawKey.startsWith("eyJ")) {
+    console.error(
+      "[Supabase] SUPABASE_SERVICE_ROLE_KEY does not appear to be a JWT " +
+        "(expected eyJ... format). " +
+        "Use the service_role key from Settings → Data API → Project API Keys, " +
+        "not the sb_secret_... key from Settings → API Keys. " +
+        "Key prefix received: " + rawKey.slice(0, 12) + "...",
+    );
+    // Still attempt to create the client — the diagnostic route needs it to try
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _client = createClient<any>(url, rawKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
