@@ -39,7 +39,10 @@ export default function DonatePage() {
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     email: "",
+    phone: "",
     message: "",
+    anonymous: false,
+    emailUpdates: false,
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -126,7 +129,7 @@ export default function DonatePage() {
     setSelectedAmount(String(currencyConfig[newCurrency].amounts[1]));
   };
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -174,39 +177,39 @@ export default function DonatePage() {
       return;
     }
 
-    const donationPayload = {
-      donorName: formData.fullName.trim(),
-      donorEmail: formData.email.trim(),
-      donorMessage: formData.message.trim(),
-      donationType: frequency,
-      currency,
-      amount: amountNumber,
-    };
-
     try {
       setIsSubmitting(true);
-      const response = await fetch("/api/donate", {
+
+      const response = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(donationPayload),
+        body: JSON.stringify({
+          amount: amountNumber,
+          currency,
+          frequency,
+          donorName: formData.fullName.trim(),
+          donorEmail: formData.email.trim(),
+          phone: formData.phone?.trim() ?? "",
+          message: formData.message?.trim() ?? "",
+          anonymous: formData.anonymous ?? false,
+          emailUpdates: formData.emailUpdates ?? false,
+        }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Donation failed.");
 
-      alert("Donation request submitted successfully.");
-      setFormData({ fullName: "", email: "", message: "" });
-      setSelectedAmount(String(currencyConfig[currency].amounts[1]));
-      setFrequency("one-time");
-      setError("");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not start checkout.");
+
+      // Redirect to Stripe Checkout — page leaves here on success
+      window.location.href = data.url;
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : "Something went wrong. Please try again.",
       );
-    } finally {
       setIsSubmitting(false);
     }
+    // Note: setIsSubmitting(false) intentionally omitted on redirect path
   };
 
   const handleItemSubmit = (e: React.FormEvent<HTMLFormElement>) => {

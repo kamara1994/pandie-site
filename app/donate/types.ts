@@ -28,7 +28,10 @@ export type CurrencyCode =
 export type FormData = {
   fullName: string;
   email: string;
+  phone: string;
   message: string;
+  anonymous: boolean;
+  emailUpdates: boolean;
 };
 
 export type DonationTab = "money" | "items" | "sponsor" | "volunteer" | "partner";
@@ -88,9 +91,9 @@ export const currencyConfig: Record<
     customPlaceholder: string;
   }
 > = {
-  USD: { label: "US Dollar", symbol: "$", amounts: [25, 50, 100, 250], customPlaceholder: "50" },
-  EUR: { label: "Euro", symbol: "€", amounts: [25, 50, 100, 250], customPlaceholder: "50" },
-  GBP: { label: "British Pound", symbol: "£", amounts: [20, 50, 100, 200], customPlaceholder: "50" },
+  USD: { label: "US Dollar", symbol: "$", amounts: [10, 25, 50, 100], customPlaceholder: "50" },
+  EUR: { label: "Euro", symbol: "€", amounts: [10, 25, 50, 100], customPlaceholder: "50" },
+  GBP: { label: "British Pound", symbol: "£", amounts: [10, 20, 50, 100], customPlaceholder: "50" },
   CAD: { label: "Canadian Dollar", symbol: "C$", amounts: [25, 50, 100, 250], customPlaceholder: "50" },
   AUD: { label: "Australian Dollar", symbol: "A$", amounts: [25, 50, 100, 250], customPlaceholder: "50" },
   NZD: { label: "New Zealand Dollar", symbol: "NZ$", amounts: [25, 50, 100, 250], customPlaceholder: "50" },

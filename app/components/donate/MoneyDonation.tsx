@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CurrencyCode, FormData, currencyConfig } from "../../donate/types";
+import PayPalDonation from "./PayPalDonation";
 
 type ImpactItem = {
   amount: number | null;
@@ -20,7 +21,7 @@ type Props = {
   onFrequencyChange: (f: "one-time" | "monthly") => void;
   onCurrencyChange: (c: CurrencyCode) => void;
   onAmountChange: (a: string) => void;
-  onInputChange: (field: keyof FormData, value: string) => void;
+  onInputChange: (field: keyof FormData, value: string | boolean) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 };
 
@@ -49,14 +50,14 @@ export default function MoneyDonation({
           {/* Left – Why your donation matters */}
           <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
             <h2 className="text-3xl font-semibold text-[#214c34] sm:text-4xl">
-              Why Your Donation Matters
+              Give Hope. Change a Child&apos;s Future.
             </h2>
 
             <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[#5f6663]">
-              Pandie Foundation supports vulnerable children through school
-              assistance, nutrition support, and basic healthcare. Your
-              support helps children stay in school, receive care, and live
-              with dignity, stability, and hope.
+              Pandie Foundation supports vulnerable children in Sierra Leone through
+              education, nutrition, and basic medical care. Your donation directly
+              helps children stay in school, receive proper meals, access healthcare,
+              and live with dignity and hope.
             </p>
 
             <div className="mt-10 grid gap-5 sm:grid-cols-2">
@@ -101,34 +102,50 @@ export default function MoneyDonation({
 
             <div className="mt-10 rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] p-6">
               <h3 className="text-lg font-semibold text-[#214c34]">
-                A donation with real purpose
+                Secure &amp; Trusted Giving
               </h3>
               <p className="mt-3 text-[15px] leading-7 text-[#626a67]">
-                Every contribution helps us serve children with practical
-                care. As the foundation grows, this page can be connected to
-                a secure payment provider like Stripe, PayPal, or Flutterwave.
+                All card payments are processed securely by Stripe. Apple Pay and
+                Google Pay are available at checkout. PayPal and Venmo are also
+                accepted. Your card details are never stored by Pandie Foundation.
               </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay", "PayPal", "Venmo"].map(
+                  (m) => (
+                    <span
+                      key={m}
+                      className="rounded border border-[#e0d9cc] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#7a8078]"
+                    >
+                      {m}
+                    </span>
+                  ),
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Right – Donate Now form */}
+          {/* Right – Donate Now */}
           <div className="lg:sticky lg:top-28">
             <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
               <h2 className="text-3xl font-semibold text-[#214c34] sm:text-4xl">
                 Donate Now
               </h2>
 
-              <p className="mt-5 text-[16px] leading-8 text-[#626a67]">
-                Complete the form below to begin your donation journey. This
-                structure is ready for a future secure payment integration.
+              <p className="mt-3 text-[15px] leading-7 text-[#626a67]">
+                Your donation supports Pandie Foundation&apos;s mission to help vulnerable
+                children in Sierra Leone.
               </p>
 
               {/* Currency */}
               <div className="mt-8">
-                <label className="mb-3 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]">
+                <label
+                  htmlFor="currency-select"
+                  className="mb-3 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
+                >
                   Currency
                 </label>
                 <select
+                  id="currency-select"
                   value={currency}
                   onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
                   className="w-full rounded-xl border border-[#d6d2c8] bg-white px-4 py-4 text-[#1f2a1f] outline-none transition focus:border-[#5a7d5d] focus:ring-2 focus:ring-[#5a7d5d]/15"
@@ -161,34 +178,26 @@ export default function MoneyDonation({
                 </select>
               </div>
 
-              {/* Donation Type toggle */}
+              {/* Frequency */}
               <div className="mt-6">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]">
                   Donation Type
                 </p>
                 <div className="grid grid-cols-2 rounded-xl bg-[#f5f1e8] p-1">
-                  <button
-                    type="button"
-                    onClick={() => onFrequencyChange("one-time")}
-                    className={`rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] transition ${
-                      frequency === "one-time"
-                        ? "bg-[#214c34] text-white"
-                        : "text-[#214c34]"
-                    }`}
-                  >
-                    One-Time
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onFrequencyChange("monthly")}
-                    className={`rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] transition ${
-                      frequency === "monthly"
-                        ? "bg-[#214c34] text-white"
-                        : "text-[#214c34]"
-                    }`}
-                  >
-                    Monthly
-                  </button>
+                  {(["one-time", "monthly"] as const).map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => onFrequencyChange(f)}
+                      className={`rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] transition ${
+                        frequency === f
+                          ? "bg-[#214c34] text-white"
+                          : "text-[#214c34]"
+                      }`}
+                    >
+                      {f === "one-time" ? "One-Time" : "Monthly"}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -198,12 +207,12 @@ export default function MoneyDonation({
                   Select Amount
                 </p>
                 <div className="grid grid-cols-2 gap-3">
-                  {currentCurrency.amounts.map((amount) => {
-                    const value = String(amount);
+                  {currentCurrency.amounts.map((amt) => {
+                    const value = String(amt);
                     const isActive = selectedAmount === value;
                     return (
                       <button
-                        key={amount}
+                        key={amt}
                         type="button"
                         onClick={() => onAmountChange(value)}
                         className={`rounded-xl border px-4 py-4 text-base font-bold transition ${
@@ -212,43 +221,78 @@ export default function MoneyDonation({
                             : "border-[#ddd6c8] bg-white text-[#214c34] hover:border-[#5a7d5d]"
                         }`}
                       >
-                        {currentCurrency.symbol}{amount}
+                        {currentCurrency.symbol}{amt}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Form fields */}
-              <form className="mt-8 space-y-5" onSubmit={onSubmit}>
+              {/* Donor details + Stripe submit */}
+              <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
+                {/* Full name */}
                 <div>
-                  <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]">
+                  <label
+                    htmlFor="donor-name"
+                    className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
+                  >
                     Full Name
                   </label>
                   <input
+                    id="donor-name"
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => onInputChange("fullName", e.target.value)}
                     placeholder="Enter your full name"
+                    autoComplete="name"
                     className="w-full rounded-xl border border-[#d6d2c8] bg-white px-4 py-4 text-[#1f2a1f] outline-none transition placeholder:text-[#8b8f8c] focus:border-[#5a7d5d] focus:ring-2 focus:ring-[#5a7d5d]/15"
                   />
                 </div>
 
+                {/* Email */}
                 <div>
-                  <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]">
-                    Email Address
+                  <label
+                    htmlFor="donor-email"
+                    className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
+                  >
+                    Email Address <span className="text-[#214c34]/60 normal-case font-normal">— required for receipt</span>
                   </label>
                   <input
+                    id="donor-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => onInputChange("email", e.target.value)}
                     placeholder="Enter your email"
+                    autoComplete="email"
                     className="w-full rounded-xl border border-[#d6d2c8] bg-white px-4 py-4 text-[#1f2a1f] outline-none transition placeholder:text-[#8b8f8c] focus:border-[#5a7d5d] focus:ring-2 focus:ring-[#5a7d5d]/15"
                   />
                 </div>
 
+                {/* Phone (optional) */}
                 <div>
-                  <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]">
+                  <label
+                    htmlFor="donor-phone"
+                    className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
+                  >
+                    Phone <span className="text-[#214c34]/60 normal-case font-normal">— optional</span>
+                  </label>
+                  <input
+                    id="donor-phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => onInputChange("phone", e.target.value)}
+                    placeholder="e.g. +1 555 000 0000"
+                    autoComplete="tel"
+                    className="w-full rounded-xl border border-[#d6d2c8] bg-white px-4 py-4 text-[#1f2a1f] outline-none transition placeholder:text-[#8b8f8c] focus:border-[#5a7d5d] focus:ring-2 focus:ring-[#5a7d5d]/15"
+                  />
+                </div>
+
+                {/* Donation amount (custom) */}
+                <div>
+                  <label
+                    htmlFor="donor-amount"
+                    className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
+                  >
                     Donation Amount
                   </label>
                   <div className="relative">
@@ -256,7 +300,9 @@ export default function MoneyDonation({
                       {currentCurrency.symbol}
                     </span>
                     <input
+                      id="donor-amount"
                       type="text"
+                      inputMode="decimal"
                       value={selectedAmount}
                       onChange={(e) => onAmountChange(e.target.value)}
                       placeholder={currentCurrency.customPlaceholder}
@@ -265,26 +311,62 @@ export default function MoneyDonation({
                   </div>
                   <p className="mt-2 text-sm text-[#6d746f]">
                     {frequency === "monthly"
-                      ? `This amount will be treated as a monthly donation in ${currency}.`
-                      : `This amount will be treated as a one-time donation in ${currency}.`}
+                      ? `Charged monthly in ${currency}. Cancel anytime.`
+                      : `One-time donation in ${currency}.`}
                   </p>
                 </div>
 
+                {/* Message */}
                 <div>
-                  <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]">
-                    Message
+                  <label
+                    htmlFor="donor-message"
+                    className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
+                  >
+                    Message <span className="text-[#214c34]/60 normal-case font-normal">— optional</span>
                   </label>
                   <textarea
+                    id="donor-message"
                     value={formData.message}
                     onChange={(e) => onInputChange("message", e.target.value)}
-                    placeholder="Write an optional message"
-                    rows={5}
+                    placeholder="Leave an optional message of support"
+                    rows={3}
                     className="w-full rounded-xl border border-[#d6d2c8] bg-white px-4 py-4 text-[#1f2a1f] outline-none transition placeholder:text-[#8b8f8c] focus:border-[#5a7d5d] focus:ring-2 focus:ring-[#5a7d5d]/15"
                   />
                 </div>
 
+                {/* Checkboxes */}
+                <div className="space-y-3">
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={formData.anonymous}
+                      onChange={(e) => onInputChange("anonymous", e.target.checked)}
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#d6d2c8] accent-[#214c34]"
+                    />
+                    <span className="text-sm leading-6 text-[#5f6663]">
+                      Make my donation anonymous (your name will not be shared)
+                    </span>
+                  </label>
+
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={formData.emailUpdates}
+                      onChange={(e) => onInputChange("emailUpdates", e.target.checked)}
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#d6d2c8] accent-[#214c34]"
+                    />
+                    <span className="text-sm leading-6 text-[#5f6663]">
+                      Keep me updated on Pandie Foundation&apos;s impact and programs
+                    </span>
+                  </label>
+                </div>
+
+                {/* Error */}
                 {error && (
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div
+                    role="alert"
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                  >
                     {error}
                   </div>
                 )}
@@ -293,46 +375,81 @@ export default function MoneyDonation({
                 <div className="rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] p-4 text-sm text-[#5f6663]">
                   <p className="font-semibold text-[#214c34]">Donation Summary</p>
                   <div className="mt-3 space-y-2">
-                    <p>
-                      Type:{" "}
+                    <div className="flex items-center justify-between">
+                      <span>Type</span>
                       <span className="font-medium text-[#214c34]">
                         {frequency === "monthly" ? "Monthly" : "One-Time"}
                       </span>
-                    </p>
-                    <p>
-                      Currency:{" "}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Currency</span>
                       <span className="font-medium text-[#214c34]">{currency}</span>
-                    </p>
-                    <p>
-                      Amount:{" "}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Amount</span>
                       <span className="font-medium text-[#214c34]">
                         {currentCurrency.symbol}{selectedAmount || "0"}
+                        {frequency === "monthly" ? "/mo" : ""}
                       </span>
-                    </p>
+                    </div>
                   </div>
+                  <p className="mt-3 text-xs text-[#9a9490]">
+                    Your donation supports Pandie Foundation&apos;s mission to help vulnerable children
+                    in Sierra Leone.
+                  </p>
                 </div>
 
+                {/* Stripe CTA */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-[#d4a017] px-6 py-4 text-sm font-bold uppercase tracking-[0.16em] text-[#173325] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#214c34] px-6 py-4 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#1a3d29] disabled:cursor-not-allowed disabled:opacity-70"
+                  aria-busy={isSubmitting}
                 >
-                  {isSubmitting
-                    ? "Preparing Donation..."
-                    : `Continue ${frequency === "monthly" ? "Monthly" : "Donation"}`}
+                  {isSubmitting ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                      </svg>
+                      Preparing Secure Checkout…
+                    </>
+                  ) : (
+                    <>
+                      {frequency === "monthly" ? "Start Monthly Giving" : "Donate with Card"}
+                      <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M12.293 4.293a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L15.586 11H3a1 1 0 110-2h12.586l-3.293-3.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </>
+                  )}
                 </button>
+
+                <p className="text-center text-xs text-[#9a9490]">
+                  🔒 Secured by Stripe · Apple Pay &amp; Google Pay available at checkout
+                </p>
               </form>
 
-              <div className="mt-5 grid gap-3 rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] p-4 text-sm text-[#5f6663]">
-                <p>• Donation-focused design built for clarity and trust</p>
-                <p>• Future-ready for Stripe, PayPal, or Flutterwave integration</p>
-                <p>• Supporting vulnerable children in Sierra Leone</p>
-              </div>
+              {/* PayPal / Venmo section */}
+              <div className="mt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-[#e7dfd0]" />
+                  <span className="text-sm font-medium text-[#9a9490]">or pay with</span>
+                  <div className="h-px flex-1 bg-[#e7dfd0]" />
+                </div>
 
-              <p className="mt-4 text-sm leading-6 text-[#6d746f]">
-                Final payment currency availability may depend on the payment
-                provider used at checkout.
-              </p>
+                <div className="mt-5">
+                  <PayPalDonation
+                    amount={selectedAmount}
+                    currency={currency}
+                    frequency={frequency}
+                    donorName={formData.anonymous ? "Anonymous" : formData.fullName}
+                    donorEmail={formData.email}
+                    phone={formData.phone}
+                    message={formData.message}
+                    anonymous={formData.anonymous}
+                  />
+                </div>
+              </div>
 
               <Link
                 href="/"
