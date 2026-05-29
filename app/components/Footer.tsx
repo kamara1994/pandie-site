@@ -50,7 +50,7 @@ export default function Footer() {
 
       {/* Content */}
       <div className="relative z-10">
-        {/* Top CTA Banner */}
+        
         <div className="border-b border-white/10 px-5 py-10 lg:px-8 xl:px-12">
           <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-6 sm:flex-row">
             <div>

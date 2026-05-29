@@ -3,87 +3,77 @@ import Link from "next/link";
 
 export default function FeatureRow() {
   return (
-    <section className="bg-[#f3f1eb] py-24">
-      <div className="mx-auto grid max-w-[1600px] gap-14 px-6 lg:grid-cols-3 xl:px-10 2xl:px-16">
-        <article className="grid gap-7">
-          <div className="relative h-72 w-full overflow-hidden bg-gray-200">
-            <Image
-              src="/feature-story.jpg"
-              alt="Child success story"
-              fill
-              className="object-cover"
-            />
-          </div>
+    <section className="bg-[#f4f1ea] py-20 px-6 lg:px-20 xl:px-28">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1fr_420px] items-start">
 
-          <div>
-            <h3 className="text-4xl font-semibold leading-tight text-[#214c34]">
+          {/* Story 1 — A Child Back in School */}
+          <article className="group">
+            <div className="relative overflow-hidden mb-6" style={{ aspectRatio: "4/3" }}>
+              <Image
+                src="/feature-story.jpg"
+                alt="A child back in school"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+            <h3 className="font-heading text-[clamp(24px,2.5vw,32px)] font-semibold text-[#214c34] leading-tight mb-4">
               A Child Back in School
             </h3>
-            <p className="mt-5 text-[17px] leading-8 text-[#626a67]">
-              Through support, encouragement, and basic school materials, a
-              vulnerable child was able to return to class with confidence and
-              renewed hope.
+            <p className="text-[15px] leading-7 text-[#626a67] mb-6">
+              Through support, encouragement, and basic school materials, a vulnerable child was able to return to class with confidence and renewed hope.
             </p>
-
             <Link
-              href="#"
-              className="mt-7 inline-block rounded-sm bg-[#efc75a] px-6 py-4 text-xs font-bold uppercase tracking-[0.16em] text-[#214c34] transition hover:opacity-90"
+              href="/stories"
+              className="inline-block bg-[#c9962a] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0a1a10] transition hover:bg-[#e8b84b]"
             >
               Success Stories
             </Link>
-          </div>
-        </article>
+          </article>
 
-        <article className="grid gap-7">
-          <div className="relative h-72 w-full overflow-hidden bg-gray-200">
-            <Image
-              src="/feature-program.jpg"
-              alt="Nutrition and care support"
-              fill
-              className="object-cover"
-            />
-          </div>
-
-          <div>
-            <h3 className="text-4xl font-semibold leading-tight text-[#214c34]">
+          {/* Story 2 — Acts of Kindness */}
+          <article className="group">
+            <div className="relative overflow-hidden mb-6" style={{ aspectRatio: "4/3" }}>
+              <Image
+                src="/feature-program.jpg"
+                alt="Acts of kindness"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+            <h3 className="font-heading text-[clamp(24px,2.5vw,32px)] font-semibold text-[#214c34] leading-tight mb-4">
               Acts of Kindness
             </h3>
-            <p className="mt-5 text-[17px] leading-8 text-[#626a67]">
-              From meals and medical help to school support, every act of care
-              restores dignity and protects the future of vulnerable children.
+            <p className="text-[15px] leading-7 text-[#626a67] mb-6">
+              From meals and medical help to school support, every act of care restores dignity and protects the future of vulnerable children.
             </p>
-
             <Link
-              href="#"
-              className="mt-7 inline-block rounded-sm bg-[#efc75a] px-6 py-4 text-xs font-bold uppercase tracking-[0.16em] text-[#214c34] transition hover:opacity-90"
+              href="/stories"
+              className="inline-block bg-[#c9962a] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0a1a10] transition hover:bg-[#e8b84b]"
             >
               More Good News
             </Link>
-          </div>
-        </article>
+          </article>
 
-        <article className="flex flex-col justify-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6d716f]">
-            Featured Program
-          </p>
-
-          <h3 className="mt-3 text-5xl font-semibold leading-tight text-[#214c34]">
-            Pandie Child Support Program
-          </h3>
-
-          <p className="mt-6 text-[17px] leading-8 text-[#626a67]">
-            Our flagship program supports the most vulnerable children in Sierra
-            Leone with education assistance, nutrition support, and access to
-            basic medical care.
-          </p>
-
-          <Link
-            href="#"
-            className="mt-8 inline-block w-fit rounded-sm bg-[#efc75a] px-6 py-4 text-xs font-bold uppercase tracking-[0.16em] text-[#214c34] transition hover:opacity-90"
-          >
-            View Program
-          </Link>
-        </article>
+          {/* Featured Program sidebar */}
+          <aside className="lg:pl-8 lg:border-l border-[#1a2e1f]/10">
+            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#626a67] mb-4">
+              Featured Program
+            </p>
+            <h3 className="font-heading text-[clamp(28px,3vw,42px)] font-semibold text-[#214c34] leading-tight mb-5">
+              Pandie Child Support Program
+            </h3>
+            <p className="text-[15px] leading-7 text-[#626a67] mb-8">
+              Our flagship program supports the most vulnerable children in Sierra Leone with education assistance, nutrition support, and access to basic medical care.
+            </p>
+            <Link
+              href="/programs"
+              className="inline-block bg-[#c9962a] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0a1a10] transition hover:bg-[#e8b84b]"
+            >
+              View Program
+            </Link>
+          </aside>
+        </div>
       </div>
     </section>
   );

@@ -1,26 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
-/* ===============================
-   ROOT THEME VARIABLES
-================================= */
-
 :root {
-  --background: #f5f3ee;   /* Soft warm neutral */
-  --foreground: #1f2a1f;   /* Deep elegant text */
+  --background: #f4f1ea;
+  --foreground: #1a2e1f;
 }
 
-/* ===============================
-   GLOBAL RESET & BASE
-================================= */
+*, *::before, *::after { box-sizing: border-box; }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body {
+html, body {
   width: 100%;
   margin: 0;
   padding: 0;
@@ -31,73 +20,29 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: 'Outfit', system-ui, sans-serif;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Prevent containers from overflowing */
-main,
-section,
-header,
-footer,
-div {
-  max-width: 100%;
-}
-
-/* ===============================
-   MEDIA
-================================= */
-
-img,
-picture,
-video,
-canvas,
-svg {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-
-/* ===============================
-   TYPOGRAPHY
-================================= */
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-heading), serif;
-  line-height: 1.2;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', serif;
+  line-height: 1.15;
   margin: 0;
 }
 
-/* ===============================
-   FALLING LOGO ANIMATION
-================================= */
+.font-heading { font-family: 'Cormorant Garamond', serif; }
+.font-body { font-family: 'Outfit', sans-serif; }
+
+img, picture, video, canvas, svg { display: block; max-width: 100%; height: auto; }
 
 @keyframes fall {
-  0% {
-    transform: translateY(-120px) rotate(0deg);
-    opacity: 0;
-  }
-
-  8% {
-    opacity: 0.25;
-  }
-
-  90% {
-    opacity: 0.2;
-  }
-
-  100% {
-    transform: translateY(110vh) rotate(360deg);
-    opacity: 0;
-  }
+  0%   { transform: translateY(-120px) rotate(0deg); opacity: 0; }
+  8%   { opacity: 0.25; }
+  90%  { opacity: 0.2; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
 }
 
-/* Utility class for falling elements */
 .animate-fall {
   animation-name: fall;
   animation-timing-function: linear;
@@ -105,3 +50,12 @@ h6 {
   will-change: transform;
   pointer-events: none;
 }
+
+.duration-1500 { transition-duration: 1500ms; }
+
+::selection { background: #c9962a; color: #0a1a10; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f4f1ea; }
+::-webkit-scrollbar-thumb { background: #c9962a50; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #c9962a; }

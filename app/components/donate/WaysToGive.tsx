@@ -1,63 +1,47 @@
-import { DonationTab, givingOptions } from "../../donate/types";
+"use client";
+
+type Tab = "money" | "items" | "sponsor" | "volunteer" | "partner";
 
 type Props = {
-  activeTab: DonationTab;
-  onTabChange: (tab: DonationTab) => void;
+  activeTab: Tab;
+  onTabChange: (tab: Tab) => void;
 };
+
+const tabs: { id: Tab; label: string; icon: string; desc: string }[] = [
+  { id: "money", label: "Donate Money", icon: "💛", desc: "Financial gift" },
+  { id: "items", label: "Donate Items", icon: "📦", desc: "Goods & supplies" },
+  { id: "sponsor", label: "Sponsor a Child", icon: "👶", desc: "1:1 commitment" },
+  { id: "volunteer", label: "Volunteer", icon: "🙋", desc: "Time & skills" },
+  { id: "partner", label: "Partner With Us", icon: "🤝", desc: "Organizations" },
+];
 
 export default function WaysToGive({ activeTab, onTabChange }: Props) {
   return (
-    <section className="px-5 py-12 lg:px-8 xl:px-12">
-      <div className="mx-auto max-w-[1100px] rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
-        <div className="max-w-3xl">
-          <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
-            Ways To Give
-          </p>
-
-          <h2 className="mt-4 text-3xl font-semibold text-[#214c34] sm:text-4xl">
-            Choose How You Want to Help
-          </h2>
-
-          <p className="mt-5 text-[17px] leading-8 text-[#5f6663]">
-            Support Pandie Foundation by giving money, donating essential
-            items, sponsoring an individual child, volunteering your time,
-            or partnering with us to serve vulnerable children in Sierra Leone.
-          </p>
+    <section className="bg-[#f4f1ea] px-6 py-14 lg:px-20">
+      <div className="mx-auto max-w-6xl">
+        <div className="text-center mb-10">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#c9962a]">Choose Your Way to Help</span>
+          <h2 className="mt-3 font-heading text-3xl font-semibold text-[#1a2e1f] lg:text-4xl">How Would You Like to Give?</h2>
         </div>
-
-        <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          {givingOptions.map((option) => {
-            const isActive = activeTab === option.id;
-
-            return (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => onTabChange(option.id)}
-                className={`rounded-2xl border p-6 text-left transition hover:-translate-y-1 hover:shadow-[0_10px_24px_rgba(0,0,0,0.06)] ${
-                  isActive
-                    ? "border-[#214c34] bg-[#214c34] text-white"
-                    : "border-[#e7dfd0] bg-[#fcfaf6] text-[#214c34]"
-                }`}
-              >
-                <h3
-                  className={`text-xl font-semibold ${
-                    isActive ? "text-white" : "text-[#214c34]"
-                  }`}
-                >
-                  {option.title}
-                </h3>
-
-                <p
-                  className={`mt-3 text-sm leading-7 ${
-                    isActive ? "text-white/85" : "text-[#626a67]"
-                  }`}
-                >
-                  {option.description}
-                </p>
-              </button>
-            );
-          })}
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              className={`group flex flex-col items-center gap-3 p-6 text-center transition-all duration-300 ${
+                activeTab === tab.id
+                  ? "bg-[#0a1a10] text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+                  : "bg-white text-[#1a2e1f] hover:bg-[#0a1a10]/5"
+              }`}
+            >
+              <span className="text-3xl">{tab.icon}</span>
+              <div>
+                <p className={`text-[13px] font-bold leading-tight ${activeTab === tab.id ? "text-white" : "text-[#1a2e1f]"}`}>{tab.label}</p>
+                <p className={`mt-1 text-[11px] ${activeTab === tab.id ? "text-[#c9962a]" : "text-[#626a67]"}`}>{tab.desc}</p>
+              </div>
+              <div className={`h-[2px] w-8 transition-all duration-300 ${activeTab === tab.id ? "bg-[#c9962a]" : "bg-transparent group-hover:bg-[#c9962a]/30"}`} />
+            </button>
+          ))}
         </div>
       </div>
     </section>
