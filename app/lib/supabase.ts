@@ -74,16 +74,38 @@ export function getDb(): AnyClient | null {
   return _client;
 }
 
-// ── DB helper: idempotency check ─────────────────────────────────────────────
-// Inserts a webhook event record. Returns {duplicate: true} if already processed.
-// The UNIQUE(provider, provider_event_id) constraint enforces at-most-once processing.
-export async function checkAndRecordWebhookEvent(
+// ── DB helper: idempotency check (SELECT only) ───────────────────────────────
+// Returns true if this event was already successfully processed.
+// Call this BEFORE writing to donations. If true, return 200 immediately.
+// The provider can safely retry events we have not yet fully recorded.
+export async function isWebhookEventProcessed(
+  provider: Provider,
+  providerEventId: string,
+): Promise<boolean> {
+  const db = getDb();
+  if (!db) return false; // No DB — process every event (development fallback)
+
+  const { data } = await db
+    .from("webhook_events")
+    .select("id")
+    .eq("provider", provider)
+    .eq("provider_event_id", providerEventId)
+    .maybeSingle();
+
+  return Boolean(data);
+}
+
+// ── DB helper: record successfully processed event (INSERT) ───────────────────
+// Call this AFTER donations have been written successfully.
+// If the INSERT fails because the row already exists (race condition between two
+// simultaneous retries), that is safe to ignore — the donation write is idempotent.
+export async function recordWebhookEvent(
   provider: Provider,
   providerEventId: string,
   eventType: string,
-): Promise<{ duplicate: boolean; error: string | null }> {
+): Promise<void> {
   const db = getDb();
-  if (!db) return { duplicate: false, error: null };
+  if (!db) return;
 
   const row: WebhookEventInsert = {
     provider,
@@ -94,13 +116,12 @@ export async function checkAndRecordWebhookEvent(
 
   const { error } = await db.from("webhook_events").insert(row);
 
-  if (error) {
-    if (error.code === "23505") return { duplicate: true, error: null };
-    console.error(`[DB] webhook_events insert error (${provider}/${eventType}):`, error.message);
-    return { duplicate: false, error: error.message };
+  if (error && error.code !== "23505") {
+    // Log but do not throw — the donation write already succeeded.
+    // A missing webhook_events row means this event could be reprocessed,
+    // but upsertDonation is idempotent so that is safe.
+    console.error(`[DB] recordWebhookEvent failed (${provider}/${eventType}):`, error.message);
   }
-
-  return { duplicate: false, error: null };
 }
 
 // ── DB helper: upsert donation ────────────────────────────────────────────────

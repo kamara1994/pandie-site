@@ -1,25 +1,14 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import {
-  checkAndRecordWebhookEvent,
+  isWebhookEventProcessed,
+  recordWebhookEvent,
   upsertDonation,
-  updateDonationByCheckoutId,
   updateDonationBySubscriptionId,
   updateDonationByPaymentId,
 } from "@/app/lib/supabase";
 
 export const dynamic = "force-dynamic";
-
-// Zero-decimal currencies — amount_total is already the display unit
-const ZERO_DECIMAL = new Set([
-  "BIF","CLP","DJF","GNF","JPY","KMF","KRW","MGA",
-  "PYG","RWF","UGX","VND","VUV","XAF","XOF","XPF",
-]);
-
-function parseAmount(amountTotal: number | null, currency: string): number {
-  if (!amountTotal) return 0;
-  return ZERO_DECIMAL.has(currency.toUpperCase()) ? amountTotal : amountTotal / 100;
-}
 
 export async function POST(request: Request) {
   if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
@@ -28,7 +17,7 @@ export async function POST(request: Request) {
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-  // Must read raw body before any JSON parsing for HMAC verification
+  // Raw body must be read before any other parsing — required for HMAC verification
   const rawBody = await request.text();
   const sig = request.headers.get("stripe-signature");
 
@@ -44,29 +33,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Webhook signature invalid." }, { status: 400 });
   }
 
-  // ── Idempotency check ──────────────────────────────────────────────────────
-  // Stripe may retry events. The webhook_events table UNIQUE(provider, provider_event_id)
-  // guarantees each event is processed at most once at the database level.
-  const { duplicate, error: idempotencyErr } = await checkAndRecordWebhookEvent(
-    "stripe",
-    event.id,
-    event.type,
-  );
-
-  if (duplicate) {
-    console.log("[Stripe Webhook] Duplicate event ignored:", event.id, event.type);
+  // ── Idempotency: SELECT first ─────────────────────────────────────────────
+  // We check before writing so that a failed donation write + Stripe retry can
+  // succeed. INSERT-first idempotency would block the retry after a partial failure.
+  const alreadyProcessed = await isWebhookEventProcessed("stripe", event.id);
+  if (alreadyProcessed) {
+    console.log("[Stripe Webhook] Duplicate event, already processed:", event.id, event.type);
     return NextResponse.json({ received: true, duplicate: true });
   }
 
-  if (idempotencyErr) {
-    console.error("[Stripe Webhook] Idempotency DB error (processing anyway):", idempotencyErr);
-  }
+  // ── Event dispatch ────────────────────────────────────────────────────────
+  // processingFailed = true causes a 500 return so Stripe will retry the event.
+  // recordWebhookEvent is only called on success, keeping the idempotency record
+  // absent until we are sure the donation was written.
+  let processingFailed = false;
 
-  // ── Event dispatch ─────────────────────────────────────────────────────────
   try {
     switch (event.type) {
 
-      // ── One-time payment OR first monthly payment completed ────────────────
+      // One-time payment OR first subscription payment completed
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const meta = (session.metadata ?? {}) as Record<string, string>;
@@ -77,11 +62,8 @@ export async function POST(request: Request) {
           typeof session.subscription === "string" ? session.subscription : null;
 
         const isMonthly = meta.frequency === "monthly" || Boolean(subscriptionId);
-        const paymentStatus = isMonthly ? "subscription_active" : "paid";
-        const paidAt = new Date().toISOString();
 
-        // Upsert: creates the record if the pending insert failed, or updates existing
-        await upsertDonation({
+        const { error } = await upsertDonation({
           provider: "stripe",
           provider_checkout_id: session.id,
           provider_payment_id: txnId,
@@ -97,21 +79,30 @@ export async function POST(request: Request) {
           amount_minor: session.amount_total ?? 0,
           currency: currency.toLowerCase(),
           frequency: isMonthly ? "monthly" : "one_time",
-          payment_status: paymentStatus,
+          payment_status: isMonthly ? "subscription_active" : "paid",
           receipt_status: "pending",
-          paid_at: paidAt,
+          paid_at: new Date().toISOString(),
         });
 
-        console.log("[Stripe Webhook] checkout.session.completed →", paymentStatus, session.id);
+        if (error) {
+          console.error("[Stripe Webhook] DB write failed for checkout.session.completed:", error);
+          processingFailed = true;
+        } else {
+          console.log(
+            "[Stripe Webhook] checkout.session.completed →",
+            isMonthly ? "subscription_active" : "paid",
+            session.id,
+          );
+        }
         break;
       }
 
-      // ── Async payment failed (e.g. bank debit declined after redirect) ─────
+      // Async payment method declined after the user was redirected to success
       case "checkout.session.async_payment_failed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const meta = (session.metadata ?? {}) as Record<string, string>;
 
-        await upsertDonation({
+        const { error } = await upsertDonation({
           provider: "stripe",
           provider_checkout_id: session.id,
           donor_name: meta.donorName || "Anonymous",
@@ -127,11 +118,16 @@ export async function POST(request: Request) {
           receipt_status: "not_available",
         });
 
-        console.log("[Stripe Webhook] async_payment_failed →", session.id);
+        if (error) {
+          console.error("[Stripe Webhook] DB write failed for async_payment_failed:", error);
+          processingFailed = true;
+        } else {
+          console.log("[Stripe Webhook] async_payment_failed →", session.id);
+        }
         break;
       }
 
-      // ── Recurring invoice paid ─────────────────────────────────────────────
+      // Recurring monthly invoice paid
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as unknown as {
           id: string;
@@ -142,48 +138,55 @@ export async function POST(request: Request) {
         };
 
         if (invoice.subscription) {
-          await updateDonationBySubscriptionId(invoice.subscription, {
+          const { error } = await updateDonationBySubscriptionId(invoice.subscription, {
             payment_status: "subscription_active",
             paid_at: new Date().toISOString(),
           });
+          if (error) {
+            console.error("[Stripe Webhook] DB write failed for invoice.payment_succeeded:", error);
+            processingFailed = true;
+          }
         }
 
-        console.log("[Stripe Webhook] invoice.payment_succeeded →", invoice.id);
+        if (!processingFailed) {
+          console.log("[Stripe Webhook] invoice.payment_succeeded →", invoice.id);
+        }
         break;
       }
 
-      // ── Recurring invoice failed ───────────────────────────────────────────
+      // Recurring invoice failed — Stripe may retry; subscription stays active until deleted
       case "invoice.payment_failed": {
         const invoice = event.data.object as unknown as {
           id: string;
           customer_email: string | null;
           subscription?: string;
         };
-
-        // Stripe may retry the invoice. Status remains subscription_active
-        // unless the subscription itself is deleted (handled below).
-        // Log only — do not flip subscription to failed on first failed invoice.
-        console.log("[Stripe Webhook] invoice.payment_failed →", invoice.id, {
+        console.log("[Stripe Webhook] invoice.payment_failed (Stripe will retry) →", invoice.id, {
           subscriptionId: invoice.subscription,
           customerEmail: invoice.customer_email,
         });
         break;
       }
 
-      // ── Subscription cancelled (by owner, by customer, or after max retries) ──
+      // Subscription cancelled — by donor, by owner, or after exhausting retries
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
 
-        await updateDonationBySubscriptionId(sub.id, {
+        const { error } = await updateDonationBySubscriptionId(sub.id, {
           payment_status: "subscription_cancelled",
           cancelled_at: new Date().toISOString(),
         });
 
-        console.log("[Stripe Webhook] subscription.deleted →", sub.id);
+        if (error) {
+          console.error("[Stripe Webhook] DB write failed for subscription.deleted:", error);
+          processingFailed = true;
+        } else {
+          console.log("[Stripe Webhook] subscription.deleted →", sub.id);
+        }
         break;
       }
 
-      // ── Full or partial refund ─────────────────────────────────────────────
+      // Full or partial refund
       case "charge.refunded": {
         const charge = event.data.object as Stripe.Charge;
         const paymentIntentId =
@@ -191,18 +194,23 @@ export async function POST(request: Request) {
 
         if (paymentIntentId) {
           const isFullRefund = charge.amount_refunded >= charge.amount;
-          await updateDonationByPaymentId("stripe", paymentIntentId, {
+          const { error } = await updateDonationByPaymentId("stripe", paymentIntentId, {
             payment_status: isFullRefund ? "refunded" : "partially_refunded",
             refunded_at: new Date().toISOString(),
           });
+
+          if (error) {
+            console.error("[Stripe Webhook] DB write failed for charge.refunded:", error);
+            processingFailed = true;
+          }
         }
 
-        console.log("[Stripe Webhook] charge.refunded →", {
-          chargeId: charge.id,
-          paymentIntentId,
-          amountRefunded: charge.amount_refunded,
-          currency: charge.currency,
-        });
+        if (!processingFailed) {
+          console.log("[Stripe Webhook] charge.refunded →", charge.id, {
+            paymentIntentId,
+            amountRefunded: charge.amount_refunded,
+          });
+        }
         break;
       }
 
@@ -210,9 +218,19 @@ export async function POST(request: Request) {
         break;
     }
   } catch (err) {
-    console.error("[Stripe Webhook] Handler error:", err);
-    return NextResponse.json({ error: "Webhook handler error." }, { status: 500 });
+    console.error("[Stripe Webhook] Unexpected handler error:", err);
+    processingFailed = true;
   }
+
+  // Return 500 if the donation write failed — Stripe will retry the event.
+  // The SELECT idempotency check at the top will not block the retry because
+  // we only write to webhook_events AFTER a successful donation write.
+  if (processingFailed) {
+    return NextResponse.json({ error: "DB write failed — will retry." }, { status: 500 });
+  }
+
+  // Record that this event was fully processed — blocks future duplicate processing
+  await recordWebhookEvent("stripe", event.id, event.type);
 
   return NextResponse.json({ received: true });
 }

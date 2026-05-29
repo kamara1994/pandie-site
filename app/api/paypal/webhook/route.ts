@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPayPalAccessToken, PAYPAL_BASE } from "@/app/lib/paypal";
 import {
-  checkAndRecordWebhookEvent,
+  isWebhookEventProcessed,
+  recordWebhookEvent,
   updateDonationByPaymentId,
   updateDonationByCheckoutId,
 } from "@/app/lib/supabase";
@@ -64,83 +65,116 @@ export async function POST(request: Request) {
     resource: Record<string, unknown>;
   };
 
-  // ── Idempotency check ──────────────────────────────────────────────────────
-  // PayPal may retry events. webhook_events UNIQUE(provider, provider_event_id)
-  // prevents duplicate processing at the database level.
-  const { duplicate } = await checkAndRecordWebhookEvent(
-    "paypal",
-    event.id || transmissionId,  // PayPal events have their own `id`
-    event.event_type,
-  );
+  // Use event.id as the idempotency key (PayPal events have their own unique ID)
+  const eventId = event.id || transmissionId;
 
-  if (duplicate) {
-    console.log("[PayPal Webhook] Duplicate event ignored:", event.id, event.event_type);
+  // ── Idempotency: SELECT first ─────────────────────────────────────────────
+  // Same pattern as Stripe: check before writing so that a failed DB write
+  // + PayPal retry can succeed. recordWebhookEvent is called only after success.
+  const alreadyProcessed = await isWebhookEventProcessed("paypal", eventId);
+  if (alreadyProcessed) {
+    console.log("[PayPal Webhook] Duplicate event, already processed:", eventId, event.event_type);
     return NextResponse.json({ received: true, duplicate: true });
   }
 
-  // ── Event dispatch ─────────────────────────────────────────────────────────
+  // ── Event dispatch ────────────────────────────────────────────────────────
+  let processingFailed = false;
   const resource = event.resource;
 
-  switch (event.event_type) {
+  try {
+    switch (event.event_type) {
 
-    // ── Capture completed (secondary confirmation — capture route already marked paid) ─
-    case "PAYMENT.CAPTURE.COMPLETED": {
-      const captureId = resource?.id as string | undefined;
-      // Idempotent update: only updates if payment is still "pending"
-      // (capture route usually beats the webhook here, so this is often a no-op)
-      if (captureId) {
-        await updateDonationByPaymentId("paypal", captureId, {
-          payment_status: "paid",
-          paid_at: new Date().toISOString(),
-        });
+      // Secondary confirmation — the capture API route already wrote the paid status.
+      // This update is idempotent and safe to re-apply.
+      case "PAYMENT.CAPTURE.COMPLETED": {
+        const captureId = resource?.id as string | undefined;
+        if (captureId) {
+          const { error } = await updateDonationByPaymentId("paypal", captureId, {
+            payment_status: "paid",
+            paid_at: new Date().toISOString(),
+          });
+          if (error) {
+            console.error("[PayPal Webhook] DB write failed for CAPTURE.COMPLETED:", error);
+            processingFailed = true;
+          }
+        }
+        if (!processingFailed) {
+          console.log("[PayPal Webhook] PAYMENT.CAPTURE.COMPLETED →", captureId);
+        }
+        break;
       }
-      console.log("[PayPal Webhook] PAYMENT.CAPTURE.COMPLETED →", captureId);
-      break;
-    }
 
-    // ── Capture denied ────────────────────────────────────────────────────────
-    case "PAYMENT.CAPTURE.DENIED": {
-      const captureId = resource?.id as string | undefined;
-      if (captureId) {
-        await updateDonationByPaymentId("paypal", captureId, {
-          payment_status: "failed",
-        });
+      // Payment was denied — mark failed by capture ID and by order ID as fallback
+      case "PAYMENT.CAPTURE.DENIED": {
+        const captureId = resource?.id as string | undefined;
+        const relatedOrderId = (
+          resource?.supplementary_data as Record<string, Record<string, string>> | undefined
+        )?.related_ids?.order_id;
+
+        if (captureId) {
+          const { error } = await updateDonationByPaymentId("paypal", captureId, {
+            payment_status: "failed",
+          });
+          if (error) {
+            console.error("[PayPal Webhook] DB write failed for CAPTURE.DENIED (captureId):", error);
+            processingFailed = true;
+          }
+        }
+
+        if (!processingFailed && relatedOrderId) {
+          await updateDonationByCheckoutId("paypal", relatedOrderId, {
+            payment_status: "failed",
+          });
+        }
+
+        if (!processingFailed) {
+          console.log("[PayPal Webhook] PAYMENT.CAPTURE.DENIED →", captureId);
+        }
+        break;
       }
-      // Also try to find by order ID if capture ID not in provider_payment_id
-      const relatedOrderId = (
-        resource?.supplementary_data as Record<string, Record<string, string>> | undefined
-      )?.related_ids?.order_id;
-      if (relatedOrderId) {
-        await updateDonationByCheckoutId("paypal", relatedOrderId, {
-          payment_status: "failed",
-        });
+
+      // Full refund issued
+      case "PAYMENT.CAPTURE.REFUNDED": {
+        const captureId = resource?.id as string | undefined;
+        if (captureId) {
+          const { error } = await updateDonationByPaymentId("paypal", captureId, {
+            payment_status: "refunded",
+            refunded_at: new Date().toISOString(),
+          });
+          if (error) {
+            console.error("[PayPal Webhook] DB write failed for CAPTURE.REFUNDED:", error);
+            processingFailed = true;
+          }
+        }
+        if (!processingFailed) {
+          console.log("[PayPal Webhook] PAYMENT.CAPTURE.REFUNDED →", captureId);
+        }
+        break;
       }
-      console.log("[PayPal Webhook] PAYMENT.CAPTURE.DENIED →", captureId);
-      break;
-    }
 
-    // ── Refund ────────────────────────────────────────────────────────────────
-    case "PAYMENT.CAPTURE.REFUNDED": {
-      const captureId = resource?.id as string | undefined;
-      if (captureId) {
-        await updateDonationByPaymentId("paypal", captureId, {
-          payment_status: "refunded",
-          refunded_at: new Date().toISOString(),
-        });
+      // Order approved — before capture, informational only, no DB write needed
+      case "CHECKOUT.ORDER.APPROVED": {
+        console.log("[PayPal Webhook] CHECKOUT.ORDER.APPROVED →", resource?.id);
+        break;
       }
-      console.log("[PayPal Webhook] PAYMENT.CAPTURE.REFUNDED →", captureId);
-      break;
-    }
 
-    // ── Order approved (before capture — informational only) ─────────────────
-    case "CHECKOUT.ORDER.APPROVED": {
-      console.log("[PayPal Webhook] CHECKOUT.ORDER.APPROVED →", resource?.id);
-      break;
+      default:
+        break;
     }
-
-    default:
-      break;
+  } catch (err) {
+    console.error("[PayPal Webhook] Unexpected handler error:", err);
+    processingFailed = true;
   }
+
+  // Return 500 if a DB write failed — PayPal will retry the event.
+  // The SELECT idempotency check will not block the retry because we only
+  // write to webhook_events after a successful donation DB write.
+  if (processingFailed) {
+    return NextResponse.json({ error: "DB write failed — will retry." }, { status: 500 });
+  }
+
+  // Record that this event was fully processed
+  await recordWebhookEvent("paypal", eventId, event.event_type);
 
   return NextResponse.json({ received: true });
 }

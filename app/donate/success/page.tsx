@@ -203,6 +203,10 @@ export default async function DonateSuccessPage({
               </Link>
             </div>
           </div>
+
+          <p className="mt-8 text-center text-[15px] leading-8 text-[#5f6663]">
+            Thank you for planting hope with us today 🌟 Your kindness is helping a child feel seen, supported, and loved.
+          </p>
         </div>
       </section>
     </main>
