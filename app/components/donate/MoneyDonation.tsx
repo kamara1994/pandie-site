@@ -447,6 +447,7 @@ export default function MoneyDonation({
                     phone={formData.phone}
                     message={formData.message}
                     anonymous={formData.anonymous}
+                    emailUpdates={formData.emailUpdates}
                   />
                 </div>
               </div>

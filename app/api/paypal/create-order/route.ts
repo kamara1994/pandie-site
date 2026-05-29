@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPayPalAccessToken, PAYPAL_BASE, PAYPAL_SUPPORTED_CURRENCIES } from "@/app/lib/paypal";
+import { upsertDonation } from "@/app/lib/supabase";
+import { toMinorUnit } from "@/app/lib/currency";
 
 export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
@@ -13,10 +15,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { amount, currency, donorEmail, donorName, anonymous, message, phone } = body as {
-    amount: number; currency: string; donorEmail: string;
-    donorName?: string; anonymous?: boolean; message?: string; phone?: string;
-  };
+  const { amount, currency, donorEmail, donorName, anonymous, message, phone, emailUpdates } =
+    body as {
+      amount: number; currency: string; donorEmail: string;
+      donorName?: string; anonymous?: boolean; message?: string;
+      phone?: string; emailUpdates?: boolean;
+    };
 
   if (!amount || typeof amount !== "number" || amount <= 0) {
     return NextResponse.json({ error: "Invalid amount." }, { status: 400 });
@@ -29,8 +33,7 @@ export async function POST(request: Request) {
   const curr = (typeof currency === "string" ? currency : "USD").toUpperCase();
   const orderCurrency = PAYPAL_SUPPORTED_CURRENCIES.has(curr) ? curr : "USD";
 
-  // PayPal requires exactly 2 decimal places for non-zero-decimal currencies
-  // JPY is zero-decimal in PayPal — pass as integer string
+  // PayPal requires exactly 2 decimal places; JPY-like currencies use integers
   const JPY_LIKE = new Set(["JPY", "TWD", "HUF"]);
   const valueStr = JPY_LIKE.has(orderCurrency)
     ? String(Math.round(amount))
@@ -81,15 +84,23 @@ export async function POST(request: Request) {
     );
   }
 
-  // Log intent — full record saved on capture
-  console.log("[PANDIE PAYPAL ORDER CREATED]", {
-    orderId: order.id,
-    currency: orderCurrency,
-    amount: valueStr,
-    donorEmail: anonymous ? "anonymous" : donorEmail,
-    donorName: anonymous ? "Anonymous" : (donorName || ""),
-    message: (message || "").slice(0, 200),
-    phone: (phone || "").slice(0, 50),
+  // Create pending donation record — will be updated to "paid" on capture
+  const safeDonorName = anonymous ? "Anonymous" : String(donorName || "").slice(0, 500);
+
+  await upsertDonation({
+    provider: "paypal",
+    provider_checkout_id: order.id,
+    donor_name: safeDonorName,
+    donor_email: donorEmail,
+    phone: phone?.trim() || null,
+    anonymous: Boolean(anonymous),
+    email_updates: Boolean(emailUpdates),
+    message: message?.trim() || null,
+    amount_minor: toMinorUnit(amount, orderCurrency),
+    currency: orderCurrency.toLowerCase(),
+    frequency: "one_time",              // PayPal monthly requires pre-created subscription plans
+    payment_status: "pending",
+    receipt_status: "pending",
   });
 
   return NextResponse.json({ id: order.id });

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { upsertDonation } from "@/app/lib/supabase";
 
 // Currencies that use the smallest unit directly (no ×100)
 const ZERO_DECIMAL = new Set([
@@ -7,7 +8,7 @@ const ZERO_DECIMAL = new Set([
   "PYG","RWF","UGX","VND","VUV","XAF","XOF","XPF",
 ]);
 
-// Currencies Stripe supports from our full list (SLE not yet supported)
+// Stripe-supported currencies from our full list (SLE not yet supported by Stripe)
 const STRIPE_SUPPORTED = new Set([
   "USD","EUR","GBP","CAD","AUD","NZD","CHF","SEK","NOK","DKK",
   "PLN","TRY","SGD","HKD","JPY","CNY","THB","INR","AED","SAR",
@@ -82,8 +83,10 @@ export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+  const safeDonorName = anonymous ? "Anonymous" : String(donorName || "").slice(0, 500);
+
   const metadata: Record<string, string> = {
-    donorName: anonymous ? "Anonymous" : String(donorName || "").slice(0, 500),
+    donorName: safeDonorName,
     donorEmail: String(donorEmail),
     anonymous: String(Boolean(anonymous)),
     emailUpdates: String(Boolean(emailUpdates)),
@@ -121,7 +124,6 @@ export async function POST(request: Request) {
         cancel_url: `${siteUrl}/donate/cancel`,
       });
     } else {
-      // Monthly recurring donation via Stripe subscription
       session = await stripe.checkout.sessions.create({
         mode: "subscription",
         payment_method_types: ["card"],
@@ -131,8 +133,7 @@ export async function POST(request: Request) {
               currency: curr.toLowerCase(),
               product_data: {
                 name: "Monthly Donation — Pandie Foundation",
-                description:
-                  "Monthly support for vulnerable children in Sierra Leone.",
+                description: "Monthly support for vulnerable children in Sierra Leone.",
               },
               unit_amount: stripeAmount,
               recurring: { interval: "month" },
@@ -148,13 +149,31 @@ export async function POST(request: Request) {
       });
     }
 
+    // Create pending donation record in the database.
+    // Non-fatal: the webhook will upsert on checkout.session.completed even if this fails.
+    await upsertDonation({
+      provider: "stripe",
+      provider_checkout_id: session.id,
+      donor_name: safeDonorName,
+      donor_email: donorEmail,
+      phone: phone?.trim() || null,
+      anonymous: Boolean(anonymous),
+      email_updates: Boolean(emailUpdates),
+      message: message?.trim() || null,
+      amount_minor: stripeAmount,
+      currency: curr.toLowerCase(),
+      frequency: frequency === "monthly" ? "monthly" : "one_time",
+      payment_status: "pending",
+      receipt_status: "pending",
+    });
+
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    const message =
+    const msg =
       err instanceof Stripe.errors.StripeError
         ? err.message
         : "Failed to create checkout session.";
     console.error("[Stripe Checkout Error]", err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { getPayPalAccessToken, PAYPAL_BASE } from "@/app/lib/paypal";
+import {
+  checkAndRecordWebhookEvent,
+  updateDonationByPaymentId,
+  updateDonationByCheckoutId,
+} from "@/app/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +25,7 @@ export async function POST(request: Request) {
   const authAlgo = request.headers.get("paypal-auth-algo") ?? "";
   const transmissionSig = request.headers.get("paypal-transmission-sig") ?? "";
 
-  // Verify webhook signature with PayPal
+  // ── Verify webhook signature with PayPal ───────────────────────────────────
   let accessToken: string;
   try {
     accessToken = await getPayPalAccessToken();
@@ -53,21 +58,86 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Webhook verification failed." }, { status: 400 });
   }
 
-  const event = JSON.parse(rawBody) as { event_type: string; resource: Record<string, unknown> };
+  const event = JSON.parse(rawBody) as {
+    id: string;
+    event_type: string;
+    resource: Record<string, unknown>;
+  };
+
+  // ── Idempotency check ──────────────────────────────────────────────────────
+  // PayPal may retry events. webhook_events UNIQUE(provider, provider_event_id)
+  // prevents duplicate processing at the database level.
+  const { duplicate } = await checkAndRecordWebhookEvent(
+    "paypal",
+    event.id || transmissionId,  // PayPal events have their own `id`
+    event.event_type,
+  );
+
+  if (duplicate) {
+    console.log("[PayPal Webhook] Duplicate event ignored:", event.id, event.event_type);
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  // ── Event dispatch ─────────────────────────────────────────────────────────
+  const resource = event.resource;
 
   switch (event.event_type) {
-    case "PAYMENT.CAPTURE.COMPLETED":
-      console.log("[PANDIE PAYPAL WEBHOOK] Payment capture completed:", event.resource?.id);
+
+    // ── Capture completed (secondary confirmation — capture route already marked paid) ─
+    case "PAYMENT.CAPTURE.COMPLETED": {
+      const captureId = resource?.id as string | undefined;
+      // Idempotent update: only updates if payment is still "pending"
+      // (capture route usually beats the webhook here, so this is often a no-op)
+      if (captureId) {
+        await updateDonationByPaymentId("paypal", captureId, {
+          payment_status: "paid",
+          paid_at: new Date().toISOString(),
+        });
+      }
+      console.log("[PayPal Webhook] PAYMENT.CAPTURE.COMPLETED →", captureId);
       break;
-    case "PAYMENT.CAPTURE.DENIED":
-      console.log("[PANDIE PAYPAL WEBHOOK] Payment capture denied:", event.resource?.id);
+    }
+
+    // ── Capture denied ────────────────────────────────────────────────────────
+    case "PAYMENT.CAPTURE.DENIED": {
+      const captureId = resource?.id as string | undefined;
+      if (captureId) {
+        await updateDonationByPaymentId("paypal", captureId, {
+          payment_status: "failed",
+        });
+      }
+      // Also try to find by order ID if capture ID not in provider_payment_id
+      const relatedOrderId = (
+        resource?.supplementary_data as Record<string, Record<string, string>> | undefined
+      )?.related_ids?.order_id;
+      if (relatedOrderId) {
+        await updateDonationByCheckoutId("paypal", relatedOrderId, {
+          payment_status: "failed",
+        });
+      }
+      console.log("[PayPal Webhook] PAYMENT.CAPTURE.DENIED →", captureId);
       break;
-    case "PAYMENT.CAPTURE.REFUNDED":
-      console.log("[PANDIE PAYPAL WEBHOOK] Payment refunded:", event.resource?.id);
+    }
+
+    // ── Refund ────────────────────────────────────────────────────────────────
+    case "PAYMENT.CAPTURE.REFUNDED": {
+      const captureId = resource?.id as string | undefined;
+      if (captureId) {
+        await updateDonationByPaymentId("paypal", captureId, {
+          payment_status: "refunded",
+          refunded_at: new Date().toISOString(),
+        });
+      }
+      console.log("[PayPal Webhook] PAYMENT.CAPTURE.REFUNDED →", captureId);
       break;
-    case "CHECKOUT.ORDER.APPROVED":
-      console.log("[PANDIE PAYPAL WEBHOOK] Order approved:", event.resource?.id);
+    }
+
+    // ── Order approved (before capture — informational only) ─────────────────
+    case "CHECKOUT.ORDER.APPROVED": {
+      console.log("[PayPal Webhook] CHECKOUT.ORDER.APPROVED →", resource?.id);
       break;
+    }
+
     default:
       break;
   }

@@ -20,6 +20,7 @@ type Props = {
   phone: string;
   message: string;
   anonymous: boolean;
+  emailUpdates: boolean;
 };
 
 // Inner component — only mounted when clientId is confirmed present
@@ -33,6 +34,7 @@ function PayPalInner({
   phone,
   message,
   anonymous,
+  emailUpdates,
 }: Props & { clientId: string }) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -70,6 +72,7 @@ function PayPalInner({
         phone,
         message,
         anonymous,
+        emailUpdates,
         frequency,
       }),
     });

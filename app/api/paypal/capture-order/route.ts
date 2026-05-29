@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPayPalAccessToken, PAYPAL_BASE } from "@/app/lib/paypal";
+import { upsertDonation } from "@/app/lib/supabase";
+import { toMinorUnit } from "@/app/lib/currency";
 
 export async function POST(request: Request) {
   if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
@@ -13,12 +15,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { orderId, donorName, donorEmail, amount, currency, frequency, anonymous, message } =
-    body as {
-      orderId: string; donorName?: string; donorEmail?: string;
-      amount?: number; currency?: string; frequency?: string;
-      anonymous?: boolean; message?: string;
-    };
+  const {
+    orderId, donorName, donorEmail, amount, currency,
+    frequency, anonymous, message, phone, emailUpdates,
+  } = body as {
+    orderId: string; donorName?: string; donorEmail?: string;
+    amount?: number; currency?: string; frequency?: string;
+    anonymous?: boolean; message?: string; phone?: string; emailUpdates?: boolean;
+  };
 
   if (!orderId || typeof orderId !== "string") {
     return NextResponse.json({ error: "Order ID required." }, { status: 400 });
@@ -32,6 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "PayPal authentication failed." }, { status: 500 });
   }
 
+  // Server-side capture — the authoritative payment confirmation
   const res = await fetch(`${PAYPAL_BASE}/v2/checkout/orders/${orderId}/capture`, {
     method: "POST",
     headers: {
@@ -52,33 +57,45 @@ export async function POST(request: Request) {
     );
   }
 
+  // Extract verified amounts from PayPal's capture response
   const txnCapture = capture.purchase_units?.[0]?.payments?.captures?.[0];
   const transactionId: string = txnCapture?.id ?? orderId;
   const capturedAmount: string = txnCapture?.amount?.value ?? String(amount ?? 0);
-  const capturedCurrency: string = txnCapture?.amount?.currency_code ?? (currency ?? "USD");
+  const capturedCurrency: string =
+    (txnCapture?.amount?.currency_code ?? currency ?? "USD").toUpperCase();
 
+  const safeDonorName = anonymous ? "Anonymous" : String(donorName || "").slice(0, 500);
   const donationId = `pf_paypal_${orderId.slice(-12)}`;
+  const paidAt = new Date().toISOString();
 
-  // Safe donation record — never stores card/wallet credentials
-  const record = {
-    id: donationId,
-    provider: "paypal" as const,
-    providerSessionId: orderId,
-    providerTransactionId: transactionId,
-    donorName: anonymous ? "Anonymous" : (donorName || ""),
-    donorEmail: donorEmail || "",
+  // Upsert: updates the pending record created in create-order, or creates a new one
+  // if create-order's DB insert failed. Capture is server-verified — safe to mark paid.
+  await upsertDonation({
+    provider: "paypal",
+    provider_checkout_id: orderId,
+    provider_payment_id: transactionId,
+    donor_name: safeDonorName,
+    donor_email: donorEmail || "",
+    phone: phone?.trim() || null,
     anonymous: Boolean(anonymous),
-    amount: Number(capturedAmount),
-    currency: capturedCurrency.toUpperCase(),
-    frequency: (frequency as "one-time" | "monthly") || "one-time",
-    status: "completed" as const,
-    receiptStatus: "pending" as const,
-    message: (message || "").slice(0, 500),
-    createdAt: new Date().toISOString(),
-  };
+    email_updates: Boolean(emailUpdates),
+    message: message?.trim() || null,
+    amount_minor: toMinorUnit(capturedAmount, capturedCurrency),
+    currency: capturedCurrency.toLowerCase(),
+    frequency: "one_time",
+    payment_status: "paid",
+    receipt_status: "pending",
+    paid_at: paidAt,
+  });
 
-  // ── Replace the console.log below with your database write (Supabase, PlanetScale, etc.)
-  console.log("[PANDIE PAYPAL DONATION RECORD — COMPLETED]", JSON.stringify(record, null, 2));
+  console.log("[PANDIE PAYPAL CAPTURED]", {
+    orderId,
+    transactionId,
+    capturedAmount,
+    capturedCurrency,
+    donorEmail: anonymous ? "anonymous" : donorEmail,
+    paidAt,
+  });
 
   return NextResponse.json({ success: true, transactionId, donationId });
 }
