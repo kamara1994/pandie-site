@@ -1,3 +1,21 @@
+// ============================================================
+// PAYPAL / VENMO — INTEGRATION DORMANT (NOT FOR PUBLIC USE)
+// ============================================================
+// PayPal and Venmo buttons are hidden from the public UI until
+// Pandie Foundation completes all of the following:
+//   1. Legal business / nonprofit registration
+//   2. EIN (Employer Identification Number) application
+//   3. PayPal Business account creation and verification
+//   4. PayPal Charity verification (if applicable)
+//
+// To re-enable when ready:
+//   Set NEXT_PUBLIC_PAYPAL_CLIENT_ID in Vercel → Settings → Environment Variables
+//   and redeploy. The MoneyDonation component renders this section only when
+//   that variable is present at build time.
+//
+// All integration code below is complete and preserved for future activation.
+// ============================================================
+
 "use client";
 
 import { useState } from "react";

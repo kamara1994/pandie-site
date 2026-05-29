@@ -106,11 +106,11 @@ export default function MoneyDonation({
               </h3>
               <p className="mt-3 text-[15px] leading-7 text-[#626a67]">
                 All card payments are processed securely by Stripe. Apple Pay and
-                Google Pay are available at checkout. PayPal and Venmo are also
-                accepted. Your card details are never stored by Pandie Foundation.
+                Google Pay are available at checkout. Your card details are never
+                stored by Pandie Foundation.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay", "PayPal", "Venmo"].map(
+                {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay"].map(
                   (m) => (
                     <span
                       key={m}
@@ -429,28 +429,36 @@ export default function MoneyDonation({
                 </p>
               </form>
 
-              {/* PayPal / Venmo section */}
-              <div className="mt-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-px flex-1 bg-[#e7dfd0]" />
-                  <span className="text-sm font-medium text-[#9a9490]">or pay with</span>
-                  <div className="h-px flex-1 bg-[#e7dfd0]" />
-                </div>
+              {/*
+                PayPal / Venmo — DISABLED
+                Hidden until Pandie Foundation completes legal registration, obtains an EIN,
+                and completes PayPal Business account verification.
+                To re-enable: set NEXT_PUBLIC_PAYPAL_CLIENT_ID in Vercel environment variables.
+                All PayPal integration code is preserved in PayPalDonation.tsx and ready to activate.
+              */}
+              {process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID && (
+                <div className="mt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="h-px flex-1 bg-[#e7dfd0]" />
+                    <span className="text-sm font-medium text-[#9a9490]">or pay with</span>
+                    <div className="h-px flex-1 bg-[#e7dfd0]" />
+                  </div>
 
-                <div className="mt-5">
-                  <PayPalDonation
-                    amount={selectedAmount}
-                    currency={currency}
-                    frequency={frequency}
-                    donorName={formData.anonymous ? "Anonymous" : formData.fullName}
-                    donorEmail={formData.email}
-                    phone={formData.phone}
-                    message={formData.message}
-                    anonymous={formData.anonymous}
-                    emailUpdates={formData.emailUpdates}
-                  />
+                  <div className="mt-5">
+                    <PayPalDonation
+                      amount={selectedAmount}
+                      currency={currency}
+                      frequency={frequency}
+                      donorName={formData.anonymous ? "Anonymous" : formData.fullName}
+                      donorEmail={formData.email}
+                      phone={formData.phone}
+                      message={formData.message}
+                      anonymous={formData.anonymous}
+                      emailUpdates={formData.emailUpdates}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <Link
                 href="/"

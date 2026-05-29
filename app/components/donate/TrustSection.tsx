@@ -32,7 +32,7 @@ export default function TrustSection() {
         <div className="mt-12 border-t border-white/10 pt-10 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/30 mb-4">Secure Payment Processing</p>
           <div className="flex flex-wrap justify-center gap-4">
-            {["Visa", "Mastercard", "American Express", "PayPal", "Apple Pay", "Google Pay"].map(method => (
+            {["Visa", "Mastercard", "American Express", "Apple Pay", "Google Pay"].map(method => (
               <span key={method} className="border border-white/10 px-4 py-2 text-[12px] font-semibold text-white/40">{method}</span>
             ))}
           </div>
