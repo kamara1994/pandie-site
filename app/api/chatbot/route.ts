@@ -1,6 +1,8 @@
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 
-const client = new Anthropic();
+const client = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 const SYSTEM = `You are Pamela, the warm and knowledgeable AI assistant for Pandie Foundation — a nonprofit dedicated to protecting and uplifting vulnerable children in Sierra Leone.
 
@@ -22,13 +24,12 @@ Est: 2024
 04 Child Protection — safe spaces, advocacy, emergency support
 05 Child Sponsorship — 1:1 monthly commitment | $10–$50/month
 06 Community Outreach — partnering with local families and leaders
-07 Talent & Mentorship — discovering football, music, arts, academic, tech talent and building pathways to the world stage
+07 Talent & Mentorship — discovering football, music, arts, academic, tech talent
 
 == DONATION INFO ==
 Page: pandiefoundation.org/donate
 Methods: Credit/debit card (Stripe), Apple Pay, Google Pay, PayPal, Venmo
 One-time or monthly recurring
-Currencies: USD, EUR, GBP, CAD, AUD, NGN, SLE, GHS, and more
 Impact: $10 feeds a child for one week | $30/month sponsors a child's education
 
 == IMPACT NUMBERS ==
@@ -45,22 +46,21 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
-    const stream = client.messages.stream({
-      model: "claude-haiku-4-5-20251001",
+    const stream = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       max_tokens: 600,
       system: SYSTEM,
       messages,
+      stream: true,
     });
 
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       async start(controller) {
-        for await (const event of stream) {
-          if (
-            event.type === "content_block_delta" &&
-            event.delta.type === "text_delta"
-          ) {
-            controller.enqueue(encoder.encode(event.delta.text));
+        for await (const chunk of stream) {
+          const text = chunk.choices[0]?.delta?.content || "";
+          if (text) {
+            controller.enqueue(encoder.encode(text));
           }
         }
         controller.close();
