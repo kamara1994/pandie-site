@@ -67,10 +67,31 @@ export default function Hero() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#c9962a]">Sierra Leone · Est. 2024</span>
           </div>
 
-          <h1 className="mt-7 font-heading text-[clamp(48px,6vw,86px)] font-semibold leading-[1.02] text-white transition-all duration-700"
-            style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transitionDelay: "250ms" }}>
-            Every Child<br />Deserves a{" "}
-            <em className="italic text-[#e8b84b]">Mother&apos;s</em><br />Love
+          <h1 className="mt-7 font-heading text-[clamp(48px,6vw,86px)] font-semibold leading-[1.02] text-white">
+            {(["Every", "Child"] as const).map((w, i) => (
+              <span key={w} className="inline-block"
+                style={{ opacity: visible ? undefined : 0, animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) ${200 + i * 90}ms both` : "none" }}>
+                {w}
+              </span>
+            )).reduce((acc: React.ReactNode[], el, i) => i === 0 ? [el] : [...acc, " ", el], [])}
+            <br />
+            {(["Deserves", "a"] as const).map((w, i) => (
+              <span key={w} className="inline-block"
+                style={{ opacity: visible ? undefined : 0, animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) ${380 + i * 90}ms both` : "none" }}>
+                {w}
+              </span>
+            )).reduce((acc: React.ReactNode[], el, i) => i === 0 ? [el] : [...acc, " ", el], [])}{" "}
+            <em className="italic text-[#e8b84b]">
+              <span className="inline-block"
+                style={{ opacity: visible ? undefined : 0, animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) 560ms both` : "none" }}>
+                Mother&apos;s
+              </span>
+            </em>
+            <br />
+            <span className="inline-block"
+              style={{ opacity: visible ? undefined : 0, animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) 650ms both` : "none" }}>
+              Love
+            </span>
           </h1>
 
           <div className="mt-8 h-[3px] rounded-full bg-[#c9962a] transition-all duration-1000"
@@ -84,8 +105,9 @@ export default function Hero() {
           <div className="mt-10 flex flex-wrap gap-4 transition-all duration-700"
             style={{ opacity: visible ? 1 : 0, transitionDelay: "550ms" }}>
             <Link href="/donate"
-              className="inline-flex items-center gap-3 bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(201,150,42,0.4)]">
-              Make an Impact <span className="text-base leading-none">→</span>
+              className="group relative inline-flex items-center gap-3 overflow-hidden bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(201,150,42,0.45)]">
+              <span className="relative z-10 flex items-center gap-3">Make an Impact <span className="text-base leading-none">→</span></span>
+              <span className="absolute inset-0 -skew-x-12 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-[200%]" />
             </Link>
             <Link href="/about"
               className="inline-flex items-center gap-3 border border-white/30 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/60 hover:text-white">
@@ -120,10 +142,12 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Scroll cue */}
-      <div className="absolute bottom-10 left-1/2 z-20 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
-        <span className="text-[9px] uppercase tracking-[0.3em] text-white">Scroll</span>
-        <div className="h-8 w-px animate-pulse bg-white/40" />
+      {/* Scroll cue — travelling gold dot */}
+      <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2 flex flex-col items-center gap-2">
+        <span className="text-[9px] uppercase tracking-[0.3em] text-white/35">Scroll</span>
+        <div className="relative h-10 w-px overflow-hidden bg-white/10">
+          <div className="animate-scrollCue absolute inset-x-0 top-0 h-4 rounded-full bg-gradient-to-b from-[#c9962a] via-[#c9962a]/60 to-transparent" />
+        </div>
       </div>
     </section>
   );

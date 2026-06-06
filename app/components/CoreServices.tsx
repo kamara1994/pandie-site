@@ -33,8 +33,14 @@ export default function CoreServices() {
           {services.map((service) => (
             <article key={service.title} className="group relative flex flex-col overflow-hidden bg-white shadow-[0_2px_20px_rgba(0,0,0,0.06)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.12)]">
               <div className="relative h-64 overflow-hidden bg-[#d4d8da]">
-                <Image src={service.image} alt={service.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                <Image src={service.image} alt={service.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  placeholder="blur" blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIABADASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgUEA//EACQQAAIBBAICAwEAAAAAAAAAAAECAwQREiExBRNBUWH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Amam17FfaqO2vMUYB1I6xN8LHfuGwfFQraFrp5beS0gmt2TMZV" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0f2418]/60 via-transparent to-transparent" />
+                {/* Hover reveal overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#0f2418]/80 opacity-0 backdrop-blur-[2px] transition-all duration-500 group-hover:opacity-100">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#c9962a]">Explore Program</span>
+                  <span className="text-2xl text-[#c9962a]">→</span>
+                </div>
                 <div className="absolute right-5 top-5 font-heading text-5xl font-semibold leading-none text-white/20">{service.num}</div>
                 <div className="absolute bottom-4 left-4 bg-[#c9962a] px-3 py-2 flex flex-col">
                   <span className="text-lg font-bold leading-none text-[#0a1a10]">{service.stat}</span>

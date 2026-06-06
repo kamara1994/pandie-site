@@ -31,6 +31,11 @@ export default function ProgramsPage() {
               <div className="relative h-56 overflow-hidden bg-[#d4d8da]">
                 <Image src={p.image} alt={p.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/70 via-transparent to-transparent" />
+                {/* Hover reveal */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#0a1a10]/80 opacity-0 backdrop-blur-[2px] transition-all duration-500 group-hover:opacity-100">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#c9962a]">Explore Program</span>
+                  <span className="text-2xl text-[#c9962a]">→</span>
+                </div>
                 <div className="absolute right-4 top-4 font-heading text-5xl font-semibold leading-none text-white/15">{p.num}</div>
                 <div className="absolute bottom-4 left-4 bg-[#c9962a] px-3 py-1.5 flex flex-col">
                   <span className="text-lg font-bold leading-none text-[#0a1a10]">{p.stat}</span>
@@ -85,13 +90,23 @@ export default function ProgramsPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#c9962a] px-6 py-20 text-center lg:px-20">
-        <span className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#0a1a10]/60">Support Our Work</span>
-        <h2 className="mt-4 font-heading text-[clamp(36px,4vw,56px)] font-semibold text-[#0a1a10]">Every program runs<br />because someone gave.</h2>
-        <p className="mt-6 text-lg text-[#0a1a10]/70 max-w-lg mx-auto">Your donation directly funds these seven programs — keeping children safe, fed, educated, and helping extraordinary talent reach the world.</p>
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Link href="/donate" className="bg-[#0a1a10] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[#1a3826]">Donate Now</Link>
-          <Link href="/programs/talent" className="border-2 border-[#0a1a10] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#0a1a10]/10">Discover Talent Program</Link>
+      <section className="relative overflow-hidden bg-[#0a1a10] px-6 py-24 text-center lg:px-20">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#c9962a]/[0.07] blur-[120px]" />
+          <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px)", backgroundSize: "60px 60px" }} />
+        </div>
+        <div className="relative">
+          <span className="inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.32em] text-[#c9962a]">
+            <span className="h-px w-8 bg-[#c9962a]" />Support Our Work<span className="h-px w-8 bg-[#c9962a]" />
+          </span>
+          <h2 className="mt-5 font-heading text-[clamp(36px,4vw,58px)] font-semibold text-white">
+            Every program runs<br /><em className="italic text-[#e8b84b]">because someone gave.</em>
+          </h2>
+          <p className="mx-auto mt-6 max-w-lg text-lg leading-8 text-white/55">Your donation directly funds these seven programs — keeping children safe, fed, educated, and helping extraordinary talent reach the world.</p>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <Link href="/donate" className="gold-cta bg-[#c9962a] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(201,150,42,0.5)]">Donate Now</Link>
+            <Link href="/programs/talent" className="border border-white/20 px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 transition hover:border-white/50 hover:text-white">Discover Talent Program</Link>
+          </div>
         </div>
       </section>
     </main>

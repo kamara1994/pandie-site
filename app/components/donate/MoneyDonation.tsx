@@ -189,13 +189,16 @@ export default function MoneyDonation({
                       key={f}
                       type="button"
                       onClick={() => onFrequencyChange(f)}
-                      className={`rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] transition ${
+                      className={`relative overflow-hidden rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] transition-all duration-300 ${
                         frequency === f
-                          ? "bg-[#214c34] text-white"
-                          : "text-[#214c34]"
+                          ? "bg-[#214c34] text-white shadow-[0_4px_14px_rgba(33,76,52,0.35)]"
+                          : "text-[#214c34] hover:bg-[#214c34]/10"
                       }`}
                     >
-                      {f === "one-time" ? "One-Time" : "Monthly"}
+                      {frequency === f && (
+                        <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#c9962a]" />
+                      )}
+                      {f === "one-time" ? "One-Time" : "Monthly ♻"}
                     </button>
                   ))}
                 </div>
@@ -215,10 +218,10 @@ export default function MoneyDonation({
                         key={amt}
                         type="button"
                         onClick={() => onAmountChange(value)}
-                        className={`rounded-xl border px-4 py-4 text-base font-bold transition ${
+                        className={`rounded-xl border px-4 py-4 text-base font-bold transition-all duration-200 ${
                           isActive
-                            ? "border-[#214c34] bg-[#214c34] text-white"
-                            : "border-[#ddd6c8] bg-white text-[#214c34] hover:border-[#5a7d5d]"
+                            ? "border-[#c9962a] bg-[#0a1a10] text-white shadow-[0_4px_18px_rgba(0,0,0,0.2),0_0_0_1px_rgba(201,150,42,0.5)_inset]"
+                            : "border-[#ddd6c8] bg-white text-[#214c34] hover:border-[#c9962a]/50 hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
                         }`}
                       >
                         {currentCurrency.symbol}{amt}
@@ -403,12 +406,12 @@ export default function MoneyDonation({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#214c34] px-6 py-4 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#1a3d29] disabled:cursor-not-allowed disabled:opacity-70"
+                  className="gold-cta inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#c9962a] px-6 py-4 text-sm font-bold uppercase tracking-[0.16em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(201,150,42,0.5)] disabled:cursor-not-allowed disabled:opacity-70"
                   aria-busy={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <svg className="h-4 w-4 animate-spin text-[#0a1a10]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
                       </svg>

@@ -97,7 +97,7 @@ export default function ContactPage() {
                 <div className="text-5xl mb-6">✅</div>
                 <h3 className="font-heading text-3xl font-semibold text-[#214c34]">Message Sent!</h3>
                 <p className="mt-4 text-[16px] leading-8 text-[#626a67]">Thank you for reaching out. We'll respond within 1–2 business days.</p>
-                <button onClick={() => setSuccess(false)} className="mt-8 bg-[#c9962a] px-8 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b]">Send Another</button>
+                <button onClick={() => setSuccess(false)} className="gold-cta mt-8 bg-[#c9962a] px-8 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b] hover:-translate-y-px hover:shadow-[0_6px_22px_rgba(201,150,42,0.45)]">Send Another</button>
               </div>
             ) : (
               <>
@@ -143,7 +143,7 @@ export default function ContactPage() {
                   </div>
                   {error && <p className="text-[13px] font-semibold text-red-600 bg-red-50 px-4 py-3">{error}</p>}
                   <button type="submit" disabled={isSubmitting}
-                    className="w-full bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b] disabled:opacity-60 disabled:cursor-not-allowed">
+                    className="gold-cta w-full bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b] hover:shadow-[0_8px_28px_rgba(201,150,42,0.45)] disabled:opacity-60 disabled:cursor-not-allowed">
                     {isSubmitting ? "Sending..." : "Send Message →"}
                   </button>
                 </form>

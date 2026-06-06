@@ -109,7 +109,7 @@ export default function Footer() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={social.label}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#173325] shadow-lg transition hover:bg-[#d4a017] hover:text-white"
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-[#c9962a]/35 bg-transparent text-white/55 transition-all duration-300 hover:border-[#c9962a] hover:bg-[#c9962a]/10 hover:text-[#c9962a] hover:shadow-[0_0_18px_rgba(201,150,42,0.35)]"
                     >
                       <svg
                         className="h-5 w-5"

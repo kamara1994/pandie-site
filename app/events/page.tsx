@@ -82,7 +82,7 @@ export default function EventsPage() {
                     ))}
                   </ul>
                 </div>
-                <Link href="/donate" className="mt-10 inline-flex items-center justify-center bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b]">
+                <Link href="/donate" className="gold-cta mt-10 inline-flex items-center justify-center bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(201,150,42,0.45)]">
                   Support This Event →
                 </Link>
               </div>
@@ -133,7 +133,7 @@ export default function EventsPage() {
           <h2 className="mt-4 font-heading text-[clamp(36px,4vw,56px)] font-semibold text-white">Want to sponsor<br /><em className="italic text-[#e8b84b]">an event?</em></h2>
           <p className="mx-auto mt-6 max-w-xl text-lg text-white/55">Partner with us and put your brand behind a mission that matters. Corporate sponsors receive recognition, reporting, and the knowledge their support reached real children.</p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link href="/contact" className="bg-[#c9962a] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b]">Become a Sponsor</Link>
+            <Link href="/contact" className="gold-cta bg-[#c9962a] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(201,150,42,0.45)]">Become a Sponsor</Link>
             <Link href="/donate" className="border border-white/20 px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition hover:border-white/50">Donate to an Event</Link>
           </div>
         </Reveal>

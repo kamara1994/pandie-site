@@ -76,7 +76,7 @@ export default function StoriesPage() {
                 <p className="mt-6 text-[16px] leading-8 text-white/65">
                   Aminata loved school, but her mother struggled to afford books, supplies, and basic daily needs. Some days she went to class worried she might have to stop. Through Pandie Foundation, she received school supplies, support, and the confidence to keep going. Today she sits in class with renewed hope — and a dream.
                 </p>
-                <Link href="/donate" className="mt-8 inline-flex w-fit items-center gap-3 bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b]">
+                <Link href="/donate" className="gold-cta mt-8 inline-flex w-fit items-center gap-3 bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(201,150,42,0.45)]">
                   Support a Child Like Aminata →
                 </Link>
               </div>
@@ -125,7 +125,7 @@ export default function StoriesPage() {
           <h2 className="mt-4 font-heading text-[clamp(36px,4vw,58px)] font-semibold text-white">Every story starts with<br /><em className="italic text-[#e8b84b]">someone who cared</em></h2>
           <p className="mx-auto mt-6 max-w-xl text-lg text-white/65">Your donation writes the next chapter for a child in Sierra Leone.</p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link href="/donate" className="bg-[#c9962a] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b]">Donate Now</Link>
+            <Link href="/donate" className="gold-cta bg-[#c9962a] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(201,150,42,0.45)]">Donate Now</Link>
             <Link href="/donate" className="border border-white/30 px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition hover:border-white/60">Sponsor a Child</Link>
           </div>
         </Reveal>

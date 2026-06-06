@@ -43,10 +43,14 @@ export default function Impact() {
   const { ref, inView } = useInView();
   return (
     <section ref={ref} className="relative overflow-hidden bg-[#0a1a10] py-28 xl:py-36">
-      <div className="pointer-events-none absolute inset-0">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#c9962a]/20 to-transparent" />
         <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#c9962a]/20 to-transparent" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "80px 80px" }} />
+        {/* Aurora glows */}
+        <div className="absolute left-1/4 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#c9962a]/[0.055] blur-[110px]" />
+        <div className="absolute right-1/4 top-1/2 h-[420px] w-[420px] -translate-y-1/2 rounded-full bg-[#6aab7e]/[0.07] blur-[130px]" />
+        <div className="absolute bottom-0 left-1/2 h-[280px] w-[600px] -translate-x-1/2 rounded-full bg-[#7eb4d4]/[0.04] blur-[100px]" />
       </div>
       <div className="relative w-full px-6 sm:px-12 lg:px-20 xl:px-28">
         <div className="mx-auto max-w-3xl text-center">
@@ -60,13 +64,16 @@ export default function Impact() {
         </div>
         <div className="mt-20 grid gap-px bg-white/5 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map(({ target, suffix, label, sub, color }, i) => (
-            <div key={label} className="flex flex-col items-center justify-center bg-[#0a1a10] px-8 py-14 text-center transition-all duration-500"
+            <div key={label}
+              className="group relative flex flex-col items-center justify-center bg-[#0a1a10] px-8 py-14 text-center transition-all duration-500 hover:bg-[#0d2016]"
               style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(30px)", transitionDelay: `${i * 120}ms` }}>
-              <div className="font-heading text-[clamp(52px,5vw,80px)] font-semibold leading-none" style={{ color }}>
+              {/* Colored top bar sweeps in on hover */}
+              <div className="absolute inset-x-0 top-0 h-[2px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100" style={{ background: color }} />
+              <div className="font-heading text-[clamp(52px,5vw,80px)] font-semibold leading-none" style={{ color, textShadow: `0 0 60px ${color}28` }}>
                 <CountUp target={target} suffix={suffix} start={inView} duration={1800 + i * 200} />
               </div>
-              <p className="mt-4 text-[13px] font-semibold uppercase tracking-[0.2em] text-white">{label}</p>
-              <p className="mt-2 text-[13px] leading-5 text-white/35">{sub}</p>
+              <p className="mt-4 text-[12px] font-semibold uppercase tracking-[0.24em] text-white/85">{label}</p>
+              <p className="mt-2 text-[12px] leading-5 text-white/35">{sub}</p>
             </div>
           ))}
         </div>

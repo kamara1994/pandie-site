@@ -59,3 +59,41 @@ img, picture, video, canvas, svg { display: block; max-width: 100%; height: auto
 ::-webkit-scrollbar-track { background: #f4f1ea; }
 ::-webkit-scrollbar-thumb { background: #c9962a50; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #c9962a; }
+
+/* Word-by-word headline reveal */
+@keyframes wordReveal {
+  from { opacity:0; transform:translateY(22px); filter:blur(5px); }
+  to   { opacity:1; transform:translateY(0);    filter:blur(0);   }
+}
+
+/* Travelling scroll-cue dot */
+@keyframes scrollCue {
+  0%   { transform:translateY(-200%); opacity:0; }
+  20%  { opacity:1; }
+  80%  { opacity:1; }
+  100% { transform:translateY(350%);  opacity:0; }
+}
+.animate-scrollCue { animation: scrollCue 1.8s ease-in-out infinite; }
+
+/* ── Global gold CTA shimmer sweep ──
+   Add class  gold-cta  to any gold button / link.
+   The element must also have  overflow-hidden  (or add it via Tailwind). */
+.gold-cta {
+  position: relative !important;
+  overflow: hidden !important;
+}
+.gold-cta::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 10;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.22) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.45s ease;
+  pointer-events: none;
+}
+.gold-cta:hover::after { transform: translateX(100%); }
+
+/* Smooth image fade-in on load */
+img { transition: opacity 0.4s ease; }
+img[data-loaded="false"] { opacity: 0; }
+img[data-loaded="true"]  { opacity: 1; }
+

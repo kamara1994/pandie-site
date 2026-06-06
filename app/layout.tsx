@@ -5,6 +5,7 @@ import TopBar from "./components/TopBar";
 import Footer from "./components/Footer";
 import ChatWidget from "./components/ChatWidget";
 import TalentPlayer from "./components/TalentPlayer";
+import PageProgress from "./components/PageProgress";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -59,8 +60,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${cormorant.variable} ${outfit.variable}`}>
       <body className="font-body antialiased">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
+        <PageProgress />
         <TopBar />
-        <main>{children}</main>
+        <main className="pt-[72px]">{children}</main>
         <Footer />
         <ChatWidget />
         <TalentPlayer />
