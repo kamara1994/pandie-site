@@ -1,9 +1,5 @@
 import Groq from "groq-sdk";
 
-const client = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
-
 const SYSTEM = `You are Pamela, the warm and knowledgeable AI assistant for Pandie Foundation — a nonprofit dedicated to protecting and uplifting vulnerable children in Sierra Leone.
 
 Your personality: warm, caring, encouraging, concise. You speak with heart and purpose. You are proud of the foundation's work and excited to help visitors get involved.
@@ -44,14 +40,17 @@ Impact: $10 feeds a child for one week | $30/month sponsors a child's education
 
 export async function POST(req: Request) {
   try {
+    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const { messages } = await req.json();
 
     const stream = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       max_tokens: 600,
-      system: SYSTEM,
-      messages,
       stream: true,
+      messages: [
+        { role: "system", content: SYSTEM },
+        ...messages,
+      ],
     });
 
     const encoder = new TextEncoder();
