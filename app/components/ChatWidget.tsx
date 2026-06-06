@@ -2,29 +2,31 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useLang } from "@/app/context/LanguageContext";
 
 type Message = { role: "user" | "assistant"; content: string };
 type View = "chat" | "handoff" | "handoff-done";
 
-const SUGGESTIONS = [
-  "How can I donate?",
-  "Tell me about your programs",
-  "How do I sponsor a child?",
-  "How can I volunteer?",
-];
-
-const GREETING = "Hi! I'm Pamela 👋 I'm here to help you learn about Pandie Foundation and how you can change a child's life in Sierra Leone. What would you like to know?";
-
 export default function ChatWidget() {
+  const { t, lang } = useLang();
   const [open, setOpen]           = useState(false);
   const [view, setView]           = useState<View>("chat");
   const [messages, setMessages]   = useState<Message[]>([]);
   const [input, setInput]         = useState("");
   const [streaming, setStreaming] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [hasGreeted, setHasGreeted]   = useState(false);
+  const [isTyping, setIsTyping]   = useState(false);
+  const [showTooltip, setShowTooltip]   = useState(false);
+  const [hasGreeted, setHasGreeted]     = useState(false);
+  const [donatePopup, setDonatePopup]   = useState(false);
+  const [prevLang, setPrevLang]         = useState(lang);
 
-  // Handoff form state
+  // Lead capture
+  const [leadCaptured, setLeadCaptured] = useState(false);
+  const [leadName, setLeadName]   = useState("");
+  const [leadEmail, setLeadEmail] = useState("");
+  const [leadStep, setLeadStep]   = useState<"idle"|"form"|"done">("idle");
+
+  // Handoff
   const [hName, setHName]     = useState("");
   const [hEmail, setHEmail]   = useState("");
   const [hSending, setHSending] = useState(false);
@@ -33,49 +35,90 @@ export default function ChatWidget() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
-  // Show tooltip after 6 s if chat never opened
+  // Tooltip after 6s
   useEffect(() => {
-    const t = setTimeout(() => { if (!open) setShowTooltip(true); }, 6000);
-    return () => clearTimeout(t);
+    const t2 = setTimeout(() => { if (!open) setShowTooltip(true); }, 6000);
+    return () => clearTimeout(t2);
   }, []);
 
   useEffect(() => {
     if (showTooltip) {
-      const t = setTimeout(() => setShowTooltip(false), 5000);
-      return () => clearTimeout(t);
+      const t2 = setTimeout(() => setShowTooltip(false), 5000);
+      return () => clearTimeout(t2);
     }
   }, [showTooltip]);
+
+  // Language change → notify Pamela
+  useEffect(() => {
+    if (lang !== prevLang && hasGreeted && messages.length > 0) {
+      setPrevLang(lang);
+      const switchMsg: Message = { role: "assistant", content: t.chat.langSwitchMsg };
+      setMessages(prev => [...prev, switchMsg]);
+    } else {
+      setPrevLang(lang);
+    }
+  }, [lang]);
 
   // Greet on first open
   useEffect(() => {
     if (open && !hasGreeted) {
       setHasGreeted(true);
       setShowTooltip(false);
-      setStreaming(true);
-      let i = 0;
-      setMessages([{ role: "assistant", content: "" }]);
-      const iv = setInterval(() => {
-        i++;
-        setMessages([{ role: "assistant", content: GREETING.slice(0, i) }]);
-        if (i >= GREETING.length) { clearInterval(iv); setStreaming(false); }
-      }, 18);
-      return () => clearInterval(iv);
+      // Show typing dots first
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setStreaming(true);
+        let i = 0;
+        const greeting = t.chat.greeting;
+        setMessages([{ role: "assistant", content: "" }]);
+        const iv = setInterval(() => {
+          i++;
+          setMessages([{ role: "assistant", content: greeting.slice(0, i) }]);
+          if (i >= greeting.length) {
+            clearInterval(iv);
+            setStreaming(false);
+            // Show lead capture after greeting if not done
+            if (!leadCaptured) {
+              setTimeout(() => setLeadStep("form"), 1200);
+            }
+          }
+        }, 16);
+        return () => clearInterval(iv);
+      }, 1200);
     }
   }, [open]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping, leadStep]);
   useEffect(() => { if (open && view === "chat") setTimeout(() => inputRef.current?.focus(), 300); }, [open, view]);
 
-  // Send message to AI
+  // Log analytics
+  const logAnalytics = async (question: string) => {
+    try {
+      await fetch("/api/chat-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question, lang, timestamp: new Date().toISOString() }),
+      });
+    } catch { /* silent */ }
+  };
+
   const send = async (text?: string) => {
     const content = (text ?? input).trim();
     if (!content || streaming) return;
     setInput("");
+    logAnalytics(content);
 
     const userMsg: Message = { role: "user", content };
     const history = [...messages, userMsg];
     setMessages(history);
+
+    // Show typing indicator
+    setIsTyping(true);
+    await new Promise(r => setTimeout(r, 600));
+    setIsTyping(false);
     setStreaming(true);
+
     const assistantMsg: Message = { role: "assistant", content: "" };
     setMessages([...history, assistantMsg]);
 
@@ -83,7 +126,10 @@ export default function ChatWidget() {
       const res = await fetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history.map(m => ({ role: m.role, content: m.content })) }),
+        body: JSON.stringify({
+          messages: history.map(m => ({ role: m.role, content: m.content })),
+          lang,
+        }),
       });
       if (!res.body) throw new Error("No stream");
       const reader = res.body.getReader();
@@ -105,7 +151,18 @@ export default function ChatWidget() {
     }
   };
 
-  // Submit human handoff
+  const submitLead = () => {
+    if (!leadName.trim() || !leadEmail.trim() || !leadEmail.includes("@")) return;
+    setLeadCaptured(true);
+    setLeadStep("done");
+    // Log lead
+    fetch("/api/chat-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "lead", name: leadName, email: leadEmail, lang, timestamp: new Date().toISOString() }),
+    }).catch(() => {});
+  };
+
   const submitHandoff = async () => {
     if (!hName.trim() || !hEmail.trim()) { setHError("Please fill in your name and email."); return; }
     if (!hEmail.includes("@")) { setHError("Please enter a valid email address."); return; }
@@ -115,12 +172,7 @@ export default function ChatWidget() {
       await fetch("/api/chatbot/handoff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: hName.trim(),
-          email: hEmail.trim(),
-          summary: `Visitor requested human support after ${messages.length} messages.`,
-          messages,
-        }),
+        body: JSON.stringify({ name: hName, email: hEmail, summary: `Visitor requested human support after ${messages.length} messages.`, messages }),
       });
       setView("handoff-done");
     } catch {
@@ -134,9 +186,11 @@ export default function ChatWidget() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
+  const userMessageCount = messages.filter(m => m.role === "user").length;
+
   return (
     <>
-      {/* ── Tooltip bubble ── */}
+      {/* Tooltip */}
       {showTooltip && !open && (
         <div className="fixed bottom-24 right-5 z-[99] max-w-[200px] animate-bounce-soft">
           <div className="relative rounded-2xl rounded-br-sm bg-[#0a1a10] px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
@@ -148,7 +202,7 @@ export default function ChatWidget() {
         </div>
       )}
 
-      {/* ── Floating avatar button ── */}
+      {/* Floating button */}
       <button type="button" onClick={() => { setOpen(p => !p); setShowTooltip(false); }}
         aria-label="Chat with Pamela" className="fixed bottom-5 right-5 z-[100] group">
         {!open && (
@@ -158,13 +212,12 @@ export default function ChatWidget() {
           </>
         )}
         <div className={`relative flex h-16 w-16 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-          open
-            ? "border-[#c9962a] shadow-[0_0_0_4px_rgba(201,150,42,0.15),0_8px_28px_rgba(0,0,0,0.4)]"
-            : "border-[#c9962a]/70 shadow-[0_0_0_3px_rgba(201,150,42,0.18),0_8px_28px_rgba(201,150,42,0.35)] group-hover:shadow-[0_0_0_5px_rgba(201,150,42,0.25),0_12px_36px_rgba(201,150,42,0.5)] group-hover:scale-105"
+          open ? "border-[#c9962a] shadow-[0_0_0_4px_rgba(201,150,42,0.15),0_8px_28px_rgba(0,0,0,0.4)]"
+               : "border-[#c9962a]/70 shadow-[0_0_0_3px_rgba(201,150,42,0.18),0_8px_28px_rgba(201,150,42,0.35)] group-hover:shadow-[0_0_0_5px_rgba(201,150,42,0.25),0_12px_36px_rgba(201,150,42,0.5)] group-hover:scale-105"
         }`}>
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#c9962a]/30 via-transparent to-[#e8b84b]/20" />
           <div className="relative h-full w-full overflow-hidden rounded-full bg-[#0a1a10]">
-            <Image src="/logo.png" alt="Pamela — Pandie Foundation AI" fill className="object-cover" />
+            <Image src="/logo.png" alt="Pamela" fill className="object-cover" />
           </div>
           <span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#4ade80] shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
         </div>
@@ -175,14 +228,14 @@ export default function ChatWidget() {
         )}
       </button>
 
-      {/* ── Chat panel ── */}
+      {/* Chat panel */}
       <div className={`fixed bottom-[88px] right-5 z-[100] w-[92vw] max-w-[380px] transition-all duration-400 ${
         open ? "pointer-events-auto translate-y-0 opacity-100 scale-100" : "pointer-events-none translate-y-6 opacity-0 scale-95"
       }`}>
         <div className="rounded-2xl p-px" style={{
           background: "linear-gradient(135deg, rgba(201,150,42,0.7) 0%, rgba(201,150,42,0.15) 40%, rgba(201,150,42,0.5) 100%)",
         }}>
-          <div className="flex flex-col overflow-hidden rounded-[15px] bg-[#060f0a]" style={{ height: "520px" }}>
+          <div className="flex flex-col overflow-hidden rounded-[15px] bg-[#060f0a]" style={{ height: "540px" }}>
 
             {/* Header */}
             <div className="relative shrink-0 overflow-hidden bg-[#0a1a10]">
@@ -199,13 +252,11 @@ export default function ChatWidget() {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="h-2 w-2 rounded-full bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.9)]" />
-                  <span className="text-[10px] font-semibold text-[#4ade80]">Online</span>
+                  <span className="text-[10px] font-semibold text-[#4ade80]">{t.chat.online}</span>
                 </div>
-                {/* Talk to human toggle */}
                 {view === "chat" && (
                   <button onClick={() => setView("handoff")}
-                    className="ml-1 shrink-0 rounded-full border border-white/15 bg-white/[0.05] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/40 transition hover:border-[#c9962a]/50 hover:text-[#c9962a]"
-                    title="Talk to a real person">
+                    className="ml-1 shrink-0 rounded-full border border-white/15 bg-white/[0.05] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/40 transition hover:border-[#c9962a]/50 hover:text-[#c9962a]">
                     👤 Human
                   </button>
                 )}
@@ -248,7 +299,8 @@ export default function ChatWidget() {
                     </div>
                   ))}
 
-                  {streaming && messages.length === 0 && (
+                  {/* Typing indicator */}
+                  {isTyping && (
                     <div className="flex gap-2.5">
                       <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full border border-[#c9962a]/40 mt-1">
                         <Image src="/logo.png" alt="Pamela" fill className="object-cover" />
@@ -260,13 +312,58 @@ export default function ChatWidget() {
                       </div>
                     </div>
                   )}
+
+                  {/* Lead capture form */}
+                  {leadStep === "form" && !isTyping && (
+                    <div className="flex gap-2.5">
+                      <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full border border-[#c9962a]/40 mt-1">
+                        <Image src="/logo.png" alt="Pamela" fill className="object-cover" />
+                      </div>
+                      <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-[#0f2418] px-4 py-3 space-y-2.5">
+                        <p className="text-[13px] text-white/80 leading-relaxed">Before we continue — may I have your name and email so our team can follow up? 💛</p>
+                        <input
+                          value={leadName} onChange={e => setLeadName(e.target.value)}
+                          placeholder="Your name"
+                          className="w-full rounded-lg bg-white/[0.08] px-3 py-2 text-[12px] text-white placeholder:text-white/30 outline-none focus:bg-white/[0.12]"
+                        />
+                        <input
+                          value={leadEmail} onChange={e => setLeadEmail(e.target.value)}
+                          type="email" placeholder="Your email"
+                          onKeyDown={e => e.key === "Enter" && submitLead()}
+                          className="w-full rounded-lg bg-white/[0.08] px-3 py-2 text-[12px] text-white placeholder:text-white/30 outline-none focus:bg-white/[0.12]"
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={submitLead}
+                            className="flex-1 rounded-lg bg-[#c9962a] py-2 text-[11px] font-bold text-[#0a1a10] transition hover:bg-[#e8b84b]">
+                            Submit →
+                          </button>
+                          <button onClick={() => { setLeadStep("idle"); setLeadCaptured(true); }}
+                            className="rounded-lg border border-white/10 px-3 py-2 text-[11px] text-white/30 transition hover:text-white/60">
+                            Skip
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {leadStep === "done" && (
+                    <div className="flex gap-2.5">
+                      <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full border border-[#c9962a]/40 mt-1">
+                        <Image src="/logo.png" alt="Pamela" fill className="object-cover" />
+                      </div>
+                      <div className="max-w-[78%] rounded-2xl rounded-tl-sm bg-[#0f2418] px-4 py-3 text-[13px] text-white/80">
+                        Thank you, {leadName}! 💛 Now, how can I help you today?
+                      </div>
+                    </div>
+                  )}
+
                   <div ref={bottomRef} />
                 </div>
 
                 {/* Suggestion chips */}
-                {messages.filter(m => m.role === "user").length === 0 && !streaming && (
+                {userMessageCount === 0 && !streaming && !isTyping && leadStep !== "form" && (
                   <div className="shrink-0 px-4 pb-2 flex flex-wrap gap-2">
-                    {SUGGESTIONS.map(s => (
+                    {t.chat.suggestions.map(s => (
                       <button key={s} onClick={() => send(s)}
                         className="rounded-full border border-[#c9962a]/35 bg-[#c9962a]/8 px-3 py-1.5 text-[11px] font-semibold text-[#c9962a] transition hover:border-[#c9962a]/70 hover:bg-[#c9962a]/15">
                         {s}
@@ -275,103 +372,104 @@ export default function ChatWidget() {
                   </div>
                 )}
 
+                {/* Donate popup */}
+                {donatePopup && (
+                  <div className="mx-4 mb-2 rounded-xl border border-[#c9962a]/30 bg-[#0f2418] px-4 py-3 text-center">
+                    <p className="text-[13px] font-bold text-[#c9962a]">🔒 Coming Soon!</p>
+                    <p className="mt-1 text-[12px] text-white/60 leading-relaxed">
+                      Online donations are launching soon! To donate now, email us at{" "}
+                      <a href="mailto:info@pandiefoundation.org" className="text-[#c9962a] underline">
+                        info@pandiefoundation.org
+                      </a>
+                    </p>
+                    <button onClick={() => setDonatePopup(false)} className="mt-2 text-[11px] text-white/30 hover:text-white">Dismiss</button>
+                  </div>
+                )}
+
+                {/* Donate button */}
+                <div className="shrink-0 px-4 pb-2">
+                  <button
+                    onClick={() => setDonatePopup(true)}
+                    className="w-full rounded-xl border border-[#c9962a]/40 bg-[#c9962a]/10 py-2.5 text-[12px] font-bold text-[#c9962a] transition hover:bg-[#c9962a]/20 flex items-center justify-center gap-2"
+                  >
+                    <span>🔒</span> {t.chat.donateBtn} <span className="text-[10px] opacity-60">(Coming Soon)</span>
+                  </button>
+                </div>
+
                 {/* Input bar */}
                 <div className="shrink-0 border-t border-white/[0.06] bg-[#0a1a10] px-3 py-3">
-                  {/* Human CTA inside chat */}
                   <button onClick={() => setView("handoff")}
                     className="mb-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-white/8 py-2 text-[11px] font-semibold text-white/35 transition hover:border-[#c9962a]/35 hover:text-[#c9962a]">
-                    <span>👤</span> Prefer to talk to a real person?
+                    <span>👤</span> {t.chat.humanCta}
                   </button>
                   <div className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 transition focus-within:border-[#c9962a]/50">
                     <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-                      onKeyDown={onKey} disabled={streaming}
-                      placeholder="Ask Pamela anything…"
+                      onKeyDown={onKey} disabled={streaming || leadStep === "form"}
+                      placeholder={t.chat.placeholder}
                       className="flex-1 bg-transparent text-[14px] text-white outline-none placeholder:text-white/25 disabled:opacity-50" />
-                    <button onClick={() => send()} disabled={!input.trim() || streaming}
+                    <button onClick={() => send()} disabled={!input.trim() || streaming || leadStep === "form"}
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#c9962a] text-[#0a1a10] transition hover:bg-[#e8b84b] disabled:opacity-35 disabled:cursor-not-allowed">
                       <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M2.5 10L17.5 2.5L10 17.5L8.75 11.25L2.5 10Z" />
                       </svg>
                     </button>
                   </div>
-                  <p className="mt-2 text-center text-[10px] text-white/20">Powered by Claude AI · Pandie Foundation</p>
+                  <p className="mt-2 text-center text-[10px] text-white/20">{t.chat.poweredBy}</p>
                 </div>
               </>
             )}
 
-            {/* ── HANDOFF FORM VIEW ── */}
+            {/* ── HANDOFF VIEW ── */}
             {view === "handoff" && (
               <div className="flex flex-1 flex-col overflow-y-auto px-5 py-6" style={{ scrollbarWidth: "none" }}>
                 <div className="mb-5 rounded-xl bg-[#0f2418] p-4">
-                  <p className="text-[13px] font-bold text-white">Talk to our team 👤</p>
-                  <p className="mt-1.5 text-[13px] leading-5 text-white/55">
-                    Leave your details and we&apos;ll get back to you personally — usually within a few hours during business hours.
-                  </p>
+                  <p className="text-[13px] font-bold text-white">{t.handoff.title}</p>
+                  <p className="mt-1.5 text-[13px] leading-5 text-white/55">{t.handoff.body}</p>
                 </div>
-
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">Your Name</label>
-                    <input value={hName} onChange={e => setHName(e.target.value)}
-                      placeholder="Full name"
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">{t.handoff.nameLbl}</label>
+                    <input value={hName} onChange={e => setHName(e.target.value)} placeholder="Full name"
                       className="w-full rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/25 outline-none transition focus:border-[#c9962a]/60" />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">Email Address</label>
-                    <input value={hEmail} onChange={e => setHEmail(e.target.value)}
-                      type="email" placeholder="you@example.com"
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">{t.handoff.emailLbl}</label>
+                    <input value={hEmail} onChange={e => setHEmail(e.target.value)} type="email" placeholder="you@example.com"
                       className="w-full rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/25 outline-none transition focus:border-[#c9962a]/60" />
                   </div>
-
-                  {/* Show summary of conversation if any */}
                   {messages.filter(m => m.role === "user").length > 0 && (
                     <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
                       <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/30 mb-1">Your conversation will be included</p>
-                      <p className="text-[12px] text-white/40 line-clamp-2">
-                        {messages.filter(m => m.role === "user").slice(-1)[0]?.content}
-                      </p>
+                      <p className="text-[12px] text-white/40 line-clamp-2">{messages.filter(m => m.role === "user").slice(-1)[0]?.content}</p>
                     </div>
                   )}
-
-                  {hError && (
-                    <p className="rounded-xl bg-red-900/20 border border-red-500/20 px-4 py-3 text-[13px] text-white/70">{hError}</p>
-                  )}
-
+                  {hError && <p className="rounded-xl bg-red-900/20 border border-red-500/20 px-4 py-3 text-[13px] text-white/70">{hError}</p>}
                   <button onClick={submitHandoff} disabled={hSending}
-                    className="gold-cta w-full rounded-xl bg-[#c9962a] px-5 py-3.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:shadow-[0_6px_22px_rgba(201,150,42,0.5)] disabled:opacity-50 disabled:cursor-not-allowed">
-                    {hSending ? "Sending…" : "Connect with Our Team →"}
+                    className="w-full rounded-xl bg-[#c9962a] px-5 py-3.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:shadow-[0_6px_22px_rgba(201,150,42,0.5)] disabled:opacity-50 disabled:cursor-not-allowed">
+                    {hSending ? t.handoff.submitting : t.handoff.submit}
                   </button>
-
                   <p className="text-center text-[11px] text-white/30">
-                    Or email us directly at{" "}
-                    <a href="mailto:info@pandiefoundation.org" className="text-[#c9962a] hover:underline">
-                      info@pandiefoundation.org
-                    </a>
+                    {t.handoff.orEmail}{" "}
+                    <a href="mailto:info@pandiefoundation.org" className="text-[#c9962a] hover:underline">info@pandiefoundation.org</a>
                   </p>
                 </div>
               </div>
             )}
 
-            {/* ── HANDOFF SUCCESS VIEW ── */}
+            {/* ── HANDOFF SUCCESS ── */}
             {view === "handoff-done" && (
               <div className="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#0f2418] text-3xl shadow-[0_0_28px_rgba(74,222,128,0.2)]">
-                  ✅
-                </div>
-                <h3 className="mt-5 font-heading text-[1.3rem] font-semibold text-white">We got your message!</h3>
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#0f2418] text-3xl shadow-[0_0_28px_rgba(74,222,128,0.2)]">✅</div>
+                <h3 className="mt-5 font-heading text-[1.3rem] font-semibold text-white">{t.handoff.successTitle}</h3>
                 <p className="mt-3 text-[14px] leading-6 text-white/55">
-                  Our team has been notified and will reach out to <span className="text-[#c9962a]">{hEmail}</span> within a few hours.
+                  {t.handoff.successBody} <span className="text-[#c9962a]">{hEmail}</span>
                 </p>
                 <div className="mt-6 rounded-xl bg-[#0f2418] px-5 py-4 text-left w-full">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#c9962a]">While you wait</p>
-                  <p className="mt-2 text-[13px] leading-5 text-white/55">
-                    Pamela can still answer most questions instantly. Or explore our programs at{" "}
-                    <a href="/programs" className="text-[#c9962a] hover:underline">pandiefoundation.org/programs</a>.
-                  </p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#c9962a]">{t.handoff.whileWait}</p>
+                  <p className="mt-2 text-[13px] leading-5 text-white/55">{t.handoff.whileWaitBody}</p>
                 </div>
-                <button onClick={() => setView("chat")}
-                  className="mt-5 text-[12px] font-semibold text-white/35 hover:text-white transition">
-                  ← Back to Pamela
+                <button onClick={() => setView("chat")} className="mt-5 text-[12px] font-semibold text-white/35 hover:text-white transition">
+                  {t.handoff.back}
                 </button>
               </div>
             )}
@@ -381,9 +479,7 @@ export default function ChatWidget() {
       </div>
 
       <style>{`
-        @keyframes bounce-soft {
-          0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)}
-        }
+        @keyframes bounce-soft { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
         .animate-bounce-soft { animation: bounce-soft 2s ease-in-out infinite; }
       `}</style>
     </>
