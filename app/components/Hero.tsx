@@ -1,7 +1,7 @@
 "use client";
-
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useLang } from "@/app/context/LanguageContext";
 
 function useCountUp(target: number, duration = 2000, start = false) {
   const [count, setCount] = useState(0);
@@ -11,8 +11,7 @@ function useCountUp(target: number, duration = 2000, start = false) {
     const step = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * target));
+      setCount(Math.floor((1 - Math.pow(1 - progress, 3)) * target));
       if (progress < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -21,9 +20,9 @@ function useCountUp(target: number, duration = 2000, start = false) {
 }
 
 export default function Hero() {
+  const { t } = useLang();
   const [visible, setVisible] = useState(false);
   const [slide, setSlide] = useState(0);
-
   const slides = ["/heroimage.jpeg", "/heroimage3.jpeg", "/heroimage7.jpeg"];
 
   useEffect(() => {
@@ -38,23 +37,10 @@ export default function Hero() {
 
   return (
     <section className="relative w-full overflow-hidden bg-[#0a1a10]" style={{ minHeight: "100svh" }}>
-
-      {/* CSS background slides — works for any image size */}
       {slides.map((src, i) => (
-        <div
-          key={src}
-          className="absolute inset-0 transition-opacity"
-          style={{
-            opacity: slide === i ? 1 : 0,
-            transitionDuration: "1500ms",
-            backgroundImage: `url(${src})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
+        <div key={src} className="absolute inset-0 transition-opacity"
+          style={{ opacity: slide === i ? 1 : 0, transitionDuration: "1500ms", backgroundImage: `url(${src})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }} />
       ))}
-
       <div className="absolute inset-0 bg-gradient-to-r from-[#0a1a10]/95 via-[#0a1a10]/70 to-[#0a1a10]/20" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/80 via-transparent to-transparent" />
       <div className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#c9962a] to-transparent opacity-60" />
@@ -64,34 +50,23 @@ export default function Hero() {
           <div className="flex items-center gap-3 transition-all duration-700"
             style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)", transitionDelay: "100ms" }}>
             <div className="h-px w-10 bg-[#c9962a]" />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#c9962a]">Sierra Leone · Est. 2024</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#c9962a]">{t.hero.badge}</span>
           </div>
 
           <h1 className="mt-7 font-heading text-[clamp(48px,6vw,86px)] font-semibold leading-[1.02] text-white">
-            {(["Every", "Child"] as const).map((w, i) => (
-              <span key={w} className="inline-block"
-                style={{ opacity: visible ? undefined : 0, animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) ${200 + i * 90}ms both` : "none" }}>
+            {[t.hero.line1, t.hero.line2].map((w, i) => (
+              <span key={i} className="inline-block"
+                style={{ animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) ${200 + i * 90}ms both` : "none" }}>
                 {w}
               </span>
             )).reduce((acc: React.ReactNode[], el, i) => i === 0 ? [el] : [...acc, " ", el], [])}
             <br />
-            {(["Deserves", "a"] as const).map((w, i) => (
-              <span key={w} className="inline-block"
-                style={{ opacity: visible ? undefined : 0, animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) ${380 + i * 90}ms both` : "none" }}>
-                {w}
-              </span>
-            )).reduce((acc: React.ReactNode[], el, i) => i === 0 ? [el] : [...acc, " ", el], [])}{" "}
+            <span className="inline-block" style={{ animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) 380ms both` : "none" }}>{t.hero.line3a}</span>{" "}
             <em className="italic text-[#e8b84b]">
-              <span className="inline-block"
-                style={{ opacity: visible ? undefined : 0, animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) 560ms both` : "none" }}>
-                Mother&apos;s
-              </span>
+              <span className="inline-block" style={{ animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) 470ms both` : "none" }}>{t.hero.line3b}</span>
             </em>
             <br />
-            <span className="inline-block"
-              style={{ opacity: visible ? undefined : 0, animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) 650ms both` : "none" }}>
-              Love
-            </span>
+            <span className="inline-block" style={{ animation: visible ? `wordReveal 0.7s cubic-bezier(.22,1,.36,1) 560ms both` : "none" }}>{t.hero.line4}</span>
           </h1>
 
           <div className="mt-8 h-[3px] rounded-full bg-[#c9962a] transition-all duration-1000"
@@ -99,28 +74,28 @@ export default function Hero() {
 
           <p className="mt-8 max-w-xl text-[17px] leading-8 text-white/75 transition-all duration-700"
             style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)", transitionDelay: "400ms" }}>
-            Pandie Foundation stands in the gap for vulnerable children across Sierra Leone — providing education, nutrition, medical care, and the warmth of human dignity.
+            {t.hero.body}
           </p>
 
           <div className="mt-10 flex flex-wrap gap-4 transition-all duration-700"
             style={{ opacity: visible ? 1 : 0, transitionDelay: "550ms" }}>
             <Link href="/donate"
               className="group relative inline-flex items-center gap-3 overflow-hidden bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(201,150,42,0.45)]">
-              <span className="relative z-10 flex items-center gap-3">Make an Impact <span className="text-base leading-none">→</span></span>
+              <span className="relative z-10 flex items-center gap-3">{t.hero.cta1} <span className="text-base leading-none">→</span></span>
               <span className="absolute inset-0 -skew-x-12 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-[200%]" />
             </Link>
             <Link href="/about"
               className="inline-flex items-center gap-3 border border-white/30 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/60 hover:text-white">
-              Our Story
+              {t.hero.cta2}
             </Link>
           </div>
 
           <div className="mt-16 flex flex-wrap gap-10 border-t border-white/10 pt-10 transition-all duration-700"
             style={{ opacity: visible ? 1 : 0, transitionDelay: "700ms" }}>
             {[
-              { num: children,  suffix: "+", label: "Children Reached" },
-              { num: education, suffix: "+", label: "In Education" },
-              { num: nutrition, suffix: "+", label: "Fed & Nourished" },
+              { num: children,  suffix: "+", label: t.hero.stat1Label },
+              { num: education, suffix: "+", label: t.hero.stat2Label },
+              { num: nutrition, suffix: "+", label: t.hero.stat3Label },
             ].map(({ num, suffix, label }) => (
               <div key={label}>
                 <p className="font-heading text-[42px] font-semibold leading-none text-white">
@@ -133,7 +108,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Slide indicators */}
       <div className="absolute bottom-10 right-8 z-20 flex gap-2">
         {slides.map((_, i) => (
           <button key={i} onClick={() => setSlide(i)} aria-label={`Slide ${i + 1}`}
@@ -141,8 +115,6 @@ export default function Hero() {
             style={{ width: slide === i ? "28px" : "12px", background: slide === i ? "#c9962a" : "rgba(255,255,255,0.3)" }} />
         ))}
       </div>
-
-      {/* Scroll cue — travelling gold dot */}
       <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2 flex flex-col items-center gap-2">
         <span className="text-[9px] uppercase tracking-[0.3em] text-white/35">Scroll</span>
         <div className="relative h-10 w-px overflow-hidden bg-white/10">
