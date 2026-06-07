@@ -1,447 +1,153 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useT } from "../components/AutoTranslate";
 
-import {
-  CurrencyCode,
-  DonationTab,
-  FormData,
-  ItemDonationFormData,
-  VolunteerFormData,
-  PartnerFormData,
-  SponsorshipSelection,
-  currencyConfig,
-} from "./types";
-
-import DonateHero from "../components/donate/DonateHero";
-import WaysToGive from "../components/donate/WaysToGive";
-import MoneyDonation from "../components/donate/MoneyDonation";
-import ItemDonation from "../components/donate/ItemDonation";
-import SponsorChild from "../components/donate/SponsorChild";
-import VolunteerForm from "../components/donate/VolunteerForm";
-import PartnerForm from "../components/donate/PartnerForm";
-import TrustSection from "../components/donate/TrustSection";
+function Tx({ children, className }: { children: string; className?: string }) {
+  const t = useT(children);
+  return <span className={className}>{t}</span>;
+}
 
 export default function DonatePage() {
-  // ── Tab ───────────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<DonationTab>("money");
+  const [visible, setVisible] = useState(false);
+  useEffect(() => { setVisible(true); }, []);
 
-  // ── Sponsorship ───────────────────────────────────────────────────────────
-  const [selectedSponsorship, setSelectedSponsorship] =
-    useState<SponsorshipSelection>(null);
-
-  // ── Money donation ────────────────────────────────────────────────────────
-  const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
-  const [currency, setCurrency] = useState<CurrencyCode>("USD");
-  const [selectedAmount, setSelectedAmount] = useState<string>(
-    String(currencyConfig.USD.amounts[1]),
-  );
-  const [formData, setFormData] = useState<FormData>({
-    fullName: "",
-    email: "",
-    phone: "",
-    message: "",
-    anonymous: false,
-    emailUpdates: false,
+  const reveal = (delay = 0): React.CSSProperties => ({
+    opacity: visible ? 1 : 0,
+    transform: visible ? "translateY(0)" : "translateY(20px)",
+    transition: `opacity 0.8s ease ${delay}ms, transform 0.8s ease ${delay}ms`,
   });
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ── Item donation ─────────────────────────────────────────────────────────
-  const [itemFormData, setItemFormData] = useState<ItemDonationFormData>({
-    fullName: "",
-    email: "",
-    phone: "",
-    country: "",
-    city: "",
-    category: "",
-    itemName: "",
-    quantity: "",
-    condition: "",
-    deliveryMethod: "",
-    preferredDate: "",
-    description: "",
-  });
-  const [itemError, setItemError] = useState("");
-
-  // ── Volunteer ─────────────────────────────────────────────────────────────
-  const [volunteerFormData, setVolunteerFormData] = useState<VolunteerFormData>({
-    fullName: "",
-    email: "",
-    phone: "",
-    country: "",
-    city: "",
-    skills: "",
-    availability: "",
-    preferredRole: "",
-    supportMode: "",
-    experience: "",
-    motivation: "",
-  });
-  const [volunteerError, setVolunteerError] = useState("");
-
-  // ── Partner ───────────────────────────────────────────────────────────────
-  const [partnerFormData, setPartnerFormData] = useState<PartnerFormData>({
-    organizationName: "",
-    contactPerson: "",
-    email: "",
-    phone: "",
-    country: "",
-    partnershipType: "",
-    contributionType: "",
-    estimatedSupport: "",
-    message: "",
-  });
-  const [partnerError, setPartnerError] = useState("");
-
-  // ── Derived ───────────────────────────────────────────────────────────────
-  const currentCurrency = currencyConfig[currency];
-
-  const impactItems = useMemo(
-    () => [
-      {
-        amount: currentCurrency.amounts[0],
-        title: "School Supplies",
-        description: "Can help provide essential learning materials for a child.",
-      },
-      {
-        amount: currentCurrency.amounts[1],
-        title: "Nutrition Support",
-        description: "Can help support meals and basic nutrition assistance.",
-      },
-      {
-        amount: currentCurrency.amounts[2],
-        title: "Medical Care",
-        description: "Can help with school and basic medical support for a child.",
-      },
-      {
-        amount: null,
-        title: "Custom Giving",
-        description: "Give any amount to support our mission and programs.",
-      },
-    ],
-    [currentCurrency],
-  );
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleCurrencyChange = (newCurrency: CurrencyCode) => {
-    setCurrency(newCurrency);
-    setSelectedAmount(String(currencyConfig[newCurrency].amounts[1]));
-  };
-
-  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleItemInputChange = (
-    field: keyof ItemDonationFormData,
-    value: string,
-  ) => {
-    setItemFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleVolunteerInputChange = (
-    field: keyof VolunteerFormData,
-    value: string,
-  ) => {
-    setVolunteerFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handlePartnerInputChange = (
-    field: keyof PartnerFormData,
-    value: string,
-  ) => {
-    setPartnerFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
-
-    const amountNumber = Number(selectedAmount);
-
-    if (!formData.fullName.trim()) {
-      setError("Please enter your full name.");
-      return;
-    }
-    if (!formData.email.trim()) {
-      setError("Please enter your email address.");
-      return;
-    }
-    if (!formData.email.includes("@")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    if (!selectedAmount.trim() || Number.isNaN(amountNumber) || amountNumber <= 0) {
-      setError("Please enter a valid donation amount.");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      const response = await fetch("/api/stripe/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: amountNumber,
-          currency,
-          frequency,
-          donorName: formData.fullName.trim(),
-          donorEmail: formData.email.trim(),
-          phone: formData.phone?.trim() ?? "",
-          message: formData.message?.trim() ?? "",
-          anonymous: formData.anonymous ?? false,
-          emailUpdates: formData.emailUpdates ?? false,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Could not start checkout.");
-
-      // Redirect to Stripe Checkout — page leaves here on success
-      window.location.href = data.url;
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again.",
-      );
-      setIsSubmitting(false);
-    }
-    // Note: setIsSubmitting(false) intentionally omitted on redirect path
-  };
-
-  const handleItemSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setItemError("");
-
-    if (!itemFormData.fullName.trim()) {
-      setItemError("Please enter your full name.");
-      return;
-    }
-    if (!itemFormData.email.trim() || !itemFormData.email.includes("@")) {
-      setItemError("Please enter a valid email address.");
-      return;
-    }
-    if (!itemFormData.phone.trim()) {
-      setItemError("Please enter your phone number.");
-      return;
-    }
-    if (!itemFormData.country.trim()) {
-      setItemError("Please enter your country.");
-      return;
-    }
-    if (!itemFormData.city.trim()) {
-      setItemError("Please enter your city.");
-      return;
-    }
-    if (!itemFormData.category) {
-      setItemError("Please choose a donation category.");
-      return;
-    }
-    if (!itemFormData.itemName.trim()) {
-      setItemError("Please enter the item name.");
-      return;
-    }
-    if (!itemFormData.quantity.trim()) {
-      setItemError("Please enter the quantity.");
-      return;
-    }
-    if (!itemFormData.condition) {
-      setItemError("Please choose the item condition.");
-      return;
-    }
-    if (!itemFormData.deliveryMethod) {
-      setItemError("Please choose a delivery method.");
-      return;
-    }
-
-    alert("Item donation form completed. Backend submission is the next step.");
-    setItemFormData({
-      fullName: "",
-      email: "",
-      phone: "",
-      country: "",
-      city: "",
-      category: "",
-      itemName: "",
-      quantity: "",
-      condition: "",
-      deliveryMethod: "",
-      preferredDate: "",
-      description: "",
-    });
-    setItemError("");
-  };
-
-  const handleVolunteerSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setVolunteerError("");
-
-    if (!volunteerFormData.fullName.trim()) {
-      setVolunteerError("Please enter your full name.");
-      return;
-    }
-    if (
-      !volunteerFormData.email.trim() ||
-      !volunteerFormData.email.includes("@")
-    ) {
-      setVolunteerError("Please enter a valid email address.");
-      return;
-    }
-    if (!volunteerFormData.phone.trim()) {
-      setVolunteerError("Please enter your phone number.");
-      return;
-    }
-    if (!volunteerFormData.country.trim()) {
-      setVolunteerError("Please enter your country.");
-      return;
-    }
-    if (!volunteerFormData.preferredRole) {
-      setVolunteerError("Please choose a preferred role.");
-      return;
-    }
-    if (!volunteerFormData.availability) {
-      setVolunteerError("Please choose your availability.");
-      return;
-    }
-    if (!volunteerFormData.supportMode) {
-      setVolunteerError("Please choose how you want to support.");
-      return;
-    }
-
-    alert("Volunteer form completed. Backend submission is the next step.");
-    setVolunteerFormData({
-      fullName: "",
-      email: "",
-      phone: "",
-      country: "",
-      city: "",
-      skills: "",
-      availability: "",
-      preferredRole: "",
-      supportMode: "",
-      experience: "",
-      motivation: "",
-    });
-    setVolunteerError("");
-  };
-
-  const handlePartnerSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setPartnerError("");
-
-    if (!partnerFormData.organizationName.trim()) {
-      setPartnerError("Please enter the organization name.");
-      return;
-    }
-    if (!partnerFormData.contactPerson.trim()) {
-      setPartnerError("Please enter the contact person name.");
-      return;
-    }
-    if (
-      !partnerFormData.email.trim() ||
-      !partnerFormData.email.includes("@")
-    ) {
-      setPartnerError("Please enter a valid email address.");
-      return;
-    }
-    if (!partnerFormData.phone.trim()) {
-      setPartnerError("Please enter your phone number.");
-      return;
-    }
-    if (!partnerFormData.country.trim()) {
-      setPartnerError("Please enter the country.");
-      return;
-    }
-    if (!partnerFormData.partnershipType) {
-      setPartnerError("Please choose a partnership type.");
-      return;
-    }
-    if (!partnerFormData.contributionType) {
-      setPartnerError("Please choose a contribution type.");
-      return;
-    }
-
-    alert("Partner form completed. Backend submission is the next step.");
-    setPartnerFormData({
-      organizationName: "",
-      contactPerson: "",
-      email: "",
-      phone: "",
-      country: "",
-      partnershipType: "",
-      contributionType: "",
-      estimatedSupport: "",
-      message: "",
-    });
-    setPartnerError("");
-  };
-
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#f4f1ea] text-[#1f2a1f]">
-      <DonateHero />
-
-      <WaysToGive activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {activeTab === "money" && (
-        <MoneyDonation
-          frequency={frequency}
-          currency={currency}
-          selectedAmount={selectedAmount}
-          formData={formData}
-          error={error}
-          isSubmitting={isSubmitting}
-          impactItems={impactItems}
-          onFrequencyChange={setFrequency}
-          onCurrencyChange={handleCurrencyChange}
-          onAmountChange={setSelectedAmount}
-          onInputChange={handleInputChange}
-          onSubmit={handleSubmit}
+    <main className="relative min-h-screen overflow-hidden bg-[#0a1a10]">
+      {/* Background image with warm overlay */}
+      <div className="absolute inset-0">
+        <Image
+          src="/heroimage.jpeg"
+          alt=""
+          fill
+          priority
+          className="object-cover opacity-30"
         />
-      )}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a10]/85 via-[#0a1a10]/90 to-[#0a1a10]" />
+      </div>
 
-      {activeTab === "items" && (
-        <ItemDonation
-          formData={itemFormData}
-          error={itemError}
-          onInputChange={handleItemInputChange}
-          onSubmit={handleItemSubmit}
-          onBack={() => setActiveTab("money")}
-        />
-      )}
+      {/* Decorative blur orbs */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-32 top-20 h-96 w-96 rounded-full bg-[#c9962a]/[0.08] blur-[120px]" />
+        <div className="absolute -right-32 bottom-20 h-96 w-96 rounded-full bg-[#c9962a]/[0.05] blur-[120px]" />
+      </div>
 
-      {activeTab === "sponsor" && (
-        <SponsorChild
-          selectedSponsorship={selectedSponsorship}
-          onSelect={setSelectedSponsorship}
-          onBack={() => setActiveTab("money")}
-        />
-      )}
+      {/* Subtle grid */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
 
-      {activeTab === "volunteer" && (
-        <VolunteerForm
-          formData={volunteerFormData}
-          error={volunteerError}
-          onInputChange={handleVolunteerInputChange}
-          onSubmit={handleVolunteerSubmit}
-          onBack={() => setActiveTab("money")}
-        />
-      )}
+      {/* Content */}
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 py-24 text-center">
 
-      {activeTab === "partner" && (
-        <PartnerForm
-          formData={partnerFormData}
-          error={partnerError}
-          onInputChange={handlePartnerInputChange}
-          onSubmit={handlePartnerSubmit}
-          onBack={() => setActiveTab("money")}
-        />
-      )}
+        {/* Logo + glow */}
+        <div style={reveal(0)} className="relative mb-10">
+          <div className="absolute inset-0 animate-pulse rounded-full bg-[#c9962a]/30 blur-2xl" />
+          <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-[#c9962a]/60 shadow-[0_0_40px_rgba(201,150,42,0.45)]">
+            <Image src="/logo.png" alt="Pandie Foundation" fill className="object-cover" />
+          </div>
+        </div>
 
-      <TrustSection />
+        {/* Construction badge */}
+        <div style={reveal(150)}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#c9962a]/40 bg-[#c9962a]/10 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.32em] text-[#c9962a]">
+            <span className="text-base">🔒</span>
+            <Tx>Under Construction</Tx>
+          </span>
+        </div>
+
+        {/* Heading */}
+        <h1
+          style={reveal(300)}
+          className="mt-8 font-heading text-[clamp(40px,6vw,68px)] font-semibold leading-[1.05] text-white"
+        >
+          <Tx>Thank You for</Tx><br />
+          <em className="italic text-[#e8b84b]"><Tx>Your Beautiful Heart</Tx></em>
+        </h1>
+
+        {/* Sweet message */}
+        <p
+          style={reveal(450)}
+          className="mt-8 max-w-xl text-[17px] leading-9 text-white/75"
+        >
+          <Tx>The fact that you came here — ready to give — already means more to us than you can imagine. Our online donation page is being built right now to make sure every gift reaches a child safely and securely.</Tx>
+        </p>
+
+        <p
+          style={reveal(600)}
+          className="mt-5 max-w-xl text-[16px] leading-8 text-white/55"
+        >
+          <Tx>Online giving will open very soon. Until then, if your heart is leading you to help a child today, we would be so honored to hear from you directly.</Tx>
+        </p>
+
+        {/* Email card */}
+        <div
+          style={reveal(750)}
+          className="mt-12 w-full max-w-md rounded-2xl border border-[#c9962a]/25 bg-[#0f2418]/60 p-7 backdrop-blur-sm"
+        >
+          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#c9962a]">
+            <Tx>Donate Today by Email</Tx>
+          </p>
+          <a
+            href="mailto:info@pandiefoundation.org?subject=I want to support Pandie Foundation"
+            className="mt-3 inline-block font-heading text-[22px] font-semibold text-white transition hover:text-[#e8b84b] sm:text-[26px]"
+          >
+            info@pandiefoundation.org
+          </a>
+          <p className="mt-4 text-[13px] leading-6 text-white/45">
+            <Tx>Tell us how you'd like to help — one-time gift, monthly sponsorship, or sponsoring a specific child — and our team will personally guide you through it.</Tx>
+          </p>
+        </div>
+
+        {/* Phone */}
+        <div style={reveal(900)} className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[13px] text-white/50">
+          <span><Tx>or call us</Tx></span>
+          <a href="tel:+13072570001" className="font-semibold text-white/80 transition hover:text-[#c9962a]">
+            +1 (307) 257-0001
+          </a>
+        </div>
+
+        {/* CTAs */}
+        <div style={reveal(1050)} className="mt-12 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            href="/programs"
+            className="group inline-flex items-center gap-2 bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(201,150,42,0.45)]"
+          >
+            <Tx>See Our Programs</Tx>
+            <span className="transition-transform group-hover:translate-x-1">→</span>
+          </Link>
+          <Link
+            href="/stories"
+            className="inline-flex items-center gap-2 border border-white/25 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 transition hover:border-white/60 hover:text-white"
+          >
+            <Tx>Read Their Stories</Tx>
+          </Link>
+        </div>
+
+        {/* Closing quote */}
+        <p
+          style={reveal(1250)}
+          className="mt-16 max-w-lg text-[13px] italic leading-7 text-white/35"
+        >
+          <Tx>"Every child reached, every meal served, every life lifted — it all begins with a heart like yours that chose to care."</Tx>
+        </p>
+        <p style={reveal(1400)} className="mt-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#c9962a]/70">
+          <Tx>— The Pandie Family</Tx>
+        </p>
+      </div>
     </main>
   );
 }
