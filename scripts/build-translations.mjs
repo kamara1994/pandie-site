@@ -1,9 +1,3 @@
-// Pre-translation build script.
-// Runs during `npm run build`. Reads the English source (en.json),
-// translates it into all 28 other languages via Gemini, and writes
-// static JSON files to public/translations/. Visitors load these
-// directly — zero API calls at runtime, instant translations.
-
 import { readFile, writeFile, mkdir, access } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,89 +7,58 @@ const ROOT = join(__dirname, "..");
 const SRC = join(ROOT, "public", "translations", "en.json");
 const OUT_DIR = join(ROOT, "public", "translations");
 
-const LANG_NAMES = {
-  fr: "French", ar: "Arabic", krio: "Sierra Leonean Krio",
-  es: "Spanish", pt: "Portuguese", zh: "Simplified Chinese", ha: "Hausa",
-  sw: "Swahili", hi: "Hindi", bn: "Bengali", ru: "Russian", ja: "Japanese",
-  ko: "Korean", de: "German", it: "Italian", tr: "Turkish", vi: "Vietnamese",
-  th: "Thai", pl: "Polish", nl: "Dutch", id: "Indonesian", ms: "Malay",
-  fa: "Persian", yo: "Yoruba", ig: "Igbo", am: "Amharic", so: "Somali",
-  rw: "Kinyarwanda",
+const LANG_CODES = {
+  fr: "fr-FR", ar: "ar-SA", krio: "kri",
+  es: "es-ES", pt: "pt-BR", zh: "zh-CN", ha: "ha-NG",
+  sw: "sw-KE", hi: "hi-IN", bn: "bn-BD", ru: "ru-RU", ja: "ja-JP",
+  ko: "ko-KR", de: "de-DE", it: "it-IT", tr: "tr-TR", vi: "vi-VN",
+  th: "th-TH", pl: "pl-PL", nl: "nl-NL", id: "id-ID", ms: "ms-MY",
+  fa: "fa-IR", yo: "yo-NG", ig: "ig-NG", am: "am-ET", so: "so-SO",
+  rw: "rw-RW",
 };
 
-const MODEL = "gemini-2.5-flash";
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-const CHUNK = 40;
+async function fileExists(p) { try { await access(p); return true; } catch { return false; } }
 
-async function fileExists(p) {
-  try { await access(p); return true; } catch { return false; }
+async function translateOne(text, targetCode) {
+  const placeholders = [
+    ["Pandie Foundation","__P1__"],["Pandie Grace Bangura","__P2__"],
+    ["Joseph Allan Kamara","__P3__"],["Sierra Leone","__P4__"],
+    ["Freetown","__P5__"],["Pamela","__P6__"],
+    ["Mohamed Salah","__P7__"],["Angelique Kidjo","__P8__"],
+  ];
+  let prepared = text;
+  for (const [name, ph] of placeholders) prepared = prepared.split(name).join(ph);
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(prepared)}&langpair=en|${targetCode}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return text;
+    const data = await res.json();
+    let translated = data?.responseData?.translatedText || text;
+    if (translated.toUpperCase().includes("INVALID") || translated.toUpperCase().includes("QUOTA") || translated.toUpperCase().includes("MYMEMORY WARNING")) return text;
+    for (const [name, ph] of placeholders) translated = translated.split(ph).join(name);
+    return translated;
+  } catch { return text; }
 }
 
-async function translateBatch(strings, target, apiKey) {
-  const targetName = LANG_NAMES[target];
-  const numbered = strings.map((t, i) => `${i + 1}. ${t}`).join("\n");
-  const prompt =
-    `Translate each numbered line into ${targetName}. ` +
-    `Rules: Keep the EXACT same numbering. Translate ONLY the text, never the numbers. ` +
-    `Preserve emojis, punctuation, $ amounts, and these names exactly as written: ` +
-    `"Pandie Foundation", "Pamela", "Joseph Allan Kamara", "Sierra Leone", "Freetown", ` +
-    `"Pandie Grace Bangura", "Aminata", "Musa", "Hawa", "Mariama", "Ibrahim", "Kadiatu". ` +
-    `Do not add notes, explanations, or extra lines. Return only the numbered translations.\n\n` +
-    numbered;
-
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const res = await fetch(`${ENDPOINT}?key=${apiKey}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 8000 },
-        }),
-      });
-
-      if (res.status === 429) {
-        const wait = 20000 + attempt * 15000;
-        console.log(`    rate-limited, waiting ${wait / 1000}s...`);
-        await new Promise(r => setTimeout(r, wait));
-        continue;
-      }
-
-      if (!res.ok) {
-        const err = await res.text();
-        console.error(`    Gemini error ${res.status}: ${err.slice(0, 200)}`);
-        return strings;
-      }
-
-      const data = await res.json();
-      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      if (!raw) return strings;
-
-      const out = [...strings];
-      for (const line of raw.split("\n")) {
-        const m = line.match(/^\s*(\d+)\.\s*(.*)$/);
-        if (m) {
-          const idx = parseInt(m[1], 10) - 1;
-          if (idx >= 0 && idx < out.length && m[2].trim()) {
-            out[idx] = m[2].trim();
-          }
-        }
-      }
-      return out;
-    } catch (err) {
-      console.error(`    attempt ${attempt + 1} failed:`, err.message);
-      await new Promise(r => setTimeout(r, 5000));
+async function translateBatch(strings, targetCode) {
+  const CONCURRENCY = 5;
+  const out = new Array(strings.length);
+  let cursor = 0;
+  async function worker() {
+    while (true) {
+      const i = cursor++;
+      if (i >= strings.length) return;
+      out[i] = await translateOne(strings[i], targetCode);
     }
   }
-  return strings;
+  await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+  return out;
 }
 
 function collectStrings(node, out) {
   if (typeof node === "string") { out.push(node); return; }
   if (Array.isArray(node)) { for (const v of node) collectStrings(v, out); return; }
-  if (node && typeof node === "object") {
-    for (const k of Object.keys(node)) collectStrings(node[k], out);
-  }
+  if (node && typeof node === "object") for (const k of Object.keys(node)) collectStrings(node[k], out);
 }
 
 function rebuild(node, map) {
@@ -110,62 +73,29 @@ function rebuild(node, map) {
 }
 
 async function main() {
-  const apiKey = process.env.GOOGLE_API_KEY;
-  if (!apiKey) {
-    console.warn("⚠️  GOOGLE_API_KEY not set — skipping translation build.");
-    console.warn("   The site will still build, but only English will be pre-translated.");
-    console.warn("   Other languages will fall back to runtime translation if /api/translate works.");
-    return;
-  }
-
-  if (!(await fileExists(SRC))) {
-    console.error(`❌ Source file not found: ${SRC}`);
-    process.exit(1);
-  }
-
+  if (!(await fileExists(SRC))) { console.error("Source file missing: " + SRC); process.exit(1); }
   const source = JSON.parse(await readFile(SRC, "utf8"));
   await mkdir(OUT_DIR, { recursive: true });
-
-  // English is the source — just copy it (it's already at en.json)
-  console.log("✓ en (source)");
-
+  console.log("OK en (source)");
   const allStrings = [];
   collectStrings(source, allStrings);
   const unique = [...new Set(allStrings)];
-  console.log(`   ${unique.length} unique strings to translate per language`);
-
-  const targets = Object.keys(LANG_NAMES);
-
+  console.log("   " + unique.length + " unique strings per language");
+  const targets = Object.keys(LANG_CODES);
+  const startTime = Date.now();
   for (const lang of targets) {
-    const outPath = join(OUT_DIR, `${lang}.json`);
-    // Skip if already exists and source hasn't changed since
-    // (simple cache: delete public/translations/<lang>.json to force re-translate)
-    if (await fileExists(outPath)) {
-      console.log(`✓ ${lang} (cached, delete public/translations/${lang}.json to refresh)`);
-      continue;
-    }
-
-    console.log(`→ ${lang} (${LANG_NAMES[lang]})...`);
+    const outPath = join(OUT_DIR, lang + ".json");
+    if (await fileExists(outPath)) { console.log("OK " + lang + " (cached)"); continue; }
+    const langStart = Date.now();
+    process.stdout.write("-> " + lang + "... ");
+    const translated = await translateBatch(unique, LANG_CODES[lang]);
     const map = new Map();
-
-    for (let i = 0; i < unique.length; i += CHUNK) {
-      const slice = unique.slice(i, i + CHUNK);
-      const translated = await translateBatch(slice, lang, apiKey);
-      slice.forEach((s, idx) => map.set(s, translated[idx] || s));
-      // small delay to be polite
-      await new Promise(r => setTimeout(r, 800));
-    }
-
+    unique.forEach((s, i) => map.set(s, translated[i] || s));
     const tree = rebuild(source, map);
     await writeFile(outPath, JSON.stringify(tree, null, 2), "utf8");
-    console.log(`✓ ${lang} saved`);
+    console.log("saved (" + ((Date.now() - langStart) / 1000).toFixed(1) + "s)");
   }
-
-  console.log("✅ Translation build complete.");
+  console.log("DONE in " + ((Date.now() - startTime) / 60000).toFixed(1) + " min.");
 }
 
-main().catch(err => {
-  console.error("Translation build failed:", err);
-  // Don't fail the deploy — site still works, just without pre-translation
-  process.exit(0);
-});
+main().catch(err => { console.error("Translation build failed:", err); process.exit(0); });
