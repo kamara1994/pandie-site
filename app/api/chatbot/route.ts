@@ -1,5 +1,15 @@
 import Groq from "groq-sdk";
 
+const LANG_NAMES: Record<string, string> = {
+  en: "English", fr: "French", ar: "Arabic", krio: "Sierra Leonean Krio",
+  es: "Spanish", pt: "Portuguese", zh: "Simplified Chinese", ha: "Hausa",
+  sw: "Swahili", hi: "Hindi", bn: "Bengali", ru: "Russian", ja: "Japanese",
+  ko: "Korean", de: "German", it: "Italian", tr: "Turkish", vi: "Vietnamese",
+  th: "Thai", pl: "Polish", nl: "Dutch", id: "Indonesian", ms: "Malay",
+  fa: "Persian", yo: "Yoruba", ig: "Igbo", am: "Amharic", so: "Somali",
+  rw: "Kinyarwanda",
+};
+
 const SYSTEM = `You are Pamela, the warm and knowledgeable AI assistant for Pandie Foundation — a nonprofit dedicated to protecting and uplifting vulnerable children in Sierra Leone.
 
 Your personality: warm, caring, encouraging, concise. You speak with heart and purpose. You are proud of the foundation's work and excited to help visitors get involved.
@@ -41,14 +51,20 @@ Impact: $10 feeds a child for one week | $30/month sponsors a child's education
 export async function POST(req: Request) {
   try {
     const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const { messages } = await req.json();
+    const { messages, lang } = await req.json();
+
+    const langName = LANG_NAMES[lang] || "English";
+    const langInstruction =
+      lang && lang !== "en"
+        ? `\n\n== LANGUAGE ==\nALWAYS reply ONLY in ${langName}. The visitor's site language is ${langName}. Keep "Pandie Foundation", "Pamela", and the email address exactly as written, but everything else must be in ${langName}.`
+        : "";
 
     const stream = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       max_tokens: 600,
       stream: true,
       messages: [
-        { role: "system", content: SYSTEM },
+        { role: "system", content: SYSTEM + langInstruction },
         ...messages,
       ],
     });

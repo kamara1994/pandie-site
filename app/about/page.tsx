@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "../components/AutoTranslate";
 
 // ── Animation Hooks ───────────────────────────────────────────────────────────
 function useReveal(threshold = 0.15) {
@@ -63,6 +64,7 @@ function RevealLine({
   );
 }
 
+// Translates each line via the hook, then renders staggered.
 function StaggeredText({
   lines,
   baseDelay = 0,
@@ -77,17 +79,34 @@ function StaggeredText({
   return (
     <div ref={ref} className="space-y-2">
       {lines.map((line, i) => (
-        <p
+        <StaggeredLine
           key={i}
-          className={`transition-all duration-700 ease-out ${className} ${
-            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-          }`}
-          style={{ transitionDelay: `${baseDelay + i * 120}ms` }}
-        >
-          {line}
-        </p>
+          line={line}
+          i={i}
+          baseDelay={baseDelay}
+          className={className}
+          visible={visible}
+        />
       ))}
     </div>
+  );
+}
+
+function StaggeredLine({
+  line, i, baseDelay, className, visible,
+}: {
+  line: string; i: number; baseDelay: number; className: string; visible: boolean;
+}) {
+  const text = useT(line);
+  return (
+    <p
+      className={`transition-all duration-700 ease-out ${className} ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+      }`}
+      style={{ transitionDelay: `${baseDelay + i * 120}ms` }}
+    >
+      {text}
+    </p>
   );
 }
 
@@ -104,11 +123,12 @@ function SwingHeading({
 }) {
   const { ref, visible } = useReveal();
   const Tag = as;
+  const translated = useT(text);
 
   return (
     <div ref={ref}>
       <Tag className={`${className} flex flex-wrap gap-x-3 gap-y-1`}>
-        {text.split(" ").map((word, i) => (
+        {translated.split(" ").map((word, i) => (
           <span
             key={i}
             className={`inline-block transition-all duration-500 ease-out ${
@@ -124,6 +144,12 @@ function SwingHeading({
       </Tag>
     </div>
   );
+}
+
+// Simple inline translated text helper for one-off labels
+function Tx({ children, className }: { children: string; className?: string }) {
+  const t = useT(children);
+  return <span className={className}>{t}</span>;
 }
 
 // ── Counter Animation ─────────────────────────────────────────────────────────
@@ -175,7 +201,7 @@ export default function AboutPage() {
         <div className="mx-auto w-full max-w-[1100px]">
           <RevealLine direction="fade">
             <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#f0c857]">
-              About Pandie Foundation
+              <Tx>About Pandie Foundation</Tx>
             </p>
           </RevealLine>
 
@@ -207,7 +233,7 @@ export default function AboutPage() {
             <div className="text-center">
               <RevealLine direction="up">
                 <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#f0c857]">
-                  Our Impact
+                  <Tx>Our Impact</Tx>
                 </p>
               </RevealLine>
 
@@ -222,30 +248,10 @@ export default function AboutPage() {
 
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                {
-                  target: 500,
-                  suffix: "+",
-                  label: "Children Supported",
-                  desc: "and counting",
-                },
-                {
-                  target: 6,
-                  suffix: "",
-                  label: "Active Programs",
-                  desc: "across Sierra Leone",
-                },
-                {
-                  target: 2,
-                  suffix: "",
-                  label: "Countries Reached",
-                  desc: "USA & Sierra Leone",
-                },
-                {
-                  target: 100,
-                  suffix: "%",
-                  label: "Donation Transparency",
-                  desc: "every cent accounted for",
-                },
+                { target: 500, suffix: "+", label: "Children Supported", desc: "and counting" },
+                { target: 6, suffix: "", label: "Active Programs", desc: "across Sierra Leone" },
+                { target: 2, suffix: "", label: "Countries Reached", desc: "USA & Sierra Leone" },
+                { target: 100, suffix: "%", label: "Donation Transparency", desc: "every cent accounted for" },
               ].map((stat, i) => (
                 <RevealLine key={stat.label} delay={i * 120} direction="up">
                   <div className="rounded-xl bg-white/10 p-6 text-center ring-1 ring-white/10">
@@ -253,9 +259,9 @@ export default function AboutPage() {
                       <CountUp target={stat.target} suffix={stat.suffix} />
                     </p>
                     <p className="mt-3 text-lg font-semibold text-white">
-                      {stat.label}
+                      <Tx>{stat.label}</Tx>
                     </p>
-                    <p className="mt-1 text-sm text-white/60">{stat.desc}</p>
+                    <p className="mt-1 text-sm text-white/60"><Tx>{stat.desc}</Tx></p>
                   </div>
                 </RevealLine>
               ))}
@@ -279,8 +285,7 @@ export default function AboutPage() {
 
           <RevealLine delay={500} direction="fade">
             <p className="mt-6 text-lg leading-8 text-[#5f6663]">
-              This is the conviction that gave birth to Pandie Foundation — and
-              the promise that drives everything we do.
+              <Tx>This is the conviction that gave birth to Pandie Foundation — and the promise that drives everything we do.</Tx>
             </p>
           </RevealLine>
         </div>
@@ -291,7 +296,6 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[1100px]">
           <div className="overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
             <div className="grid lg:grid-cols-[0.75fr_1.25fr]">
-              {/* Founder Photo */}
               <div className="relative min-h-[380px] bg-[#0f1f17] lg:min-h-[500px]">
                 <Image
                   src="/founder02.jpg"
@@ -304,26 +308,25 @@ export default function AboutPage() {
                 <div className="absolute bottom-6 left-6 right-6">
                   <RevealLine direction="up">
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f0c857]">
-                      Foundation Founder
+                      <Tx>Foundation Founder</Tx>
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-white">
                       Joseph Allan Kamara
                     </p>
                     <p className="mt-1 text-sm text-white/70">
-                      Founder & Executive Director
+                      <Tx>Founder & Executive Director</Tx>
                     </p>
                     <p className="mt-1 text-sm text-white/60">
-                      Sierra Leone — United States
+                      <Tx>Sierra Leone — United States</Tx>
                     </p>
                   </RevealLine>
                 </div>
               </div>
 
-              {/* Founder Story */}
               <div className="px-8 py-12 sm:px-10 lg:px-12 lg:py-14">
                 <RevealLine direction="right">
                   <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
-                    A Message From the Founder
+                    <Tx>A Message From the Founder</Tx>
                   </p>
                 </RevealLine>
 
@@ -377,7 +380,7 @@ export default function AboutPage() {
                       Joseph Allan Kamara
                     </p>
                     <p className="text-sm text-[#8b8f8c]">
-                      — Founder & Executive Director
+                      <Tx>— Founder & Executive Director</Tx>
                     </p>
                     <div className="h-px flex-1 bg-[#e7dfd0]" />
                   </div>
@@ -405,13 +408,13 @@ export default function AboutPage() {
                 <div className="absolute bottom-6 left-6 right-6">
                   <RevealLine direction="up">
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f0c857]">
-                      In Honor Of
+                      <Tx>In Honor Of</Tx>
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-white">
                       Pandie Grace Bangura
                     </p>
                     <p className="mt-1 text-sm text-white/70">
-                      The heart and soul behind this foundation
+                      <Tx>The heart and soul behind this foundation</Tx>
                     </p>
                   </RevealLine>
                 </div>
@@ -420,7 +423,7 @@ export default function AboutPage() {
               <div className="px-8 py-12 text-white sm:px-10 lg:px-12 lg:py-14">
                 <RevealLine direction="right">
                   <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#f0c857]">
-                    The Name Behind the Foundation
+                    <Tx>The Name Behind the Foundation</Tx>
                   </p>
                 </RevealLine>
 
@@ -460,12 +463,10 @@ export default function AboutPage() {
                 <RevealLine delay={1500} direction="up">
                   <div className="mt-8 rounded-xl border border-white/15 bg-white/5 p-5">
                     <p className="text-base italic leading-8 text-white/80">
-                      "She believed that every child mattered — not just her own
-                      — and that true kindness is measured by how we care for
-                      those who have the least."
+                      <Tx>"She believed that every child mattered — not just her own — and that true kindness is measured by how we care for those who have the least."</Tx>
                     </p>
                     <p className="mt-3 text-sm font-semibold text-[#f0c857]">
-                      — Joseph Allan Kamara, Founder
+                      <Tx>— Joseph Allan Kamara, Founder</Tx>
                     </p>
                   </div>
                 </RevealLine>
@@ -482,7 +483,7 @@ export default function AboutPage() {
             <div className="text-center">
               <RevealLine direction="up">
                 <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
-                  Our Journey
+                  <Tx>Our Journey</Tx>
                 </p>
               </RevealLine>
 
@@ -500,36 +501,11 @@ export default function AboutPage() {
 
               <div className="space-y-10">
                 {[
-                  {
-                    year: "The Beginning",
-                    title: "A Vision Is Born",
-                    desc: "Joseph Allan Kamara, a native of Sierra Leone, witnesses the struggles of vulnerable children and carries a deep conviction that something must be done.",
-                    side: "left",
-                  },
-                  {
-                    year: "The Inspiration",
-                    title: "Named After a Mother",
-                    desc: "The foundation is named in honor of Pandie Grace Bangura — a woman whose selfless love and compassion for others continue to shape the soul of this mission.",
-                    side: "right",
-                  },
-                  {
-                    year: "The Foundation",
-                    title: "Pandie Foundation Is Established",
-                    desc: "Pandie Foundation is officially established as a humanitarian nonprofit dedicated to supporting vulnerable children in Sierra Leone through education, nutrition, and medical care.",
-                    side: "left",
-                  },
-                  {
-                    year: "The Programs",
-                    title: "Six Core Programs Launched",
-                    desc: "Education Support, Nutrition Support, Medical Assistance, Child Protection, Child Sponsorship, and Community Outreach programs are developed and activated.",
-                    side: "right",
-                  },
-                  {
-                    year: "The Future",
-                    title: "Growing Toward Greater Impact",
-                    desc: "With the support of donors, volunteers, and partners around the world, Pandie Foundation is expanding its reach and building toward a future where no child is left behind.",
-                    side: "left",
-                  },
+                  { year: "The Beginning", title: "A Vision Is Born", desc: "Joseph Allan Kamara, a native of Sierra Leone, witnesses the struggles of vulnerable children and carries a deep conviction that something must be done.", side: "left" },
+                  { year: "The Inspiration", title: "Named After a Mother", desc: "The foundation is named in honor of Pandie Grace Bangura — a woman whose selfless love and compassion for others continue to shape the soul of this mission.", side: "right" },
+                  { year: "The Foundation", title: "Pandie Foundation Is Established", desc: "Pandie Foundation is officially established as a humanitarian nonprofit dedicated to supporting vulnerable children in Sierra Leone through education, nutrition, and medical care.", side: "left" },
+                  { year: "The Programs", title: "Six Core Programs Launched", desc: "Education Support, Nutrition Support, Medical Assistance, Child Protection, Child Sponsorship, and Community Outreach programs are developed and activated.", side: "right" },
+                  { year: "The Future", title: "Growing Toward Greater Impact", desc: "With the support of donors, volunteers, and partners around the world, Pandie Foundation is expanding its reach and building toward a future where no child is left behind.", side: "left" },
                 ].map((item, i) => (
                   <div
                     key={item.year}
@@ -551,13 +527,13 @@ export default function AboutPage() {
                         }`}
                       >
                         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d4a017]">
-                          {item.year}
+                          <Tx>{item.year}</Tx>
                         </p>
                         <h3 className="mt-2 text-lg font-semibold text-[#214c34]">
-                          {item.title}
+                          <Tx>{item.title}</Tx>
                         </h3>
                         <p className="mt-2 text-sm leading-7 text-[#626a67]">
-                          {item.desc}
+                          <Tx>{item.desc}</Tx>
                         </p>
                       </div>
                     </RevealLine>
@@ -575,7 +551,7 @@ export default function AboutPage() {
           <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-12">
             <RevealLine direction="up">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
-                The Reality We Face
+                <Tx>The Reality We Face</Tx>
               </p>
             </RevealLine>
 
@@ -600,39 +576,9 @@ export default function AboutPage() {
 
             <div className="mt-12 grid gap-6 md:grid-cols-3">
               {[
-                {
-                  emoji: "📚",
-                  title: "A Child Who Wants to Learn",
-                  lines: [
-                    "She wakes before sunrise and walks miles to school,",
-                    "only to sit in a classroom with no textbooks,",
-                    "with no guarantee she can return tomorrow",
-                    "if her family cannot pay the fees.",
-                  ],
-                  delay: 0,
-                },
-                {
-                  emoji: "🍽️",
-                  title: "A Child Who Goes to Bed Hungry",
-                  lines: [
-                    "He is nine years old and already knows",
-                    "what it feels like to concentrate through hunger.",
-                    "Some days, the only thing between him and an empty stomach",
-                    "is a single cup of rice.",
-                  ],
-                  delay: 200,
-                },
-                {
-                  emoji: "💊",
-                  title: "A Child Who Needs Medical Care",
-                  lines: [
-                    "She has had a fever for a week.",
-                    "Her mother knows what to do but cannot afford the medicine.",
-                    "She prays and watches and waits —",
-                    "because the alternative is unthinkable.",
-                  ],
-                  delay: 400,
-                },
+                { emoji: "📚", title: "A Child Who Wants to Learn", lines: ["She wakes before sunrise and walks miles to school,", "only to sit in a classroom with no textbooks,", "with no guarantee she can return tomorrow", "if her family cannot pay the fees."], delay: 0 },
+                { emoji: "🍽️", title: "A Child Who Goes to Bed Hungry", lines: ["He is nine years old and already knows", "what it feels like to concentrate through hunger.", "Some days, the only thing between him and an empty stomach", "is a single cup of rice."], delay: 200 },
+                { emoji: "💊", title: "A Child Who Needs Medical Care", lines: ["She has had a fever for a week.", "Her mother knows what to do but cannot afford the medicine.", "She prays and watches and waits —", "because the alternative is unthinkable."], delay: 400 },
               ].map((item) => (
                 <div
                   key={item.title}
@@ -641,7 +587,7 @@ export default function AboutPage() {
                   <RevealLine delay={item.delay} direction="up">
                     <p className="text-4xl">{item.emoji}</p>
                     <h3 className="mt-4 text-lg font-semibold text-[#214c34]">
-                      {item.title}
+                      <Tx>{item.title}</Tx>
                     </h3>
                   </RevealLine>
 
@@ -680,18 +626,8 @@ export default function AboutPage() {
             <RevealLine direction="left">
               <div className="h-full rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#214c34]">
-                  <svg
-                    className="h-6 w-6 text-[#f0c857]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
+                  <svg className="h-6 w-6 text-[#f0c857]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
 
@@ -717,23 +653,9 @@ export default function AboutPage() {
             <RevealLine direction="right">
               <div className="h-full rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#d4a017]">
-                  <svg
-                    className="h-6 w-6 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
+                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </div>
 
@@ -765,7 +687,7 @@ export default function AboutPage() {
           <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-12">
             <RevealLine direction="up">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
-                What We Do
+                <Tx>What We Do</Tx>
               </p>
             </RevealLine>
 
@@ -788,65 +710,25 @@ export default function AboutPage() {
 
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                {
-                  title: "Education Support",
-                  desc: "School fees, supplies, uniforms, and materials so no child misses out on learning.",
-                  icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
-                  delay: 0,
-                },
-                {
-                  title: "Nutrition & Food",
-                  desc: "Nutritious meals and food assistance so hunger never stands between a child and their future.",
-                  icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z",
-                  delay: 100,
-                },
-                {
-                  title: "Medical Care",
-                  desc: "Healthcare and medical support for children suffering from preventable and treatable conditions.",
-                  icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
-                  delay: 200,
-                },
-                {
-                  title: "Child Protection",
-                  desc: "Advocacy, safety, and dignity programs for children at risk of neglect and exploitation.",
-                  icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
-                  delay: 300,
-                },
-                {
-                  title: "Child Sponsorship",
-                  desc: "Long-term individual sponsorship connecting generous donors directly with a child's journey.",
-                  icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
-                  delay: 400,
-                },
-                {
-                  title: "Community Outreach",
-                  desc: "Working hand in hand with families, local leaders, and schools to create lasting change.",
-                  icon: "M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064",
-                  delay: 500,
-                },
+                { title: "Education Support", desc: "School fees, supplies, uniforms, and materials so no child misses out on learning.", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253", delay: 0 },
+                { title: "Nutrition & Food", desc: "Nutritious meals and food assistance so hunger never stands between a child and their future.", icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z", delay: 100 },
+                { title: "Medical Care", desc: "Healthcare and medical support for children suffering from preventable and treatable conditions.", icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z", delay: 200 },
+                { title: "Child Protection", desc: "Advocacy, safety, and dignity programs for children at risk of neglect and exploitation.", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", delay: 300 },
+                { title: "Child Sponsorship", desc: "Long-term individual sponsorship connecting generous donors directly with a child's journey.", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z", delay: 400 },
+                { title: "Community Outreach", desc: "Working hand in hand with families, local leaders, and schools to create lasting change.", icon: "M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064", delay: 500 },
               ].map((item) => (
                 <RevealLine key={item.title} delay={item.delay} direction="up">
                   <div className="h-full rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] p-6">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#214c34]">
-                      <svg
-                        className="h-5 w-5 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d={item.icon}
-                        />
+                      <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                       </svg>
                     </div>
                     <h3 className="mt-4 text-lg font-semibold text-[#214c34]">
-                      {item.title}
+                      <Tx>{item.title}</Tx>
                     </h3>
                     <p className="mt-3 text-sm leading-7 text-[#626a67]">
-                      {item.desc}
+                      <Tx>{item.desc}</Tx>
                     </p>
                   </div>
                 </RevealLine>
@@ -859,19 +741,9 @@ export default function AboutPage() {
                   href="/programs"
                   className="inline-flex items-center gap-2 rounded-xl bg-[#214c34] px-7 py-4 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#d4a017] hover:text-[#173325]"
                 >
-                  Explore All Programs
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
+                  <Tx>Explore All Programs</Tx>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Link>
               </div>
@@ -886,7 +758,7 @@ export default function AboutPage() {
           <div className="mb-8 text-center">
             <RevealLine direction="up">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
-                Our Values
+                <Tx>Our Values</Tx>
               </p>
             </RevealLine>
 
@@ -901,34 +773,18 @@ export default function AboutPage() {
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              {
-                title: "Integrity",
-                desc: "Transparent and accountable in everything — every resource used responsibly and with purpose.",
-                delay: 0,
-              },
-              {
-                title: "Compassion",
-                desc: "Every decision made with the wellbeing of children and families placed at the very center.",
-                delay: 100,
-              },
-              {
-                title: "Respect",
-                desc: "Honoring the dignity of every child, every family, and every community we are privileged to serve.",
-                delay: 200,
-              },
-              {
-                title: "Impact",
-                desc: "Committed to sustainable, lasting change — not just temporary relief, but transformed futures.",
-                delay: 300,
-              },
+              { title: "Integrity", desc: "Transparent and accountable in everything — every resource used responsibly and with purpose.", delay: 0 },
+              { title: "Compassion", desc: "Every decision made with the wellbeing of children and families placed at the very center.", delay: 100 },
+              { title: "Respect", desc: "Honoring the dignity of every child, every family, and every community we are privileged to serve.", delay: 200 },
+              { title: "Impact", desc: "Committed to sustainable, lasting change — not just temporary relief, but transformed futures.", delay: 300 },
             ].map((v) => (
               <RevealLine key={v.title} delay={v.delay} direction="up">
                 <div className="h-full rounded-2xl bg-white p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
                   <h3 className="text-lg font-semibold text-[#214c34]">
-                    {v.title}
+                    <Tx>{v.title}</Tx>
                   </h3>
                   <p className="mt-3 text-sm leading-7 text-[#626a67]">
-                    {v.desc}
+                    <Tx>{v.desc}</Tx>
                   </p>
                 </div>
               </RevealLine>
@@ -943,7 +799,7 @@ export default function AboutPage() {
           <div className="rounded-2xl bg-[#214c34] p-10 text-center text-white shadow-[0_20px_60px_rgba(0,0,0,0.15)] sm:p-14">
             <RevealLine direction="up">
               <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#f0c857]">
-                Will You Answer the Call?
+                <Tx>Will You Answer the Call?</Tx>
               </p>
             </RevealLine>
 
@@ -983,21 +839,20 @@ export default function AboutPage() {
                   href="/donate"
                   className="inline-flex items-center justify-center rounded-xl bg-[#d4a017] px-10 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#173325] transition hover:opacity-90"
                 >
-                  Donate Now — Change a Life
+                  <Tx>Donate Now — Change a Life</Tx>
                 </Link>
                 <Link
                   href="/contact"
                   className="inline-flex items-center justify-center rounded-xl border border-white/30 px-10 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:bg-white/10"
                 >
-                  Get Involved
+                  <Tx>Get Involved</Tx>
                 </Link>
               </div>
             </RevealLine>
 
             <RevealLine delay={1900} direction="fade">
               <p className="mt-10 text-sm italic text-white/50">
-                "Pandie Foundation — The Mother of All — stands for compassion
-                without boundaries and hope without limits."
+                <Tx>"Pandie Foundation — The Mother of All — stands for compassion without boundaries and hope without limits."</Tx>
               </p>
             </RevealLine>
           </div>
