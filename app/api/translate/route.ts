@@ -1,6 +1,6 @@
-import Groq from "groq-sdk";
+// Translate route using Google Gemini (free tier, no rate limit issue).
+// Falls back to returning the English source if anything fails — page never breaks.
 
-// Map our app language codes to full language names for the model
 const LANG_NAMES: Record<string, string> = {
   en: "English", fr: "French", ar: "Arabic", krio: "Sierra Leonean Krio",
   es: "Spanish", pt: "Portuguese", zh: "Simplified Chinese", ha: "Hausa",
@@ -11,43 +11,64 @@ const LANG_NAMES: Record<string, string> = {
   rw: "Kinyarwanda",
 };
 
-export async function POST(req: Request) {
-  try {
-    const { texts, target } = await req.json();
+const MODEL = "gemini-2.0-flash";
+const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
-    // No work needed for English or empty input
+export async function POST(req: Request) {
+  let texts: string[] = [];
+  let target = "en";
+
+  try {
+    const body = await req.json();
+    texts = body.texts || [];
+    target = body.target || "en";
+
     if (!target || target === "en" || !Array.isArray(texts) || texts.length === 0) {
-      return Response.json({ translations: texts || [] });
+      return Response.json({ translations: texts });
+    }
+
+    const apiKey = process.env.GOOGLE_API_KEY;
+    if (!apiKey) {
+      console.error("GOOGLE_API_KEY missing");
+      return Response.json({ translations: texts });
     }
 
     const targetName = LANG_NAMES[target] || target;
-    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const numbered = texts.map((t, i) => `${i + 1}. ${t}`).join("\n");
 
-    // We send a numbered list and ask for a numbered list back.
-    // This keeps order stable and lets us translate many strings in one call.
-    const numbered = texts
-      .map((t: string, i: number) => `${i + 1}. ${t}`)
-      .join("\n");
+    const prompt =
+      `Translate each numbered line into ${targetName}. ` +
+      `Rules: Keep the EXACT same numbering. Translate ONLY the text, never the numbers. ` +
+      `Preserve emojis, punctuation, $ amounts, and names like "Pandie Foundation", "Pamela", "Joseph Allan Kamara", "Sierra Leone", "Freetown" exactly as written. ` +
+      `Do not add notes, explanations, or extra lines. Return only the numbered translations.\n\n` +
+      numbered;
 
-    const completion = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.2,
-      max_tokens: 4000,
-      messages: [
-        {
-          role: "system",
-          content:
-            `You are a professional translator. Translate each numbered line into ${targetName}. ` +
-            `Rules: Keep the EXACT same numbering. Translate ONLY the text, never the numbers. ` +
-            `Preserve emojis, punctuation, $ amounts, and names like "Pandie Foundation", "Pamela", ` +
-            `"Joseph Allan Kamara", "Sierra Leone", "Freetown" exactly as written. ` +
-            `Do not add notes, explanations, or extra lines. Return only the numbered translations.`,
+    const res = await fetch(`${ENDPOINT}?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 4000,
         },
-        { role: "user", content: numbered },
-      ],
+      }),
     });
 
-    const raw = completion.choices[0]?.message?.content || "";
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Gemini API error:", res.status, errText);
+      return Response.json({ translations: texts });
+    }
+
+    const data = await res.json();
+    const raw: string =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    if (!raw) {
+      console.error("Gemini returned empty");
+      return Response.json({ translations: texts });
+    }
 
     // Parse "1. xxx" lines back into an array, in order.
     const out: string[] = [...texts];
@@ -64,8 +85,6 @@ export async function POST(req: Request) {
     return Response.json({ translations: out });
   } catch (err) {
     console.error("Translate error:", err);
-    // On failure, return the original English so the page never breaks
-    const body = await req.clone().json().catch(() => ({ texts: [] }));
-    return Response.json({ translations: body.texts || [] });
+    return Response.json({ translations: texts });
   }
 }
