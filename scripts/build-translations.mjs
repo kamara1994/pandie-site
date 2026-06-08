@@ -7,52 +7,66 @@ const ROOT = join(__dirname, "..");
 const SRC = join(ROOT, "public", "translations", "en.json");
 const OUT_DIR = join(ROOT, "public", "translations");
 
-const LANG_CODES = {
-  fr: "fr-FR", ar: "ar-SA", krio: "kri",
-  es: "es-ES", pt: "pt-BR", zh: "zh-CN", ha: "ha-NG",
-  sw: "sw-KE", hi: "hi-IN", bn: "bn-BD", ru: "ru-RU", ja: "ja-JP",
-  ko: "ko-KR", de: "de-DE", it: "it-IT", tr: "tr-TR", vi: "vi-VN",
-  th: "th-TH", pl: "pl-PL", nl: "nl-NL", id: "id-ID", ms: "ms-MY",
-  fa: "fa-IR", yo: "yo-NG", ig: "ig-NG", am: "am-ET", so: "so-SO",
-  rw: "rw-RW",
+const LANG_NAMES = {
+  fr: "French", ar: "Arabic", krio: "Sierra Leonean Krio",
+  es: "Spanish", pt: "Portuguese", zh: "Simplified Chinese", ha: "Hausa",
+  sw: "Swahili", hi: "Hindi", bn: "Bengali", ru: "Russian", ja: "Japanese",
+  ko: "Korean", de: "German", it: "Italian", tr: "Turkish", vi: "Vietnamese",
+  th: "Thai", pl: "Polish", nl: "Dutch", id: "Indonesian", ms: "Malay",
+  fa: "Persian", yo: "Yoruba", ig: "Igbo", am: "Amharic", so: "Somali",
+  rw: "Kinyarwanda",
 };
+
+const MODEL = "gemini-2.5-flash";
+const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const BATCH_SIZE = 50;
+const DELAY_MS = 11000;
 
 async function fileExists(p) { try { await access(p); return true; } catch { return false; } }
 
-async function translateOne(text, targetCode) {
-  const placeholders = [
-    ["Pandie Foundation","__P1__"],["Pandie Grace Bangura","__P2__"],
-    ["Joseph Allan Kamara","__P3__"],["Sierra Leone","__P4__"],
-    ["Freetown","__P5__"],["Pamela","__P6__"],
-    ["Mohamed Salah","__P7__"],["Angelique Kidjo","__P8__"],
-  ];
-  let prepared = text;
-  for (const [name, ph] of placeholders) prepared = prepared.split(name).join(ph);
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(prepared)}&langpair=en|${targetCode}`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return text;
-    const data = await res.json();
-    let translated = data?.responseData?.translatedText || text;
-    if (translated.toUpperCase().includes("INVALID") || translated.toUpperCase().includes("QUOTA") || translated.toUpperCase().includes("MYMEMORY WARNING")) return text;
-    for (const [name, ph] of placeholders) translated = translated.split(ph).join(name);
-    return translated;
-  } catch { return text; }
-}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-async function translateBatch(strings, targetCode) {
-  const CONCURRENCY = 5;
-  const out = new Array(strings.length);
-  let cursor = 0;
-  async function worker() {
-    while (true) {
-      const i = cursor++;
-      if (i >= strings.length) return;
-      out[i] = await translateOne(strings[i], targetCode);
+async function translateBatch(strings, targetName, apiKey, attempt = 0) {
+  const numbered = strings.map((t, i) => `${i + 1}. ${t}`).join("\n");
+  const prompt = `Translate each numbered line into ${targetName}. Keep the EXACT same numbering. Translate ONLY the text. Preserve emojis, punctuation, $ amounts, and these names exactly: "Pandie Foundation", "Pamela", "Joseph Allan Kamara", "Pandie Grace Bangura", "Sierra Leone", "Freetown", "Mohamed Salah", "Angelique Kidjo", "Aminata", "Musa", "Hawa", "Mariama", "Ibrahim", "Kadiatu". No notes or explanations. Return only the numbered translations.\n\n${numbered}`;
+
+  try {
+    const res = await fetch(`${ENDPOINT}?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 8000 },
+      }),
+    });
+
+    if (res.status === 429) {
+      if (attempt >= 5) { console.log(" [gave up on batch, using English]"); return strings; }
+      const wait = 30000 * (attempt + 1);
+      console.log(` [rate-limited, waiting ${wait / 1000}s]`);
+      await sleep(wait);
+      return translateBatch(strings, targetName, apiKey, attempt + 1);
     }
+
+    if (!res.ok) { console.log(` [error ${res.status}, using English]`); return strings; }
+
+    const data = await res.json();
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    if (!raw) return strings;
+
+    const out = [...strings];
+    for (const line of raw.split("\n")) {
+      const m = line.match(/^\s*(\d+)\.\s*(.*)$/);
+      if (m) {
+        const idx = parseInt(m[1], 10) - 1;
+        if (idx >= 0 && idx < out.length && m[2].trim()) out[idx] = m[2].trim();
+      }
+    }
+    return out;
+  } catch (err) {
+    console.log(` [exception: ${err.message}]`);
+    return strings;
   }
-  await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
-  return out;
 }
 
 function collectStrings(node, out) {
@@ -73,29 +87,46 @@ function rebuild(node, map) {
 }
 
 async function main() {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) { console.error("Set GOOGLE_API_KEY env var. Get one at aistudio.google.com/app/apikey"); process.exit(1); }
   if (!(await fileExists(SRC))) { console.error("Source file missing: " + SRC); process.exit(1); }
+
   const source = JSON.parse(await readFile(SRC, "utf8"));
   await mkdir(OUT_DIR, { recursive: true });
   console.log("OK en (source)");
+
   const allStrings = [];
   collectStrings(source, allStrings);
   const unique = [...new Set(allStrings)];
   console.log("   " + unique.length + " unique strings per language");
-  const targets = Object.keys(LANG_CODES);
+  console.log("   batch size " + BATCH_SIZE + ", " + (DELAY_MS / 1000) + "s between requests (respects free tier)\n");
+
+  const targets = Object.keys(LANG_NAMES);
   const startTime = Date.now();
+
   for (const lang of targets) {
     const outPath = join(OUT_DIR, lang + ".json");
     if (await fileExists(outPath)) { console.log("OK " + lang + " (cached)"); continue; }
+
     const langStart = Date.now();
-    process.stdout.write("-> " + lang + "... ");
-    const translated = await translateBatch(unique, LANG_CODES[lang]);
+    process.stdout.write("-> " + lang + " (" + LANG_NAMES[lang] + ")");
     const map = new Map();
-    unique.forEach((s, i) => map.set(s, translated[i] || s));
+
+    for (let i = 0; i < unique.length; i += BATCH_SIZE) {
+      const slice = unique.slice(i, i + BATCH_SIZE);
+      const translated = await translateBatch(slice, LANG_NAMES[lang], apiKey);
+      slice.forEach((s, idx) => map.set(s, translated[idx] || s));
+      process.stdout.write(".");
+      if (i + BATCH_SIZE < unique.length) await sleep(DELAY_MS);
+    }
+
     const tree = rebuild(source, map);
     await writeFile(outPath, JSON.stringify(tree, null, 2), "utf8");
-    console.log("saved (" + ((Date.now() - langStart) / 1000).toFixed(1) + "s)");
+    console.log(" saved (" + ((Date.now() - langStart) / 1000).toFixed(1) + "s)");
+    await sleep(DELAY_MS);
   }
-  console.log("DONE in " + ((Date.now() - startTime) / 60000).toFixed(1) + " min.");
+
+  console.log("\nDONE in " + ((Date.now() - startTime) / 60000).toFixed(1) + " min.");
 }
 
-main().catch(err => { console.error("Translation build failed:", err); process.exit(0); });
+main().catch(err => { console.error("Build failed:", err); process.exit(1); });
