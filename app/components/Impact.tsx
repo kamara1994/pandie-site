@@ -44,7 +44,7 @@ export default function Impact() {
   const { ref, inView } = useInView();
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-[#0a1a10] py-28 xl:py-36">
+    <section ref={ref} className="relative overflow-hidden bg-[#0a1a10] py-16 sm:py-20 lg:py-28 xl:py-36">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#c9962a]/20 to-transparent" />
         <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#c9962a]/20 to-transparent" />
@@ -54,21 +54,21 @@ export default function Impact() {
       </div>
       <div className="relative w-full px-6 sm:px-12 lg:px-20 xl:px-28">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.36em] text-[#c9962a]">
-            <span className="h-px w-8 bg-[#c9962a]" />{t.impact.badge}<span className="h-px w-8 bg-[#c9962a]" />
+          <span className="inline-flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.32em] text-[#c9962a] sm:text-[11px] sm:tracking-[0.36em]">
+            <span className="h-px w-6 bg-[#c9962a] sm:w-8" />{t.impact.badge}<span className="h-px w-6 bg-[#c9962a] sm:w-8" />
           </span>
-          <h2 className="mt-6 font-heading text-[clamp(38px,4.5vw,64px)] font-semibold leading-[1.1] text-white">
+          <h2 className="mt-5 font-heading text-[clamp(30px,6vw,64px)] font-semibold leading-[1.12] text-white sm:mt-6 sm:leading-[1.1]">
             {t.impact.heading1}<br /><em className="italic text-[#e8b84b]">{t.impact.heading2}</em>
           </h2>
-          <p className="mt-6 text-lg leading-8 text-white/55">{t.impact.body}</p>
+          <p className="mt-5 text-[16px] leading-7 text-white/55 sm:mt-6 sm:text-lg sm:leading-8">{t.impact.body}</p>
         </div>
-        <div className="mt-20 grid gap-px bg-white/5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid grid-cols-2 gap-px bg-white/5 sm:mt-16 lg:mt-20 lg:grid-cols-4">
           {t.impact.s.map(({ label, sub }, i) => (
             <div key={i}
-              className="group relative flex flex-col items-center justify-center bg-[#0a1a10] px-8 py-14 text-center transition-all duration-500 hover:bg-[#0d2016]"
+              className="group relative flex flex-col items-center justify-center bg-[#0a1a10] px-5 py-10 text-center transition-all duration-500 hover:bg-[#0d2016] sm:px-8 sm:py-14"
               style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(30px)", transitionDelay: `${i * 120}ms` }}>
               <div className="absolute inset-x-0 top-0 h-[2px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100" style={{ background: statNums[i].color }} />
-              <div className="font-heading text-[clamp(52px,5vw,80px)] font-semibold leading-none" style={{ color: statNums[i].color, textShadow:`0 0 60px ${statNums[i].color}28` }}>
+              <div className="font-heading text-[clamp(44px,9vw,80px)] font-semibold leading-none" style={{ color: statNums[i].color, textShadow:`0 0 60px ${statNums[i].color}28` }}>
                 <CountUp target={statNums[i].target} suffix={statNums[i].suffix} start={inView} duration={1800 + i * 200} />
               </div>
               <p className="mt-4 text-[12px] font-semibold uppercase tracking-[0.24em] text-white/85">{label}</p>
@@ -76,8 +76,8 @@ export default function Impact() {
             </div>
           ))}
         </div>
-        <div className="mx-auto mt-20 max-w-3xl border-l-2 border-[#c9962a] py-2 pl-10">
-          <p className="font-heading text-[1.6rem] font-light italic leading-[1.5] text-white/80">{t.impact.quote}</p>
+        <div className="mx-auto mt-14 max-w-3xl border-l-2 border-[#c9962a] py-2 pl-6 sm:mt-20 sm:pl-10">
+          <p className="font-heading text-[1.35rem] font-light italic leading-[1.5] text-white/80 sm:text-[1.6rem]">{t.impact.quote}</p>
           <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#c9962a]">{t.impact.quoteAuthor}</p>
         </div>
       </div>

@@ -29,19 +29,19 @@ export default function FeatureRow() {
   });
 
   return (
-    <section className="bg-[#f4f1ea] py-20 px-6 lg:px-20 xl:px-28">
+    <section className="bg-[#f4f1ea] px-6 py-16 sm:py-20 lg:px-20 xl:px-28">
       <div ref={ref} className="mx-auto max-w-7xl">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1fr_420px] items-start">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1fr_420px] lg:items-start">
 
           <article className="group" style={reveal(0)}>
-            <div className="relative overflow-hidden mb-6" style={{ aspectRatio:"4/3" }}>
-              <Image src="/feature-story.jpg" alt={t.feature.story1title} fill
+            <div className="relative mb-6 overflow-hidden" style={{ aspectRatio:"4/3" }}>
+              <Image src="/feature-story.jpg" alt={t.feature.story1title} fill sizes="(max-width:1024px) 100vw, 33vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                 placeholder="blur" blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIABADASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgUEB//EACQQAAIBBAICAwEAAAAAAAAAAAECAwQREiExBRNBUWH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AmqmvI7bVR215ijAOpHWJvhY790WD4qFbQtdPLbyWkE1uSZjKpJI" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/55 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
-            <h3 className="font-heading text-[clamp(24px,2.5vw,32px)] font-semibold text-[#214c34] leading-tight mb-4">{t.feature.story1title}</h3>
-            <p className="text-[15px] leading-7 text-[#626a67] mb-6">{t.feature.story1body}</p>
+            <h3 className="mb-4 font-heading text-[clamp(24px,5vw,32px)] font-semibold leading-tight text-[#214c34]">{t.feature.story1title}</h3>
+            <p className="mb-6 text-[15px] leading-7 text-[#626a67]">{t.feature.story1body}</p>
             <Link href="/stories"
               className="group relative inline-block overflow-hidden bg-[#c9962a] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_6px_22px_rgba(201,150,42,0.45)]">
               <span className="relative z-10">{t.feature.story1cta}</span>
@@ -50,14 +50,14 @@ export default function FeatureRow() {
           </article>
 
           <article className="group" style={reveal(140)}>
-            <div className="relative overflow-hidden mb-6" style={{ aspectRatio:"4/3" }}>
-              <Image src="/feature-program.jpg" alt={t.feature.story2title} fill
+            <div className="relative mb-6 overflow-hidden" style={{ aspectRatio:"4/3" }}>
+              <Image src="/feature-program.jpg" alt={t.feature.story2title} fill sizes="(max-width:1024px) 100vw, 33vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                 placeholder="blur" blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIABADASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgUEB//EACQQAAIBBAICAwEAAAAAAAAAAAECAwQREiExBRNBUWH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AmqmvI7bVR215ijAOpHWJvhY790WD4qFbQtdPLbyWkE1uSZjKpJI" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/55 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
-            <h3 className="font-heading text-[clamp(24px,2.5vw,32px)] font-semibold text-[#214c34] leading-tight mb-4">{t.feature.story2title}</h3>
-            <p className="text-[15px] leading-7 text-[#626a67] mb-6">{t.feature.story2body}</p>
+            <h3 className="mb-4 font-heading text-[clamp(24px,5vw,32px)] font-semibold leading-tight text-[#214c34]">{t.feature.story2title}</h3>
+            <p className="mb-6 text-[15px] leading-7 text-[#626a67]">{t.feature.story2body}</p>
             <Link href="/stories"
               className="group relative inline-block overflow-hidden bg-[#c9962a] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_6px_22px_rgba(201,150,42,0.45)]">
               <span className="relative z-10">{t.feature.story2cta}</span>
@@ -65,10 +65,10 @@ export default function FeatureRow() {
             </Link>
           </article>
 
-          <aside className="lg:pl-8 lg:border-l border-[#1a2e1f]/10" style={reveal(280,"X",1)}>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#626a67] mb-4">{t.feature.sideLabel}</p>
-            <h3 className="font-heading text-[clamp(28px,3vw,42px)] font-semibold text-[#214c34] leading-tight mb-5">{t.feature.sideTitle}</h3>
-            <p className="text-[15px] leading-7 text-[#626a67] mb-8">{t.feature.sideBody}</p>
+          <aside className="border-t border-[#1a2e1f]/10 pt-8 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0" style={reveal(280,"X",1)}>
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.28em] text-[#626a67]">{t.feature.sideLabel}</p>
+            <h3 className="mb-5 font-heading text-[clamp(28px,6vw,42px)] font-semibold leading-tight text-[#214c34]">{t.feature.sideTitle}</h3>
+            <p className="mb-8 text-[15px] leading-7 text-[#626a67]">{t.feature.sideBody}</p>
             <Link href="/programs"
               className="group relative inline-block overflow-hidden bg-[#c9962a] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_6px_22px_rgba(201,150,42,0.45)]">
               <span className="relative z-10">{t.feature.sideCta}</span>
