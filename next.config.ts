@@ -21,6 +21,7 @@ const csp = [
   "connect-src 'self' https://api.stripe.com https://*.paypal.com https://*.stripe.com",
   "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.paypal.com",
   "upgrade-insecure-requests",
+  "report-uri /api/csp-report",
 ].join("; ");
 
 // These headers are safe to enforce immediately — they cannot change how the
@@ -33,6 +34,10 @@ const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+  // Isolate our browsing context from windows we open / that open us (mitigates
+  // tab-napping and cross-window XS-Leaks). "-allow-popups" keeps redirect-based
+  // payment popups (PayPal) working.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
 ];
 
 const nextConfig: NextConfig = {
