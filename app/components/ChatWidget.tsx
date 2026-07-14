@@ -92,13 +92,16 @@ export default function ChatWidget() {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping, leadStep]);
   useEffect(() => { if (open && view === "chat") setTimeout(() => inputRef.current?.focus(), 300); }, [open, view]);
 
-  // Log analytics
+  // Forward the question to the team webhook. The API requires an identified
+  // visitor (name + valid email), so this only fires after the lead form was
+  // submitted — anonymous questions would just be rejected with a 400.
   const logAnalytics = async (question: string) => {
+    if (!leadCaptured || !leadName.trim() || !leadEmail.includes("@")) return;
     try {
       await fetch("/api/chat-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: question, lang, timestamp: new Date().toISOString() }),
+        body: JSON.stringify({ name: leadName, email: leadEmail, message: question }),
       });
     } catch { /* silent */ }
   };
@@ -155,11 +158,15 @@ export default function ChatWidget() {
     if (!leadName.trim() || !leadEmail.trim() || !leadEmail.includes("@")) return;
     setLeadCaptured(true);
     setLeadStep("done");
-    // Log lead
+    // Log lead — the API requires a non-empty message alongside name/email.
     fetch("/api/chat-message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "lead", name: leadName, email: leadEmail, lang, timestamp: new Date().toISOString() }),
+      body: JSON.stringify({
+        name: leadName,
+        email: leadEmail,
+        message: `New lead from the Pamela chat widget (site language: ${lang}).`,
+      }),
     }).catch(() => {});
   };
 
