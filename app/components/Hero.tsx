@@ -1,12 +1,20 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLang } from "@/app/context/LanguageContext";
+
+function prefersReducedMotion() {
+  return typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+}
 
 function useCountUp(target: number, duration = 2000, start = false) {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (!start) return;
+    // Respect reduced-motion: show the final number immediately.
+    if (prefersReducedMotion()) { setCount(target); return; }
     let startTime: number | null = null;
     const step = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
@@ -37,24 +45,21 @@ export default function Hero() {
 
   return (
     <section className="relative w-full overflow-hidden bg-[#0a1a10]" style={{ minHeight: "100svh" }}>
-      {/* Phone: show the WHOLE photo (contain). Desktop: full-bleed (cover). */}
-      <style>{`
-        .pf-hero-slide {
-          background-size: contain;
-          background-position: center;
-          background-repeat: no-repeat;
-        }
-        @media (min-width: 1024px) {
-          .pf-hero-slide {
-            background-size: cover;
-            background-position: center;
-          }
-        }
-      `}</style>
-
+      {/* Optimized, full-bleed hero slides. First slide is priority-preloaded
+          as the LCP image; the rest crossfade. next/image emits AVIF/WebP +
+          responsive srcset automatically. */}
       {slides.map((src, i) => (
-        <div key={src} className="pf-hero-slide absolute inset-0 transition-opacity"
-          style={{ opacity: slide === i ? 1 : 0, transitionDuration: "1500ms", backgroundImage: `url(${src})` }} />
+        <div key={src} className="absolute inset-0 transition-opacity"
+          style={{ opacity: slide === i ? 1 : 0, transitionDuration: "1500ms" }}>
+          <Image
+            src={src}
+            alt=""
+            fill
+            priority={i === 0}
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+        </div>
       ))}
 
       {/* On phone the overlay is lighter so the full photo stays visible; on desktop it's the original strong gradient */}
@@ -125,11 +130,14 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="absolute bottom-6 right-5 z-20 flex gap-2 sm:bottom-10 sm:right-8">
+      <div className="absolute bottom-4 right-3 z-20 flex sm:bottom-8 sm:right-6">
         {slides.map((_, i) => (
-          <button key={i} onClick={() => setSlide(i)} aria-label={`Slide ${i + 1}`}
-            className="h-[2px] transition-all duration-500"
-            style={{ width: slide === i ? "28px" : "12px", background: slide === i ? "#c9962a" : "rgba(255,255,255,0.3)" }} />
+          <button key={i} onClick={() => setSlide(i)} aria-label={`Go to slide ${i + 1}`}
+            aria-current={slide === i}
+            className="flex h-11 w-8 items-center justify-center">
+            <span className="block h-[3px] rounded-full transition-all duration-500"
+              style={{ width: slide === i ? "28px" : "12px", background: slide === i ? "#c9962a" : "rgba(255,255,255,0.4)" }} />
+          </button>
         ))}
       </div>
       <div className="absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 flex-col items-center gap-2 sm:bottom-8 lg:flex">

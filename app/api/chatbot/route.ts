@@ -1,4 +1,55 @@
 import Groq from "groq-sdk";
+import Anthropic from "@anthropic-ai/sdk";
+import { guard } from "@/app/lib/apiGuard";
+
+// Prefer Claude when a key is configured; otherwise fall back to Groq (llama).
+// This upgrades answer quality the moment ANTHROPIC_API_KEY is set, without
+// breaking deployments that only have GROQ_API_KEY.
+const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL || "claude-opus-4-8";
+
+function streamText(pump: (enqueue: (t: string) => void) => Promise<void>): Response {
+  const encoder = new TextEncoder();
+  const readable = new ReadableStream({
+    async start(controller) {
+      try {
+        await pump((t) => controller.enqueue(encoder.encode(t)));
+      } catch (err) {
+        console.error("Chatbot stream error:", err);
+      } finally {
+        controller.close();
+      }
+    },
+  });
+  return new Response(readable, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+}
+
+// Abuse limits — keep the chatbot a chatbot, not a free LLM proxy.
+const MAX_MESSAGES = 16;      // conversation turns we will forward
+const MAX_CONTENT_CHARS = 1200; // per message
+const MAX_TOTAL_CHARS = 8000;   // whole conversation
+
+type ChatMessage = { role: "user" | "assistant"; content: string };
+
+// Accept ONLY user/assistant roles from the client — never a client-supplied
+// system role (that is how the "you are Pamela" instructions get overridden).
+function sanitizeMessages(raw: unknown): ChatMessage[] | null {
+  if (!Array.isArray(raw) || raw.length === 0) return null;
+  const trimmed = raw.slice(-MAX_MESSAGES);
+  const out: ChatMessage[] = [];
+  let total = 0;
+  for (const m of trimmed) {
+    if (!m || typeof m !== "object") return null;
+    const role = (m as { role?: unknown }).role;
+    const content = (m as { content?: unknown }).content;
+    if (role !== "user" && role !== "assistant") return null;
+    if (typeof content !== "string") return null;
+    const clipped = content.slice(0, MAX_CONTENT_CHARS);
+    total += clipped.length;
+    if (total > MAX_TOTAL_CHARS) break;
+    out.push({ role, content: clipped });
+  }
+  return out.length ? out : null;
+}
 
 const LANG_NAMES: Record<string, string> = {
   en: "English", fr: "French", ar: "Arabic", krio: "Sierra Leonean Krio",
@@ -49,41 +100,59 @@ Impact: $10 feeds a child for one week | $30/month sponsors a child's education
 - Speak as Pamela, not as "an AI" — you are the foundation's digital assistant`;
 
 export async function POST(req: Request) {
+  // Origin check + 32KB body cap + 20 requests/min per IP.
+  const blocked = guard(req, { bucket: "chatbot", limit: 20, windowMs: 60_000, maxBytes: 32 * 1024 });
+  if (blocked) return blocked;
+
   try {
-    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const { messages, lang } = await req.json();
+    const { messages: rawMessages, lang } = await req.json();
+
+    const messages = sanitizeMessages(rawMessages);
+    if (!messages) {
+      return new Response(
+        JSON.stringify({ error: "Invalid message format." }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
     const langName = LANG_NAMES[lang] || "English";
     const langInstruction =
       lang && lang !== "en"
         ? `\n\n== LANGUAGE ==\nALWAYS reply ONLY in ${langName}. The visitor's site language is ${langName}. Keep "Pandie Foundation", "Pamela", and the email address exactly as written, but everything else must be in ${langName}.`
         : "";
+    const system = SYSTEM + langInstruction;
 
-    const stream = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      max_tokens: 600,
-      stream: true,
-      messages: [
-        { role: "system", content: SYSTEM + langInstruction },
-        ...messages,
-      ],
-    });
-
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        for await (const chunk of stream) {
-          const text = chunk.choices[0]?.delta?.content || "";
-          if (text) {
-            controller.enqueue(encoder.encode(text));
+    // ── Claude (preferred) ──────────────────────────────────────────
+    if (process.env.ANTHROPIC_API_KEY) {
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      return streamText(async (enqueue) => {
+        const stream = anthropic.messages.stream({
+          model: CLAUDE_MODEL,
+          max_tokens: 600,
+          system,
+          messages, // already restricted to user/assistant roles
+        });
+        for await (const event of stream) {
+          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+            enqueue(event.delta.text);
           }
         }
-        controller.close();
-      },
-    });
+      });
+    }
 
-    return new Response(readable, {
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    // ── Groq (fallback) ─────────────────────────────────────────────
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    return streamText(async (enqueue) => {
+      const stream = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 600,
+        stream: true,
+        messages: [{ role: "system", content: system }, ...messages],
+      });
+      for await (const chunk of stream) {
+        const text = chunk.choices[0]?.delta?.content || "";
+        if (text) enqueue(text);
+      }
     });
   } catch (err) {
     console.error("Chatbot error:", err);
