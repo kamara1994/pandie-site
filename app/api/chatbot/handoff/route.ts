@@ -1,31 +1,18 @@
 import { NextResponse } from "next/server";
-import { guard, isEmail, clampStr } from "@/app/lib/apiGuard";
-
-const MAX_TRANSCRIPT_MESSAGES = 40;
 
 export async function POST(req: Request) {
-  // Origin check + 32KB cap + 5 handoffs/min per IP.
-  const blocked = guard(req, { bucket: "handoff", limit: 5, windowMs: 60_000, maxBytes: 32 * 1024 });
-  if (blocked) return blocked;
-
   try {
-    const body = await req.json();
+    const { name, email, summary, messages } = await req.json();
 
-    const name = clampStr(body?.name, 120);
-    const email = body?.email;
-    const summary = clampStr(body?.summary, 1000) || "Visitor requested to speak with a human.";
-
-    if (!name || !isEmail(email)) {
-      return NextResponse.json({ error: "A name and valid email are required." }, { status: 400 });
+    if (!name || !email) {
+      return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
     }
 
-    const rawMessages = Array.isArray(body?.messages) ? body.messages : [];
-    const transcript = rawMessages
-      .slice(-MAX_TRANSCRIPT_MESSAGES)
-      .filter((m: unknown): m is { role: string; content: string } =>
-        !!m && typeof m === "object" &&
-        typeof (m as { content?: unknown }).content === "string")
-      .map((m: { role: string; content: string }) => `${m.role === "user" ? "Visitor" : "Pamela (AI)"}: ${clampStr(m.content, 2000)}`)
+    const webhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
+
+    // Build a readable conversation transcript
+    const transcript = (messages as { role: string; content: string }[])
+      .map(m => `${m.role === "user" ? "Visitor" : "Pamela (AI)"}: ${m.content}`)
       .join("\n\n");
 
     const payload = {
@@ -34,11 +21,11 @@ export async function POST(req: Request) {
       submittedAt: new Date().toISOString(),
       name,
       email,
-      summary,
+      summary: summary || "Visitor requested to speak with a human.",
       transcript,
     };
 
-    const webhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
+    // Forward to n8n if configured
     if (webhookUrl) {
       await fetch(webhookUrl, {
         method: "POST",
@@ -46,7 +33,8 @@ export async function POST(req: Request) {
         body: JSON.stringify(payload),
       });
     } else {
-      console.error("[handoff] N8N_CHAT_WEBHOOK_URL is not configured");
+      // Log for debugging if webhook not set up
+      console.log("[Human Handoff Request]", payload);
     }
 
     return NextResponse.json({ success: true });

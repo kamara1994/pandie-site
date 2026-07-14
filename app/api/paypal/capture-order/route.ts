@@ -2,13 +2,8 @@ import { NextResponse } from "next/server";
 import { getPayPalAccessToken, PAYPAL_BASE } from "@/app/lib/paypal";
 import { upsertDonation } from "@/app/lib/supabase";
 import { toMinorUnit } from "@/app/lib/currency";
-import { guard } from "@/app/lib/apiGuard";
 
 export async function POST(request: Request) {
-  // Origin check + 16KB cap + 20 capture attempts/min per IP.
-  const blocked = guard(request, { bucket: "paypal-capture", limit: 20, windowMs: 60_000, maxBytes: 16 * 1024 });
-  if (blocked) return blocked;
-
   if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
     return NextResponse.json({ error: "PayPal not configured." }, { status: 503 });
   }
@@ -57,8 +52,8 @@ export async function POST(request: Request) {
   if (!res.ok || capture.status !== "COMPLETED") {
     console.error("[PayPal Capture Error]", capture);
     return NextResponse.json(
-      { error: "Payment capture failed. Please try again." },
-      { status: 502 },
+      { error: capture?.message ?? "Payment capture failed. Please try again." },
+      { status: 500 },
     );
   }
 
@@ -93,12 +88,12 @@ export async function POST(request: Request) {
     paid_at: paidAt,
   });
 
-  // Log non-identifying references only — no donor PII in server logs.
   console.log("[PANDIE PAYPAL CAPTURED]", {
     orderId,
     transactionId,
     capturedAmount,
     capturedCurrency,
+    donorEmail: anonymous ? "anonymous" : donorEmail,
     paidAt,
   });
 

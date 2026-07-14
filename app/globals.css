@@ -1,111 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
 @import "tailwindcss";
-
-/* ── Design tokens ──────────────────────────────────────────────────────────
-   One source of truth for the brand palette. Fonts are injected by next/font
-   (see layout.tsx) as --font-heading / --font-body, self-hosted — no more
-   render-blocking Google Fonts @import. */
-@theme {
-  --color-cream: #f4f1ea;
-  --color-cream-deep: #ece7db;
-
-  --color-forest-950: #081410;
-  --color-forest-900: #0a1a10;
-  --color-forest-800: #0f2418;
-  --color-forest-700: #12301f;
-  --color-forest-600: #1a3826;
-  --color-forest-500: #214c34;
-
-  --color-gold-300: #f5d070;
-  --color-gold-400: #e8b84b;
-  --color-gold-500: #c9962a;
-  --color-gold-600: #b07f1f;
-
-  --color-ink: #14261a;
-  --color-muted: #5f6663;
-
-  --font-heading: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
-  --font-body: var(--font-outfit), "Outfit", system-ui, sans-serif;
-
-  --shadow-soft: 0 2px 10px rgba(10, 26, 16, 0.06);
-  --shadow-card: 0 14px 44px rgba(10, 26, 16, 0.12);
-  --shadow-gold: 0 10px 34px rgba(201, 150, 42, 0.4);
-}
 
 :root {
   --background: #f4f1ea;
-  --foreground: #14261a;
+  --foreground: #1a2e1f;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
 
 html, body {
   width: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body);
+  font-family: 'Outfit', system-ui, sans-serif;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  line-height: 1.12;
+  font-family: 'Cormorant Garamond', serif;
+  line-height: 1.15;
   margin: 0;
-  letter-spacing: -0.01em;
 }
 
-.font-heading { font-family: var(--font-heading); }
-.font-body { font-family: var(--font-body); }
+.font-heading { font-family: 'Cormorant Garamond', serif; }
+.font-body { font-family: 'Outfit', sans-serif; }
 
 img, picture, video, canvas, svg { display: block; max-width: 100%; height: auto; }
-
-/* ── Accessibility ──────────────────────────────────────────────────────── */
-
-/* Visible, on-brand keyboard focus for every interactive element. */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid var(--color-gold-500);
-  outline-offset: 2px;
-  border-radius: 3px;
-}
-
-/* Skip-to-content link — visible only when focused. */
-.skip-link {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, -120%);
-  z-index: 200;
-  background: var(--color-forest-900);
-  color: #fff;
-  padding: 0.75rem 1.25rem;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 0 0 8px 8px;
-  transition: transform 0.2s ease;
-}
-.skip-link:focus {
-  transform: translate(-50%, 0);
-  outline: 2px solid var(--color-gold-500);
-}
-
-/* ── Motion ─────────────────────────────────────────────────────────────── */
 
 @keyframes fall {
   0%   { transform: translateY(-120px) rotate(0deg); opacity: 0; }
@@ -113,6 +42,7 @@ textarea:focus-visible,
   90%  { opacity: 0.2; }
   100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
 }
+
 .animate-fall {
   animation-name: fall;
   animation-timing-function: linear;
@@ -123,53 +53,47 @@ textarea:focus-visible,
 
 .duration-1500 { transition-duration: 1500ms; }
 
+::selection { background: #c9962a; color: #0a1a10; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f4f1ea; }
+::-webkit-scrollbar-thumb { background: #c9962a50; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #c9962a; }
+
+/* Word-by-word headline reveal */
 @keyframes wordReveal {
-  from { opacity: 0; transform: translateY(22px); filter: blur(5px); }
-  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+  from { opacity:0; transform:translateY(22px); filter:blur(5px); }
+  to   { opacity:1; transform:translateY(0);    filter:blur(0);   }
 }
 
+/* Travelling scroll-cue dot */
 @keyframes scrollCue {
-  0%   { transform: translateY(-200%); opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { opacity: 1; }
-  100% { transform: translateY(350%);  opacity: 0; }
+  0%   { transform:translateY(-200%); opacity:0; }
+  20%  { opacity:1; }
+  80%  { opacity:1; }
+  100% { transform:translateY(350%);  opacity:0; }
 }
 .animate-scrollCue { animation: scrollCue 1.8s ease-in-out infinite; }
 
-@keyframes shimmerSweep {
-  to { transform: translateX(100%); }
+/* ── Global gold CTA shimmer sweep ──
+   Add class  gold-cta  to any gold button / link.
+   The element must also have  overflow-hidden  (or add it via Tailwind). */
+.gold-cta {
+  position: relative !important;
+  overflow: hidden !important;
 }
-
-/* Respect users who ask for less motion — disables the pervasive reveals,
-   count-ups (via CSS), parallax, shimmer, and confetti. */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  html { scroll-behavior: auto; }
-}
-
-/* ── Brand flourishes ───────────────────────────────────────────────────── */
-
-::selection { background: var(--color-gold-500); color: var(--color-forest-900); }
-
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--color-cream); }
-::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-gold-500) 50%, transparent); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-gold-500); }
-
-/* Gold CTA shimmer sweep — add class `gold-cta` to any gold button/link. */
-.gold-cta { position: relative; overflow: hidden; }
 .gold-cta::after {
-  content: "";
+  content: '';
   position: absolute; inset: 0; z-index: 10;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.22) 50%, transparent 60%);
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.22) 50%, transparent 60%);
   transform: translateX(-100%);
   transition: transform 0.45s ease;
   pointer-events: none;
 }
-.gold-cta:hover::after,
-.gold-cta:focus-visible::after { transform: translateX(100%); }
+.gold-cta:hover::after { transform: translateX(100%); }
+
+/* Smooth image fade-in on load */
+img { transition: opacity 0.4s ease; }
+img[data-loaded="false"] { opacity: 0; }
+img[data-loaded="true"]  { opacity: 1; }
+

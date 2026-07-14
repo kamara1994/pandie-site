@@ -2,13 +2,8 @@ import { NextResponse } from "next/server";
 import { getPayPalAccessToken, PAYPAL_BASE, PAYPAL_SUPPORTED_CURRENCIES } from "@/app/lib/paypal";
 import { upsertDonation } from "@/app/lib/supabase";
 import { toMinorUnit } from "@/app/lib/currency";
-import { guard } from "@/app/lib/apiGuard";
 
 export async function POST(request: Request) {
-  // Origin check + 16KB cap + 15 order attempts/min per IP.
-  const blocked = guard(request, { bucket: "paypal-order", limit: 15, windowMs: 60_000, maxBytes: 16 * 1024 });
-  if (blocked) return blocked;
-
   if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
     return NextResponse.json({ error: "PayPal not configured." }, { status: 503 });
   }
@@ -34,26 +29,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Valid email required for donation receipt." }, { status: 400 });
   }
 
-  // Reject unsupported currencies instead of silently charging the same
-  // numeric value in USD (e.g. 5000 JPY must not become 5000 USD).
+  // Fall back to USD for currencies PayPal doesn't support
   const curr = (typeof currency === "string" ? currency : "USD").toUpperCase();
-  if (!PAYPAL_SUPPORTED_CURRENCIES.has(curr)) {
-    return NextResponse.json(
-      { error: `${curr} is not supported by PayPal. Please choose USD or another supported currency, or pay by card.` },
-      { status: 400 },
-    );
-  }
-  const orderCurrency = curr;
+  const orderCurrency = PAYPAL_SUPPORTED_CURRENCIES.has(curr) ? curr : "USD";
 
   // PayPal requires exactly 2 decimal places; JPY-like currencies use integers
   const JPY_LIKE = new Set(["JPY", "TWD", "HUF"]);
   const valueStr = JPY_LIKE.has(orderCurrency)
     ? String(Math.round(amount))
     : amount.toFixed(2);
-
-  const fwdHost = request.headers.get("x-forwarded-host") || request.headers.get("host");
-  const fwdProto = request.headers.get("x-forwarded-proto") || "https";
-  const siteUrl = fwdHost ? `${fwdProto}://${fwdHost}` : "https://pandiefoundation.org";
 
   let accessToken: string;
   try {
@@ -83,8 +67,8 @@ export async function POST(request: Request) {
       application_context: {
         brand_name: "Pandie Foundation",
         user_action: "PAY_NOW",
-        return_url: `${siteUrl}/donate/success`,
-        cancel_url: `${siteUrl}/donate/cancel`,
+        return_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/donate/success`,
+        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/donate/cancel`,
       },
     }),
     cache: "no-store",
@@ -95,8 +79,8 @@ export async function POST(request: Request) {
   if (!res.ok) {
     console.error("[PayPal Create Order Error]", order);
     return NextResponse.json(
-      { error: "We couldn't start your PayPal donation right now. Please try again." },
-      { status: 502 },
+      { error: order?.message ?? "Failed to create PayPal order." },
+      { status: 500 },
     );
   }
 

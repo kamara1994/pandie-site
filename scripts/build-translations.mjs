@@ -88,21 +88,8 @@ function rebuild(node, map) {
 
 async function main() {
   const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) { console.error("Set GOOGLE_API_KEY env var. Get one at aistudio.google.com/app/apikey"); process.exit(1); }
   if (!(await fileExists(SRC))) { console.error("Source file missing: " + SRC); process.exit(1); }
-  if (!apiKey) {
-    // No key: only proceed if every language file already exists (pre-built).
-    // Otherwise fail so we never ship a half-translated build.
-    const missing = [];
-    for (const lang of Object.keys(LANG_NAMES)) {
-      if (!(await fileExists(join(OUT_DIR, lang + ".json")))) missing.push(lang);
-    }
-    if (missing.length === 0) {
-      console.log("No GOOGLE_API_KEY set — using existing pre-built translations.");
-      return;
-    }
-    console.error(`Set GOOGLE_API_KEY to build missing translations: ${missing.join(", ")}`);
-    process.exit(1);
-  }
 
   const source = JSON.parse(await readFile(SRC, "utf8"));
   await mkdir(OUT_DIR, { recursive: true });

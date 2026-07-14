@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/app/context/LanguageContext";
 
@@ -18,6 +17,7 @@ export default function ChatWidget() {
   const [isTyping, setIsTyping]   = useState(false);
   const [showTooltip, setShowTooltip]   = useState(false);
   const [hasGreeted, setHasGreeted]     = useState(false);
+  const [donatePopup, setDonatePopup]   = useState(false);
   const [prevLang, setPrevLang]         = useState(lang);
 
   // Lead capture
@@ -192,7 +192,7 @@ export default function ChatWidget() {
     <>
       {/* Tooltip */}
       {showTooltip && !open && (
-        <div className="fixed bottom-40 right-5 z-[99] max-w-[200px] animate-bounce-soft lg:bottom-24">
+        <div className="fixed bottom-24 right-5 z-[99] max-w-[200px] animate-bounce-soft">
           <div className="relative rounded-2xl rounded-br-sm bg-[#0a1a10] px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c9962a]/60 to-transparent rounded-t-2xl" />
             <p className="text-[13px] font-semibold text-white">Got questions? 👋</p>
@@ -204,7 +204,7 @@ export default function ChatWidget() {
 
       {/* Floating button */}
       <button type="button" onClick={() => { setOpen(p => !p); setShowTooltip(false); }}
-        aria-label="Chat with Pamela" className="fixed bottom-24 right-5 z-[100] group lg:bottom-5">
+        aria-label="Chat with Pamela" className="fixed bottom-5 right-5 z-[100] group">
         {!open && (
           <>
             <span className="absolute inset-0 rounded-full bg-[#c9962a]/20 animate-ping" style={{ animationDuration: "2.2s" }} />
@@ -229,7 +229,7 @@ export default function ChatWidget() {
       </button>
 
       {/* Chat panel */}
-      <div className={`fixed bottom-[104px] right-5 z-[100] w-[92vw] max-w-[380px] transition-all duration-400 lg:bottom-[88px] ${
+      <div className={`fixed bottom-[88px] right-5 z-[100] w-[92vw] max-w-[380px] transition-all duration-400 ${
         open ? "pointer-events-auto translate-y-0 opacity-100 scale-100" : "pointer-events-none translate-y-6 opacity-0 scale-95"
       }`}>
         <div className="rounded-2xl p-px" style={{
@@ -372,15 +372,28 @@ export default function ChatWidget() {
                   </div>
                 )}
 
-                {/* Donate button — links to the live donation flow */}
+                {/* Donate popup */}
+                {donatePopup && (
+                  <div className="mx-4 mb-2 rounded-xl border border-[#c9962a]/30 bg-[#0f2418] px-4 py-3 text-center">
+                    <p className="text-[13px] font-bold text-[#c9962a]">🔒 Coming Soon!</p>
+                    <p className="mt-1 text-[12px] text-white/60 leading-relaxed">
+                      Online donations are launching soon! To donate now, email us at{" "}
+                      <a href="mailto:info@pandiefoundation.org" className="text-[#c9962a] underline">
+                        info@pandiefoundation.org
+                      </a>
+                    </p>
+                    <button onClick={() => setDonatePopup(false)} className="mt-2 text-[11px] text-white/30 hover:text-white">Dismiss</button>
+                  </div>
+                )}
+
+                {/* Donate button */}
                 <div className="shrink-0 px-4 pb-2">
-                  <Link
-                    href="/donate"
-                    onClick={() => setOpen(false)}
-                    className="gold-cta w-full rounded-xl bg-[#c9962a] py-2.5 text-[12px] font-bold text-[#0a1a10] transition hover:bg-[#e8b84b] flex items-center justify-center gap-2"
+                  <button
+                    onClick={() => setDonatePopup(true)}
+                    className="w-full rounded-xl border border-[#c9962a]/40 bg-[#c9962a]/10 py-2.5 text-[12px] font-bold text-[#c9962a] transition hover:bg-[#c9962a]/20 flex items-center justify-center gap-2"
                   >
-                    <span>💛</span> {t.chat.donateBtn}
-                  </Link>
+                    <span>🔒</span> {t.chat.donateBtn} <span className="text-[10px] opacity-60">(Coming Soon)</span>
+                  </button>
                 </div>
 
                 {/* Input bar */}

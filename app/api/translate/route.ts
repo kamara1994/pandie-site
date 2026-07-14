@@ -1,7 +1,5 @@
-// Translate route using Google Gemini.
+// Translate route using Google Gemini (free tier, no rate limit issue).
 // Falls back to returning the English source if anything fails — page never breaks.
-
-import { guard } from "@/app/lib/apiGuard";
 
 const LANG_NAMES: Record<string, string> = {
   en: "English", fr: "French", ar: "Arabic", krio: "Sierra Leonean Krio",
@@ -16,37 +14,17 @@ const LANG_NAMES: Record<string, string> = {
 const MODEL = "gemini-2.5-flash";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
-// Abuse caps — this route spends the site's Gemini quota.
-const MAX_TEXTS = 400;        // UI strings per batch
-const MAX_TOTAL_CHARS = 24000;
-
 export async function POST(req: Request) {
-  // 64KB body cap + 60 batches/min per IP.
-  const blocked = guard(req, { bucket: "translate", limit: 60, windowMs: 60_000, maxBytes: 64 * 1024 });
-  if (blocked) return blocked;
-
   let texts: string[] = [];
   let target = "en";
 
   try {
     const body = await req.json();
-    texts = Array.isArray(body.texts) ? body.texts : [];
-    target = typeof body.target === "string" ? body.target : "en";
+    texts = body.texts || [];
+    target = body.target || "en";
 
-    if (!target || target === "en" || texts.length === 0) {
+    if (!target || target === "en" || !Array.isArray(texts) || texts.length === 0) {
       return Response.json({ translations: texts });
-    }
-
-    // Reject oversized batches before spending an API call on them.
-    if (texts.length > MAX_TEXTS) {
-      return Response.json({ error: "Too many strings." }, { status: 413 });
-    }
-    if (!texts.every((t) => typeof t === "string")) {
-      return Response.json({ translations: texts });
-    }
-    const totalChars = texts.reduce((n, t) => n + t.length, 0);
-    if (totalChars > MAX_TOTAL_CHARS) {
-      return Response.json({ error: "Payload too large." }, { status: 413 });
     }
 
     const apiKey = process.env.GOOGLE_API_KEY;
