@@ -74,6 +74,21 @@ export interface Translations {
     about: string[]; stories: string[]; events: string[];
     contact: string[]; getInvolved: string[]; donate: string[];
   };
+  footer: {
+    ctaEyebrow: string; ctaHeading: string; donateNow: string; mission: string;
+    newsletterHeading: string; namePlaceholder: string; emailPlaceholder: string;
+    join: string; newsletterSuccess: string; genericError: string;
+    quickLinks: string; aboutUs: string; ourPrograms: string; stories: string;
+    events: string; contactUs: string; donate: string;
+    education: string; nutrition: string; medical: string; protection: string;
+    sponsorship: string; outreach: string;
+    getInTouch: string; email: string; phone: string; location: string;
+    locationUS: string; locationSL: string; officeHours: string; officeHoursValue: string;
+    rights: string; about: string; programs: string; contact: string;
+    motto: string; backToTop: string; skipToContent: string;
+    searchLanguages: string; search: string; noLanguagesFound: string;
+    switchLanguage: string; toggleMenu: string;
+  };
 }
 
 // ── Static import of English for instant initial render ─────────────

@@ -3,8 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useLang } from "@/app/context/LanguageContext";
 
 export default function Footer() {
+  const { flat, lang } = useLang();
+  // Same lookup as useT(), but callable inside loops: English source string
+  // → translated string, falling back to English when a translation is absent.
+  const tr = (s: string) => (lang === "en" ? s : flat.get(s) ?? s);
+
   // Mobile accordion state for the link columns; columns are always open on lg+
   const [openSec, setOpenSec] = useState<string | null>(null);
   const toggleSec = (key: string) => {
@@ -57,13 +63,13 @@ export default function Footer() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setNlError(data?.error || "Something went wrong. Please try again.");
+        setNlError(data?.error || tr("Something went wrong. Please try again."));
         setNlStatus("error");
         return;
       }
       setNlStatus("ok");
     } catch {
-      setNlError("Something went wrong. Please try again.");
+      setNlError(tr("Something went wrong. Please try again."));
       setNlStatus("error");
     }
   };
@@ -142,10 +148,10 @@ export default function Footer() {
           <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-8 text-center sm:flex-row sm:text-left">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#e8b84b]">
-                Make a Difference Today
+                {tr("Make a Difference Today")}
               </p>
               <p className="mt-3 font-heading text-4xl font-semibold leading-none text-white sm:text-5xl">
-                Every Child Deserves Hope
+                {tr("Every Child Deserves Hope")}
               </p>
             </div>
 
@@ -153,7 +159,7 @@ export default function Footer() {
               href="/donate"
               className="group relative flex w-full max-w-sm shrink-0 justify-center overflow-hidden bg-[#c9962a] px-9 py-4 text-[12px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] sm:w-auto transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b]"
             >
-              <span className="relative z-10">Donate Now</span>
+              <span className="relative z-10">{tr("Donate Now")}</span>
               <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%] motion-reduce:hidden" />
             </Link>
           </div>
@@ -177,25 +183,23 @@ export default function Footer() {
                   <div>
                     <p className="text-xl font-bold text-white">Pandie</p>
                     <p className="text-[10px] uppercase tracking-[0.22em] text-white/50">
-                      The Mother of All
+                      {tr("The Mother of All")}
                     </p>
                   </div>
                 </Link>
 
                 <p className="mt-6 max-w-xs text-sm leading-7 text-white/70">
-                  A humanitarian nonprofit dedicated to protecting and uplifting
-                  vulnerable children in Sierra Leone through education,
-                  nutrition, medical assistance, and compassionate care.
+                  {tr("A humanitarian nonprofit dedicated to protecting and uplifting vulnerable children in Sierra Leone through education, nutrition, medical assistance, and compassionate care.")}
                 </p>
 
                 {/* Newsletter signup — leads flow through the guarded chat-message API */}
                 <div className="mt-8">
                   <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b]">
-                    Stay Close to the Work
+                    {tr("Stay Close to the Work")}
                   </p>
                   {nlStatus === "ok" ? (
                     <p aria-live="polite" className="mt-4 text-sm text-white/80">
-                      You&apos;re on the list — thank you for standing with us.
+                      {tr("You’re on the list — thank you for standing with us.")}
                     </p>
                   ) : (
                     <form onSubmit={handleNewsletter} className="mt-4 max-w-xs">
@@ -209,25 +213,25 @@ export default function Footer() {
                         aria-hidden="true"
                         className="absolute -left-[9999px] h-0 w-0 opacity-0"
                       />
-                      <label htmlFor="footer-nl-name" className="sr-only">Your name</label>
+                      <label htmlFor="footer-nl-name" className="sr-only">{tr("Your name")}</label>
                       <input
                         id="footer-nl-name"
                         value={nlName}
                         onChange={e => setNlName(e.target.value)}
                         required
-                        placeholder="Your name"
+                        placeholder={tr("Your name")}
                         autoComplete="name"
                         className="w-full rounded-none border border-white/15 bg-white/[0.06] px-4 py-3 text-[16px] text-white outline-none transition placeholder:text-white/35 focus:border-[#c9962a]/60 focus:bg-white/[0.09] sm:text-sm"
                       />
                       <div className="mt-2 flex">
-                        <label htmlFor="footer-nl-email" className="sr-only">Email address</label>
+                        <label htmlFor="footer-nl-email" className="sr-only">{tr("Email address")}</label>
                         <input
                           id="footer-nl-email"
                           type="email"
                           value={nlEmail}
                           onChange={e => setNlEmail(e.target.value)}
                           required
-                          placeholder="Email address"
+                          placeholder={tr("Email address")}
                           autoComplete="email"
                           className="min-w-0 flex-1 border border-r-0 border-white/15 bg-white/[0.06] px-4 py-3 text-[16px] text-white outline-none transition placeholder:text-white/35 focus:border-[#c9962a]/60 focus:bg-white/[0.09] sm:text-sm"
                         />
@@ -236,7 +240,7 @@ export default function Footer() {
                           disabled={nlStatus === "sending"}
                           className="shrink-0 bg-[#c9962a] px-5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#0a1a10] transition hover:bg-[#e8b84b] disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
                         >
-                          {nlStatus === "sending" ? "…" : "Join"}
+                          {nlStatus === "sending" ? "…" : tr("Join")}
                         </button>
                       </div>
                       {nlStatus === "error" && (
@@ -271,7 +275,7 @@ export default function Footer() {
 
               {/* Quick Links */}
               <div className="border-b border-white/10 pb-5 lg:border-0 lg:pb-0">
-                <SectionHeader id="quick" label="Quick Links" />
+                <SectionHeader id="quick" label={tr("Quick Links")} />
                 <ul className={`mt-5 space-y-1 ${sectionBodyCls("quick")}`}>
                   {[
                     { label: "About Us", href: "/about" },
@@ -287,7 +291,7 @@ export default function Footer() {
                         className="group flex items-center py-1.5 text-sm text-white/70 transition-colors duration-300 hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
                       >
                         <span className="h-px w-0 bg-[#c9962a] transition-all duration-300 group-hover:mr-2 group-hover:w-3" />
-                        {link.label}
+                        {tr(link.label)}
                       </Link>
                     </li>
                   ))}
@@ -296,7 +300,7 @@ export default function Footer() {
 
               {/* Programs */}
               <div className="border-b border-white/10 pb-5 lg:border-0 lg:pb-0">
-                <SectionHeader id="programs" label="Our Programs" />
+                <SectionHeader id="programs" label={tr("Our Programs")} />
                 <ul className={`mt-5 space-y-1 ${sectionBodyCls("programs")}`}>
                   {[
                     { label: "Education Support", href: "/programs/education" },
@@ -312,7 +316,7 @@ export default function Footer() {
                         className="group flex items-center py-1.5 text-sm text-white/70 transition-colors duration-300 hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
                       >
                         <span className="h-px w-0 bg-[#c9962a] transition-all duration-300 group-hover:mr-2 group-hover:w-3" />
-                        {link.label}
+                        {tr(link.label)}
                       </Link>
                     </li>
                   ))}
@@ -321,7 +325,7 @@ export default function Footer() {
 
               {/* Contact */}
               <div>
-                <SectionHeader id="contact" label="Get In Touch" />
+                <SectionHeader id="contact" label={tr("Get In Touch")} />
                 <ul className={`mt-5 space-y-5 ${sectionBodyCls("contact")}`}>
                   {[
                     {
@@ -355,7 +359,7 @@ export default function Footer() {
                       </div>
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/40">
-                          {item.label}
+                          {tr(item.label)}
                         </p>
                         <a
                           href={item.href}
@@ -390,12 +394,12 @@ export default function Footer() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/40">
-                        Location
+                        {tr("Location")}
                       </p>
                       <p className="mt-1 text-sm text-white/70">
-                        United States of America
+                        {tr("United States of America")}
                         <br />
-                        Sierra Leone Operations: Freetown, SL
+                        {tr("Sierra Leone Operations: Freetown, SL")}
                       </p>
                     </div>
                   </li>
@@ -418,10 +422,10 @@ export default function Footer() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/40">
-                        Office Hours
+                        {tr("Office Hours")}
                       </p>
                       <p className="mt-1 text-sm text-white/70">
-                        Mon – Fri: 9:00 AM – 5:00 PM EST
+                        {tr("Mon – Fri: 9:00 AM – 5:00 PM EST")}
                       </p>
                     </div>
                   </li>
@@ -435,25 +439,24 @@ export default function Footer() {
         <div className="border-t border-white/10 px-5 py-6 lg:px-8 xl:px-12">
           <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-4 sm:flex-row">
             <p className="text-sm text-white/50">
-              © {new Date().getFullYear()} Pandie Foundation. All rights
-              reserved.
+              © {new Date().getFullYear()} Pandie Foundation. {tr("All rights reserved.")}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-sm text-white/50">
               <Link href="/about" className="transition hover:text-[#e8b84b]">
-                About
+                {tr("About")}
               </Link>
               <Link href="/programs" className="transition hover:text-[#e8b84b]">
-                Programs
+                {tr("Programs")}
               </Link>
               <Link href="/contact" className="transition hover:text-[#e8b84b]">
-                Contact
+                {tr("Contact")}
               </Link>
               <Link href="/donate" className="transition hover:text-[#e8b84b]">
-                Donate
+                {tr("Donate")}
               </Link>
               <span className="text-white/30">|</span>
               <p className="font-heading text-[15px] italic text-[#c9962a]/80">
-                The Mother of All
+                {tr("The Mother of All")}
               </p>
               <button
                 type="button"
@@ -465,7 +468,7 @@ export default function Footer() {
                 }
                 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40 transition hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
               >
-                Back to top
+                {tr("Back to top")}
                 <span aria-hidden="true">↑</span>
               </button>
             </div>

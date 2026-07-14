@@ -14,7 +14,9 @@ export default function TopBar() {
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
   const pathname = usePathname();
-  const { t, lang, setLang, currentLang } = useLang();
+  const { t, lang, setLang, currentLang, flat } = useLang();
+  // English source string → translated string (falls back to English).
+  const tr = (s: string) => (lang === "en" ? s : flat.get(s) ?? s);
 
   const desktopLangRef = useRef<HTMLDivElement>(null);
   const mobileLangRef = useRef<HTMLDivElement>(null);
@@ -106,7 +108,7 @@ export default function TopBar() {
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder={compact ? "Search…" : "Search languages…"}
+          placeholder={compact ? tr("Search…") : tr("Search languages…")}
           autoFocus
           className="w-full rounded-lg bg-white/[0.07] px-3 py-2.5 text-[16px] text-white outline-none placeholder:text-white/30 focus:bg-white/[0.1] sm:text-[13px]"
         />
@@ -134,7 +136,7 @@ export default function TopBar() {
           </button>
         ))}
         {filteredLangs.length === 0 && (
-          <p className="px-4 py-4 text-center text-[12px] text-white/30">No languages found</p>
+          <p className="px-4 py-4 text-center text-[12px] text-white/30">{tr("No languages found")}</p>
         )}
       </div>
     </>
@@ -146,7 +148,7 @@ export default function TopBar() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:bg-[#c9962a] focus:px-5 focus:py-3 focus:text-[12px] focus:font-bold focus:uppercase focus:tracking-[0.18em] focus:text-[#0a1a10] focus:outline-2 focus:outline-offset-2 focus:outline-[#e8b84b]"
       >
-        Skip to content
+        {tr("Skip to content")}
       </a>
       <header
         onFocusCapture={() => setHidden(false)}
@@ -168,7 +170,7 @@ export default function TopBar() {
             </div>
             <div className="leading-none">
               <p className="text-[17px] font-bold tracking-wide text-white transition-colors duration-300 group-hover:text-[#e8b84b] sm:text-[18px] md:text-[20px]">Pandie</p>
-              <p className="mt-1 text-[8px] uppercase tracking-[0.18em] whitespace-nowrap text-white/45 transition-colors duration-300 group-hover:text-white/60 sm:text-[9px] sm:tracking-[0.28em]">The Mother of All</p>
+              <p className="mt-1 text-[8px] uppercase tracking-[0.18em] whitespace-nowrap text-white/45 transition-colors duration-300 group-hover:text-white/60 sm:text-[9px] sm:tracking-[0.28em]">{tr("The Mother of All")}</p>
             </div>
           </Link>
 
@@ -191,7 +193,7 @@ export default function TopBar() {
               <button
                 onClick={() => setLangOpen(p => !p)}
                 aria-expanded={langOpen}
-                aria-label="Switch language"
+                aria-label={tr("Switch language")}
                 className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold text-white/60 transition hover:border-[#c9962a]/40 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
               >
                 <span className="text-[14px]">{currentLang.flag}</span>
@@ -227,7 +229,7 @@ export default function TopBar() {
               <button
                 onClick={() => setLangOpen(p => !p)}
                 aria-expanded={langOpen}
-                aria-label="Switch language"
+                aria-label={tr("Switch language")}
                 className="flex h-11 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 text-[14px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
               >
                 {currentLang.flag}
@@ -244,7 +246,7 @@ export default function TopBar() {
 
             <button type="button" onClick={() => setOpen(!open)}
               aria-expanded={open}
-              aria-label="Toggle menu"
+              aria-label={tr("Toggle menu")}
               className="relative z-[110] flex h-11 w-11 flex-col items-center justify-center gap-[5px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]">
               <span className={`block h-[1.5px] w-6 bg-white transition-all duration-300 ${open ? "translate-y-[6.5px] rotate-45" : ""}`} />
               <span className={`block h-[1.5px] w-6 bg-white transition-all duration-300 ${open ? "scale-x-0 opacity-0" : ""}`} />
@@ -300,7 +302,7 @@ export default function TopBar() {
               </div>
               <div>
                 <p className="text-[13px] font-bold text-white">Pandie Foundation</p>
-                <p className="text-[10px] uppercase tracking-[0.22em] text-white/40">The Mother of All</p>
+                <p className="text-[10px] uppercase tracking-[0.22em] text-white/40">{tr("The Mother of All")}</p>
               </div>
             </div>
           </div>
