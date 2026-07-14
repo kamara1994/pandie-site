@@ -4,8 +4,9 @@ import type { NextConfig } from "next";
 //   Google Fonts — fonts.googleapis.com (style), fonts.gstatic.com (font)
 //   Stripe / PayPal — declared ahead of the donation form going live
 // Gemini/Groq are called server-side, so they need no browser CSP grant.
-// Shipped as Report-Only for now: it CANNOT break rendering, only reports
-// violations, so we can confirm it's clean in the browser before enforcing.
+// ENFORCING since 2026-07-14, after a full browser sweep of every page showed
+// zero violations in Report-Only mode. report-uri stays on so any future
+// violation is still logged to /api/csp-report.
 // 'unsafe-inline' is required because Next.js injects inline bootstrap scripts
 // and Tailwind emits inline styles; nonces are the follow-up hardening.
 const csp = [
@@ -28,7 +29,7 @@ const csp = [
 // page renders, only how the browser treats framing, MIME sniffing, transport,
 // referrer leakage, and powerful-feature access.
 const securityHeaders = [
-  { key: "Content-Security-Policy-Report-Only", value: csp },
+  { key: "Content-Security-Policy", value: csp },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-Content-Type-Options", value: "nosniff" },
