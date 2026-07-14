@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { upsertDonation } from "@/app/lib/supabase";
+import { guard } from "@/app/lib/apiGuard";
+import { siteOrigin } from "@/app/lib/site";
 
 // Currencies that use the smallest unit directly (no ×100)
 const ZERO_DECIMAL = new Set([
@@ -28,6 +30,10 @@ function toStripeAmount(amount: number, currency: string): number {
 }
 
 export async function POST(request: Request) {
+  // Origin check + 16KB cap + 15 checkout attempts/min per IP.
+  const blocked = guard(request, { bucket: "stripe-checkout", limit: 15, windowMs: 60_000, maxBytes: 16 * 1024 });
+  if (blocked) return blocked;
+
   if (!process.env.STRIPE_SECRET_KEY) {
     return NextResponse.json(
       { error: "Secure payment processing is being configured. Please try again soon." },
@@ -81,7 +87,12 @@ export async function POST(request: Request) {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  // Redirect back to the domain the donor is actually on. Derive it from the
+  // forwarded headers (correct behind Vercel's proxy on prod + every preview),
+  // falling back to configured env — never silently to localhost.
+  const fwdHost = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  const fwdProto = request.headers.get("x-forwarded-proto") || "https";
+  const siteUrl = fwdHost ? `${fwdProto}://${fwdHost}` : siteOrigin();
 
   const safeDonorName = anonymous ? "Anonymous" : String(donorName || "").slice(0, 500);
 
@@ -169,11 +180,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    const msg =
-      err instanceof Stripe.errors.StripeError
-        ? err.message
-        : "Failed to create checkout session.";
+    // Log the detail server-side; never leak raw provider error text to clients.
     console.error("[Stripe Checkout Error]", err);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json(
+      { error: "We couldn't start checkout right now. Please try again in a moment." },
+      { status: 502 },
+    );
   }
 }
