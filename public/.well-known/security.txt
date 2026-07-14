@@ -1,0 +1,8 @@
+# Pandie Foundation — Security contact (RFC 9116)
+# If you believe you've found a security vulnerability, please report it
+# privately to the contact below before any public disclosure. Thank you.
+
+Contact: mailto:info@pandiefoundation.org
+Expires: 2027-07-14T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://pandiefoundation.org/.well-known/security.txt
