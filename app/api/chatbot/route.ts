@@ -1,4 +1,32 @@
 import Groq from "groq-sdk";
+import { guard } from "@/app/lib/apiGuard";
+
+// Abuse limits — keep the chatbot a chatbot, not a free LLM proxy.
+const MAX_MESSAGES = 16;         // conversation turns forwarded to the model
+const MAX_CONTENT_CHARS = 1200;  // per message
+const MAX_TOTAL_CHARS = 8000;    // whole conversation
+
+type ChatMessage = { role: "user" | "assistant"; content: string };
+
+// Accept ONLY user/assistant roles from the client — never a client-supplied
+// system role (that is how the "you are Pamela" instructions get overridden).
+function sanitizeMessages(raw: unknown): ChatMessage[] | null {
+  if (!Array.isArray(raw) || raw.length === 0) return null;
+  const out: ChatMessage[] = [];
+  let total = 0;
+  for (const m of raw.slice(-MAX_MESSAGES)) {
+    if (!m || typeof m !== "object") return null;
+    const role = (m as { role?: unknown }).role;
+    const content = (m as { content?: unknown }).content;
+    if (role !== "user" && role !== "assistant") return null;
+    if (typeof content !== "string") return null;
+    const clipped = content.slice(0, MAX_CONTENT_CHARS);
+    total += clipped.length;
+    if (total > MAX_TOTAL_CHARS) break;
+    out.push({ role, content: clipped });
+  }
+  return out.length ? out : null;
+}
 
 const LANG_NAMES: Record<string, string> = {
   en: "English", fr: "French", ar: "Arabic", krio: "Sierra Leonean Krio",
@@ -49,9 +77,21 @@ Impact: $10 feeds a child for one week | $30/month sponsors a child's education
 - Speak as Pamela, not as "an AI" — you are the foundation's digital assistant`;
 
 export async function POST(req: Request) {
+  // Origin check + 32KB body cap + 20 requests/min per IP.
+  const blocked = guard(req, { bucket: "chatbot", limit: 20, windowMs: 60_000, maxBytes: 32 * 1024 });
+  if (blocked) return blocked;
+
   try {
     const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const { messages, lang } = await req.json();
+    const { messages: rawMessages, lang } = await req.json();
+
+    const messages = sanitizeMessages(rawMessages);
+    if (!messages) {
+      return new Response(
+        JSON.stringify({ error: "Invalid message format." }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
     const langName = LANG_NAMES[lang] || "English";
     const langInstruction =
