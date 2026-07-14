@@ -1,0 +1,38 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly Monday 06:00 UTC — catches new advisories even with no commits.
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  audit-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Fail on high/critical advisories. Moderate is reported but non-blocking
+      # (postcss-in-next is a known moderate we cannot fix until upstream ships).
+      - run: npm audit --audit-level=high
+      - run: npx tsc --noEmit
+      # Scoped to the security-relevant lane; page components carry pre-existing
+      # style-lint debt that is tracked separately.
+      - run: npx eslint app/api app/lib --max-warnings=0
+
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep scan --config p/security-audit --config p/secrets --config p/owasp-top-ten --severity ERROR --severity WARNING --error app/ next.config.ts

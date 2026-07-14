@@ -1,0 +1,27 @@
+# Dependabot: opens PRs for dependency updates — nothing merges automatically.
+# Security advisories get individual PRs immediately; routine updates arrive
+# weekly, grouped so they don't flood the repo. The 7-day cooldown means a
+# just-published version is never proposed immediately — malicious releases
+# are typically detected and yanked within days. Delete this file to disable.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    # Major bumps (e.g. Next 16 → 17) stay individual PRs for careful review.
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
