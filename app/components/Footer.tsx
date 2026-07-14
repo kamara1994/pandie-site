@@ -2,8 +2,41 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function Footer() {
+  const [nlName, setNlName] = useState("");
+  const [nlEmail, setNlEmail] = useState("");
+  const [nlStatus, setNlStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
+  const [nlError, setNlError] = useState("");
+
+  const handleNewsletter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (nlStatus === "sending") return;
+    setNlStatus("sending");
+    setNlError("");
+    try {
+      const res = await fetch("/api/chat-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: nlName,
+          email: nlEmail,
+          message: "Newsletter signup from the website footer — please add me to the mailing list.",
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setNlError(data?.error || "Something went wrong. Please try again.");
+        setNlStatus("error");
+        return;
+      }
+      setNlStatus("ok");
+    } catch {
+      setNlError("Something went wrong. Please try again.");
+      setNlStatus("error");
+    }
+  };
   const socialLinks = [
     {
       label: "Facebook",
@@ -104,6 +137,54 @@ export default function Footer() {
                   vulnerable children in Sierra Leone through education,
                   nutrition, medical assistance, and compassionate care.
                 </p>
+
+                {/* Newsletter signup — leads flow through the guarded chat-message API */}
+                <div className="mt-8">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b]">
+                    Stay Close to the Work
+                  </p>
+                  {nlStatus === "ok" ? (
+                    <p aria-live="polite" className="mt-4 text-sm text-white/80">
+                      You&apos;re on the list — thank you for standing with us.
+                    </p>
+                  ) : (
+                    <form onSubmit={handleNewsletter} className="mt-4 max-w-xs">
+                      <label htmlFor="footer-nl-name" className="sr-only">Your name</label>
+                      <input
+                        id="footer-nl-name"
+                        value={nlName}
+                        onChange={e => setNlName(e.target.value)}
+                        required
+                        placeholder="Your name"
+                        autoComplete="name"
+                        className="w-full rounded-none border border-white/15 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#c9962a]/60 focus:bg-white/[0.09]"
+                      />
+                      <div className="mt-2 flex">
+                        <label htmlFor="footer-nl-email" className="sr-only">Email address</label>
+                        <input
+                          id="footer-nl-email"
+                          type="email"
+                          value={nlEmail}
+                          onChange={e => setNlEmail(e.target.value)}
+                          required
+                          placeholder="Email address"
+                          autoComplete="email"
+                          className="min-w-0 flex-1 border border-r-0 border-white/15 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#c9962a]/60 focus:bg-white/[0.09]"
+                        />
+                        <button
+                          type="submit"
+                          disabled={nlStatus === "sending"}
+                          className="shrink-0 bg-[#c9962a] px-5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#0a1a10] transition hover:bg-[#e8b84b] disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
+                        >
+                          {nlStatus === "sending" ? "…" : "Join"}
+                        </button>
+                      </div>
+                      {nlStatus === "error" && (
+                        <p aria-live="polite" className="mt-2 text-[12px] text-[#e8b84b]/90">{nlError}</p>
+                      )}
+                    </form>
+                  )}
+                </div>
 
                 {/* Social Links */}
                 <div className="mt-6 flex gap-3">
@@ -320,6 +401,14 @@ export default function Footer() {
               <p className="font-heading text-[15px] italic text-[#c9962a]/80">
                 The Mother of All
               </p>
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40 transition hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
+              >
+                Back to top
+                <span aria-hidden="true">↑</span>
+              </button>
             </div>
           </div>
         </div>

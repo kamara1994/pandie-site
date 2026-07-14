@@ -11,6 +11,8 @@ export default function TopBar() {
   const [langOpen, setLangOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
   const pathname = usePathname();
   const { t, lang, setLang, currentLang } = useLang();
 
@@ -64,9 +66,14 @@ export default function TopBar() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  // Compress the bar once the page is scrolled
+  // Compress the bar once scrolled; hide on scroll down, reveal on scroll up
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 24);
+      setHidden(y > lastY.current && y > 160);
+      lastY.current = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -135,7 +142,13 @@ export default function TopBar() {
 
   return (
     <>
-      <header className="fixed top-0 z-50 w-full">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:bg-[#c9962a] focus:px-5 focus:py-3 focus:text-[12px] focus:font-bold focus:uppercase focus:tracking-[0.18em] focus:text-[#0a1a10] focus:outline-2 focus:outline-offset-2 focus:outline-[#e8b84b]"
+      >
+        Skip to content
+      </a>
+      <header className={`fixed top-0 z-50 w-full transition-transform duration-500 ${hidden && !open && !langOpen ? "-translate-y-full" : "translate-y-0"}`}>
         <div className={`absolute inset-0 backdrop-blur-md transition-all duration-500 ${scrolled ? "bg-[#0a1a10] shadow-[0_8px_40px_rgba(0,0,0,0.55)]" : "bg-[#0a1a10]/92 shadow-[0_4px_30px_rgba(0,0,0,0.35)]"}`} />
         <div className="pointer-events-none absolute inset-0 opacity-[0.14]">
           <Image src="/nav-texture.jpg" alt="" fill className="object-cover" />
@@ -160,6 +173,7 @@ export default function TopBar() {
           <nav className="hidden items-center gap-7 lg:flex">
             {links.map(l => (
               <Link key={l.href} href={l.href}
+                aria-current={isActive(l.href) ? "page" : undefined}
                 className={`group relative pb-1.5 text-[11.5px] font-semibold uppercase tracking-[0.18em] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b] ${isActive(l.href) ? "text-white" : "text-white/60 hover:text-white"}`}>
                 {l.label}
                 <span className={`absolute bottom-0 left-0 h-[1.5px] rounded-full bg-[#c9962a] transition-all duration-300 ${isActive(l.href) ? "w-full" : "w-0 group-hover:w-full"}`} />
@@ -244,6 +258,7 @@ export default function TopBar() {
           <nav className="flex flex-col">
             {links.map((l, i) => (
               <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
+                aria-current={isActive(l.href) ? "page" : undefined}
                 className="group flex items-center gap-5 border-b border-white/[0.07] py-4 md:py-5"
                 style={{
                   opacity: open ? 1 : 0,

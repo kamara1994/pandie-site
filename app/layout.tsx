@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <LanguageProvider>
           <TopBar />
-          <main>{children}</main>
+          <main id="main-content">{children}</main>
           <Footer />
           <ChatWidget />
         </LanguageProvider>
