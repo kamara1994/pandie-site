@@ -108,7 +108,7 @@ export default function TopBar() {
           onChange={e => setSearch(e.target.value)}
           placeholder={compact ? "Search…" : "Search languages…"}
           autoFocus
-          className="w-full rounded-lg bg-white/[0.07] px-3 py-2.5 text-[13px] text-white outline-none placeholder:text-white/30 focus:bg-white/[0.1]"
+          className="w-full rounded-lg bg-white/[0.07] px-3 py-2.5 text-[16px] text-white outline-none placeholder:text-white/30 focus:bg-white/[0.1] sm:text-[13px]"
         />
       </div>
       <div
@@ -165,7 +165,7 @@ export default function TopBar() {
             </div>
             <div className="leading-none">
               <p className="text-[17px] font-bold tracking-wide text-white transition-colors duration-300 group-hover:text-[#e8b84b] sm:text-[18px] md:text-[20px]">Pandie</p>
-              <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-white/45 transition-colors duration-300 group-hover:text-white/60">The Mother of All</p>
+              <p className="mt-1 text-[8px] uppercase tracking-[0.18em] whitespace-nowrap text-white/45 transition-colors duration-300 group-hover:text-white/60 sm:text-[9px] sm:tracking-[0.28em]">The Mother of All</p>
             </div>
           </Link>
 
@@ -212,8 +212,14 @@ export default function TopBar() {
             </Link>
           </nav>
 
-          {/* Mobile / iPad: lang + hamburger */}
-          <div className="flex items-center gap-2.5 sm:gap-3 lg:hidden">
+          {/* Mobile / iPad: donate + lang + hamburger */}
+          <div className="flex items-center gap-2 sm:gap-3 lg:hidden">
+            <Link
+              href="/donate"
+              className="flex h-11 items-center bg-[#c9962a] px-3.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#0a1a10] transition hover:bg-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b] max-[374px]:px-2.5 max-[374px]:tracking-[0.08em] sm:px-4 sm:text-[11px]"
+            >
+              {t.nav.donate}
+            </Link>
             <div ref={mobileLangRef} className="relative">
               <button
                 onClick={() => setLangOpen(p => !p)}

@@ -5,6 +5,30 @@ import Image from "next/image";
 import { useState } from "react";
 
 export default function Footer() {
+  // Mobile accordion state for the link columns; columns are always open on lg+
+  const [openSec, setOpenSec] = useState<string | null>(null);
+  const toggleSec = (key: string) => {
+    if (window.matchMedia("(min-width: 1024px)").matches) return;
+    setOpenSec(prev => (prev === key ? null : key));
+  };
+
+  const sectionHeaderCls =
+    "flex w-full items-center justify-between text-left text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b] lg:pointer-events-none";
+  const SectionHeader = ({ id, label }: { id: string; label: string }) => (
+    <button type="button" onClick={() => toggleSec(id)} aria-expanded={openSec === id} className={sectionHeaderCls}>
+      <span className="after:mt-3 after:block after:h-px after:w-8 after:bg-gradient-to-r after:from-[#c9962a]/70 after:to-transparent">
+        {label}
+      </span>
+      <svg
+        width="10" height="10" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"
+        className={`shrink-0 transition-transform duration-300 lg:hidden ${openSec === id ? "rotate-180" : ""}`}
+      >
+        <path d="M0 2l4 4 4-4H0z" />
+      </svg>
+    </button>
+  );
+  const sectionBodyCls = (id: string) => `${openSec === id ? "block" : "hidden"} lg:block`;
+
   const [nlName, setNlName] = useState("");
   const [nlEmail, setNlEmail] = useState("");
   const [nlStatus, setNlStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
@@ -101,7 +125,7 @@ export default function Footer() {
 
             <Link
               href="/donate"
-              className="group relative shrink-0 overflow-hidden bg-[#c9962a] px-9 py-4 text-[12px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b]"
+              className="group relative flex w-full max-w-sm shrink-0 justify-center overflow-hidden bg-[#c9962a] px-9 py-4 text-[12px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] sm:w-auto transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b]"
             >
               <span className="relative z-10">Donate Now</span>
               <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%]" />
@@ -112,7 +136,7 @@ export default function Footer() {
         {/* Main Footer Content */}
         <div className="px-5 py-16 lg:px-8 xl:px-12">
           <div className="mx-auto max-w-[1100px]">
-            <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-12">
               {/* Brand column */}
               <div>
                 <Link href="/" className="flex items-center gap-3">
@@ -157,7 +181,7 @@ export default function Footer() {
                         required
                         placeholder="Your name"
                         autoComplete="name"
-                        className="w-full rounded-none border border-white/15 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#c9962a]/60 focus:bg-white/[0.09]"
+                        className="w-full rounded-none border border-white/15 bg-white/[0.06] px-4 py-3 text-[16px] text-white outline-none transition placeholder:text-white/35 focus:border-[#c9962a]/60 focus:bg-white/[0.09] sm:text-sm"
                       />
                       <div className="mt-2 flex">
                         <label htmlFor="footer-nl-email" className="sr-only">Email address</label>
@@ -169,7 +193,7 @@ export default function Footer() {
                           required
                           placeholder="Email address"
                           autoComplete="email"
-                          className="min-w-0 flex-1 border border-r-0 border-white/15 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#c9962a]/60 focus:bg-white/[0.09]"
+                          className="min-w-0 flex-1 border border-r-0 border-white/15 bg-white/[0.06] px-4 py-3 text-[16px] text-white outline-none transition placeholder:text-white/35 focus:border-[#c9962a]/60 focus:bg-white/[0.09] sm:text-sm"
                         />
                         <button
                           type="submit"
@@ -210,11 +234,9 @@ export default function Footer() {
               </div>
 
               {/* Quick Links */}
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b] after:mt-3 after:block after:h-px after:w-8 after:bg-gradient-to-r after:from-[#c9962a]/70 after:to-transparent">
-                  Quick Links
-                </p>
-                <ul className="mt-5 space-y-3">
+              <div className="border-b border-white/10 pb-5 lg:border-0 lg:pb-0">
+                <SectionHeader id="quick" label="Quick Links" />
+                <ul className={`mt-5 space-y-1 ${sectionBodyCls("quick")}`}>
                   {[
                     { label: "About Us", href: "/about" },
                     { label: "Our Programs", href: "/programs" },
@@ -226,7 +248,7 @@ export default function Footer() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="group flex items-center text-sm text-white/70 transition-colors duration-300 hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
+                        className="group flex items-center py-1.5 text-sm text-white/70 transition-colors duration-300 hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
                       >
                         <span className="h-px w-0 bg-[#c9962a] transition-all duration-300 group-hover:mr-2 group-hover:w-3" />
                         {link.label}
@@ -237,11 +259,9 @@ export default function Footer() {
               </div>
 
               {/* Programs */}
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b] after:mt-3 after:block after:h-px after:w-8 after:bg-gradient-to-r after:from-[#c9962a]/70 after:to-transparent">
-                  Our Programs
-                </p>
-                <ul className="mt-5 space-y-3">
+              <div className="border-b border-white/10 pb-5 lg:border-0 lg:pb-0">
+                <SectionHeader id="programs" label="Our Programs" />
+                <ul className={`mt-5 space-y-1 ${sectionBodyCls("programs")}`}>
                   {[
                     { label: "Education Support", href: "/programs/education" },
                     { label: "Nutrition Support", href: "/programs/nutrition" },
@@ -253,7 +273,7 @@ export default function Footer() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="group flex items-center text-sm text-white/70 transition-colors duration-300 hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
+                        className="group flex items-center py-1.5 text-sm text-white/70 transition-colors duration-300 hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
                       >
                         <span className="h-px w-0 bg-[#c9962a] transition-all duration-300 group-hover:mr-2 group-hover:w-3" />
                         {link.label}
@@ -265,10 +285,8 @@ export default function Footer() {
 
               {/* Contact */}
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b] after:mt-3 after:block after:h-px after:w-8 after:bg-gradient-to-r after:from-[#c9962a]/70 after:to-transparent">
-                  Get In Touch
-                </p>
-                <ul className="mt-5 space-y-5">
+                <SectionHeader id="contact" label="Get In Touch" />
+                <ul className={`mt-5 space-y-5 ${sectionBodyCls("contact")}`}>
                   {[
                     {
                       icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
@@ -384,7 +402,7 @@ export default function Footer() {
               © {new Date().getFullYear()} Pandie Foundation. All rights
               reserved.
             </p>
-            <div className="flex flex-wrap items-center gap-5 text-sm text-white/50">
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-sm text-white/50">
               <Link href="/about" className="transition hover:text-[#e8b84b]">
                 About
               </Link>
