@@ -1,5 +1,12 @@
-// Translate route using Google Gemini (free tier, no rate limit issue).
+// Translate route using Google Gemini.
 // Falls back to returning the English source if anything fails — page never breaks.
+
+import { guard } from "@/app/lib/apiGuard";
+
+// Abuse caps — this route spends the site's Gemini quota. Set well above the
+// real UI batch (~416 strings / ~18K chars) so legitimate use never trips them.
+const MAX_TEXTS = 600;
+const MAX_TOTAL_CHARS = 40000;
 
 const LANG_NAMES: Record<string, string> = {
   en: "English", fr: "French", ar: "Arabic", krio: "Sierra Leonean Krio",
@@ -15,16 +22,29 @@ const MODEL = "gemini-2.5-flash";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 export async function POST(req: Request) {
+  // Origin check + 96KB body cap + 30 batches/min per IP.
+  const blocked = guard(req, { bucket: "translate", limit: 30, windowMs: 60_000, maxBytes: 96 * 1024 });
+  if (blocked) return blocked;
+
   let texts: string[] = [];
   let target = "en";
 
   try {
     const body = await req.json();
-    texts = body.texts || [];
-    target = body.target || "en";
+    texts = Array.isArray(body.texts) ? body.texts : [];
+    target = typeof body.target === "string" ? body.target : "en";
 
-    if (!target || target === "en" || !Array.isArray(texts) || texts.length === 0) {
+    if (!target || target === "en" || texts.length === 0) {
       return Response.json({ translations: texts });
+    }
+    if (texts.length > MAX_TEXTS) {
+      return Response.json({ error: "Too many strings." }, { status: 413 });
+    }
+    if (!texts.every((t) => typeof t === "string")) {
+      return Response.json({ translations: texts });
+    }
+    if (texts.reduce((n, t) => n + t.length, 0) > MAX_TOTAL_CHARS) {
+      return Response.json({ error: "Payload too large." }, { status: 413 });
     }
 
     const apiKey = process.env.GOOGLE_API_KEY;
