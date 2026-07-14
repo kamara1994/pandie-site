@@ -45,28 +45,33 @@ export default function Footer() {
           fill
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-[#0f1f17]/90" />
+        <div className="absolute inset-0 bg-[#0a1a10]/93" />
       </div>
+
+      {/* Gold hairline top edge — mirrors the top bar's, bookending the page */}
+      <div className="absolute inset-x-0 top-0 z-20 h-[1.5px] bg-gradient-to-r from-transparent via-[#c9962a]/70 to-transparent" />
+      <div className="pointer-events-none absolute -top-1/4 right-0 z-10 h-[60vh] w-[60vh] rounded-full bg-[radial-gradient(circle,rgba(201,150,42,0.10),transparent_70%)]" />
 
       {/* Content */}
       <div className="relative z-10">
-        
-        <div className="border-b border-white/10 px-5 py-10 lg:px-8 xl:px-12">
-          <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-6 sm:flex-row">
+
+        <div className="border-b border-white/10 px-5 py-12 lg:px-8 xl:px-12">
+          <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-8 text-center sm:flex-row sm:text-left">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#f0c857]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#e8b84b]">
                 Make a Difference Today
               </p>
-              <p className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+              <p className="mt-3 font-heading text-4xl font-semibold leading-none text-white sm:text-5xl">
                 Every Child Deserves Hope
               </p>
             </div>
 
             <Link
               href="/donate"
-              className="shrink-0 rounded-xl bg-[#d4a017] px-8 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#173325] transition hover:opacity-90"
+              className="group relative shrink-0 overflow-hidden bg-[#c9962a] px-9 py-4 text-[12px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b]"
             >
-              Donate Now
+              <span className="relative z-10">Donate Now</span>
+              <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%]" />
             </Link>
           </div>
         </div>
@@ -125,7 +130,7 @@ export default function Footer() {
 
               {/* Quick Links */}
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f0c857]">
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b] after:mt-3 after:block after:h-px after:w-8 after:bg-gradient-to-r after:from-[#c9962a]/70 after:to-transparent">
                   Quick Links
                 </p>
                 <ul className="mt-5 space-y-3">
@@ -140,8 +145,9 @@ export default function Footer() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="text-sm text-white/70 transition hover:text-[#d4a017]"
+                        className="group flex items-center text-sm text-white/70 transition-colors duration-300 hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
                       >
+                        <span className="h-px w-0 bg-[#c9962a] transition-all duration-300 group-hover:mr-2 group-hover:w-3" />
                         {link.label}
                       </Link>
                     </li>
@@ -151,7 +157,7 @@ export default function Footer() {
 
               {/* Programs */}
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f0c857]">
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b] after:mt-3 after:block after:h-px after:w-8 after:bg-gradient-to-r after:from-[#c9962a]/70 after:to-transparent">
                   Our Programs
                 </p>
                 <ul className="mt-5 space-y-3">
@@ -166,8 +172,9 @@ export default function Footer() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="text-sm text-white/70 transition hover:text-[#d4a017]"
+                        className="group flex items-center text-sm text-white/70 transition-colors duration-300 hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
                       >
+                        <span className="h-px w-0 bg-[#c9962a] transition-all duration-300 group-hover:mr-2 group-hover:w-3" />
                         {link.label}
                       </Link>
                     </li>
@@ -177,7 +184,7 @@ export default function Footer() {
 
               {/* Contact */}
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f0c857]">
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#e8b84b] after:mt-3 after:block after:h-px after:w-8 after:bg-gradient-to-r after:from-[#c9962a]/70 after:to-transparent">
                   Get In Touch
                 </p>
                 <ul className="mt-5 space-y-5">
@@ -198,7 +205,7 @@ export default function Footer() {
                     <li key={item.label} className="flex items-start gap-3">
                       <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10">
                         <svg
-                          className="h-3.5 w-3.5 text-[#f0c857]"
+                          className="h-3.5 w-3.5 text-[#e8b84b]"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -217,7 +224,7 @@ export default function Footer() {
                         </p>
                         <a
                           href={item.href}
-                          className="mt-1 text-sm text-white/70 transition hover:text-[#d4a017]"
+                          className="mt-1 text-sm text-white/70 transition hover:text-[#e8b84b]"
                         >
                           {item.value}
                         </a>
@@ -228,7 +235,7 @@ export default function Footer() {
                   <li className="flex items-start gap-3">
                     <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10">
                       <svg
-                        className="h-3.5 w-3.5 text-[#f0c857]"
+                        className="h-3.5 w-3.5 text-[#e8b84b]"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -261,7 +268,7 @@ export default function Footer() {
                   <li className="flex items-start gap-3">
                     <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10">
                       <svg
-                        className="h-3.5 w-3.5 text-[#f0c857]"
+                        className="h-3.5 w-3.5 text-[#e8b84b]"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -297,21 +304,21 @@ export default function Footer() {
               reserved.
             </p>
             <div className="flex flex-wrap items-center gap-5 text-sm text-white/50">
-              <Link href="/about" className="transition hover:text-white/80">
+              <Link href="/about" className="transition hover:text-[#e8b84b]">
                 About
               </Link>
-              <Link href="/programs" className="transition hover:text-white/80">
+              <Link href="/programs" className="transition hover:text-[#e8b84b]">
                 Programs
               </Link>
-              <Link href="/contact" className="transition hover:text-white/80">
+              <Link href="/contact" className="transition hover:text-[#e8b84b]">
                 Contact
               </Link>
-              <Link href="/donate" className="transition hover:text-white/80">
+              <Link href="/donate" className="transition hover:text-[#e8b84b]">
                 Donate
               </Link>
               <span className="text-white/30">|</span>
-              <p className="text-white/30">
-                Pandie Foundation — The Mother of All
+              <p className="font-heading text-[15px] italic text-[#c9962a]/80">
+                The Mother of All
               </p>
             </div>
           </div>

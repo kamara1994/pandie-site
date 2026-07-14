@@ -10,6 +10,7 @@ export default function TopBar() {
   const [open, setOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const { t, lang, setLang, currentLang } = useLang();
 
@@ -61,6 +62,14 @@ export default function TopBar() {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Compress the bar once the page is scrolled
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // Lock body scroll while the full-screen menu is open
@@ -127,14 +136,14 @@ export default function TopBar() {
   return (
     <>
       <header className="fixed top-0 z-50 w-full">
-        <div className="absolute inset-0 bg-[#0a1a10]/97 shadow-[0_4px_30px_rgba(0,0,0,0.4)] backdrop-blur-md" />
+        <div className={`absolute inset-0 backdrop-blur-md transition-all duration-500 ${scrolled ? "bg-[#0a1a10] shadow-[0_8px_40px_rgba(0,0,0,0.55)]" : "bg-[#0a1a10]/92 shadow-[0_4px_30px_rgba(0,0,0,0.35)]"}`} />
         <div className="pointer-events-none absolute inset-0 opacity-[0.14]">
           <Image src="/nav-texture.jpg" alt="" fill className="object-cover" />
         </div>
         <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#c9962a]/70 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
-        <div className="relative z-10 flex w-full items-center justify-between px-5 py-3 sm:px-6 sm:py-3.5 lg:px-20">
+        <div className={`relative z-10 flex w-full items-center justify-between px-5 transition-[padding] duration-500 sm:px-6 lg:px-20 ${scrolled ? "py-2 sm:py-2.5" : "py-3.5 sm:py-4"}`}>
 
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-3 sm:gap-3.5">
@@ -151,7 +160,7 @@ export default function TopBar() {
           <nav className="hidden items-center gap-7 lg:flex">
             {links.map(l => (
               <Link key={l.href} href={l.href}
-                className={`group relative pb-1.5 text-[11.5px] font-semibold uppercase tracking-[0.18em] transition-colors duration-200 ${isActive(l.href) ? "text-white" : "text-white/60 hover:text-white"}`}>
+                className={`group relative pb-1.5 text-[11.5px] font-semibold uppercase tracking-[0.18em] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b] ${isActive(l.href) ? "text-white" : "text-white/60 hover:text-white"}`}>
                 {l.label}
                 <span className={`absolute bottom-0 left-0 h-[1.5px] rounded-full bg-[#c9962a] transition-all duration-300 ${isActive(l.href) ? "w-full" : "w-0 group-hover:w-full"}`} />
                 {isActive(l.href) && (
@@ -166,7 +175,7 @@ export default function TopBar() {
                 onClick={() => setLangOpen(p => !p)}
                 aria-expanded={langOpen}
                 aria-label="Switch language"
-                className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold text-white/60 transition hover:border-[#c9962a]/40 hover:text-white"
+                className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold text-white/60 transition hover:border-[#c9962a]/40 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
               >
                 <span className="text-[14px]">{currentLang.flag}</span>
                 <span className="hidden xl:inline">{currentLang.nativeName}</span>
@@ -183,7 +192,7 @@ export default function TopBar() {
 
             {/* Donate */}
             <Link href="/donate"
-              className="group relative overflow-hidden bg-[#c9962a] px-6 py-2.5 text-[11px] font-bold tracking-[0.18em] text-[#0a1a10] transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)]">
+              className="group relative overflow-hidden bg-[#c9962a] px-6 py-2.5 text-[11px] font-bold tracking-[0.18em] text-[#0a1a10] transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b]">
               <span className="relative z-10">{t.nav.donate}</span>
               <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%]" />
             </Link>
@@ -196,7 +205,7 @@ export default function TopBar() {
                 onClick={() => setLangOpen(p => !p)}
                 aria-expanded={langOpen}
                 aria-label="Switch language"
-                className="flex h-11 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 text-[14px]"
+                className="flex h-11 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 text-[14px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
               >
                 {currentLang.flag}
                 <svg width="8" height="8" viewBox="0 0 8 8" fill="white" opacity="0.4" className={`transition-transform duration-200 ${langOpen ? "rotate-180" : ""}`}>
@@ -213,7 +222,7 @@ export default function TopBar() {
             <button type="button" onClick={() => setOpen(!open)}
               aria-expanded={open}
               aria-label="Toggle menu"
-              className="relative z-[110] flex h-11 w-11 flex-col items-center justify-center gap-[5px]">
+              className="relative z-[110] flex h-11 w-11 flex-col items-center justify-center gap-[5px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]">
               <span className={`block h-[1.5px] w-6 bg-white transition-all duration-300 ${open ? "translate-y-[6.5px] rotate-45" : ""}`} />
               <span className={`block h-[1.5px] w-6 bg-white transition-all duration-300 ${open ? "scale-x-0 opacity-0" : ""}`} />
               <span className={`block h-[1.5px] w-6 bg-white transition-all duration-300 ${open ? "-translate-y-[6.5px] -rotate-45" : ""}`} />
