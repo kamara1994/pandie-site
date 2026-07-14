@@ -54,8 +54,8 @@ export default function Hero() {
   const nutrition = useCountUp(200, 1800, visible, reduced);
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#0a1a10]" style={{ minHeight: "100svh" }}>
-      {/* Ken Burns drift — desktop only (mobile keeps the whole photo visible, untouched) */}
+    <section className="relative w-full overflow-hidden bg-[#0a1a10] lg:min-h-[100svh]">
+      {/* Ken Burns drift — desktop only (the mobile whole-photo band never crops) */}
       <style>{`
         .pf-hero-img { transition: transform 8s ease-out; }
         @media (min-width: 1024px) {
@@ -66,23 +66,42 @@ export default function Hero() {
         }
       `}</style>
 
-      {/* Phone: show the WHOLE photo (object-contain). Desktop: full-bleed (object-cover).
+      {/* Phone: the photo is its own full-width band right under the bar — whole photo
+          visible (1024×701 source ⇒ aspect-matched, zero letterboxing), text never
+          overlaps it. Desktop: unchanged full-bleed absolute background (cover).
           next/image serves responsive AVIF/WebP and preloads the first slide (LCP). */}
-      {slides.map((src, i) => (
-        <div key={src} aria-hidden="true"
-          className="absolute inset-0 overflow-hidden transition-opacity motion-reduce:transition-none"
-          style={{ opacity: slide === i ? 1 : 0, transitionDuration: "1500ms" }}>
-          <Image src={src} alt="" fill priority={i === 0} sizes="100vw"
-            className={`pf-hero-img object-contain object-center lg:object-cover ${slide === i ? "pf-active" : ""}`} />
-        </div>
-      ))}
+      <div className="relative mt-[72px] aspect-[1024/701] w-full sm:mt-[76px] lg:absolute lg:inset-0 lg:mt-0 lg:aspect-auto">
+        {slides.map((src, i) => (
+          <div key={src} aria-hidden="true"
+            className="absolute inset-0 overflow-hidden transition-opacity motion-reduce:transition-none"
+            style={{ opacity: slide === i ? 1 : 0, transitionDuration: "1500ms" }}>
+            <Image src={src} alt="" fill priority={i === 0} sizes="100vw"
+              className={`pf-hero-img object-cover object-center ${slide === i ? "pf-active" : ""}`} />
+          </div>
+        ))}
 
-      {/* On phone the overlay is lighter so the full photo stays visible; on desktop it's the original strong gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/85 via-[#0a1a10]/35 to-[#0a1a10]/55 lg:bg-gradient-to-r lg:from-[#0a1a10]/95 lg:via-[#0a1a10]/70 lg:to-[#0a1a10]/20" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/70 via-transparent to-transparent lg:from-[#0a1a10]/85" />
+        {/* Slide dots live on the photo itself */}
+        <div className="absolute bottom-3 right-4 z-30 flex gap-1 lg:bottom-10 lg:right-8 lg:gap-2">
+          {slides.map((_, i) => (
+            <button key={i} onClick={() => setSlide(i)} aria-label={`Slide ${i + 1}`}
+              aria-current={slide === i}
+              className="flex h-11 items-center px-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]">
+              <span className="h-[2px] transition-all duration-500 motion-reduce:transition-none"
+                style={{ width: slide === i ? "28px" : "12px", background: slide === i ? "#c9962a" : "rgba(255,255,255,0.45)" }} />
+            </button>
+          ))}
+        </div>
+
+        {/* Mobile-only: soft fade at the photo's base so it melts into the green below */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a1a10] to-transparent lg:hidden" />
+      </div>
+
+      {/* Desktop-only overlays (mobile text sits on solid green, no overlay needed) */}
+      <div className="absolute inset-0 hidden lg:block lg:bg-gradient-to-r lg:from-[#0a1a10]/95 lg:via-[#0a1a10]/70 lg:to-[#0a1a10]/20" />
+      <div className="absolute inset-0 hidden bg-gradient-to-t via-transparent to-transparent lg:block lg:from-[#0a1a10]/85" />
       <div className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#c9962a] to-transparent opacity-60" />
 
-      <div className="relative z-10 flex min-h-[100svh] flex-col justify-end px-6 pb-20 pt-28 sm:px-12 sm:pb-24 lg:justify-center lg:px-20 lg:py-0 xl:px-28">
+      <div className="relative z-10 flex flex-col px-6 pb-16 pt-7 sm:px-12 sm:pb-20 lg:min-h-[100svh] lg:justify-center lg:px-20 lg:py-0 lg:pt-0 xl:px-28">
         <div className="max-w-3xl">
           <div className="flex items-center gap-3 transition-all duration-700 motion-reduce:transition-none"
             style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)", transitionDelay: "100ms" }}>
@@ -145,16 +164,6 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="absolute bottom-6 right-5 z-20 flex gap-2 sm:bottom-10 sm:right-8">
-        {slides.map((_, i) => (
-          <button key={i} onClick={() => setSlide(i)} aria-label={`Slide ${i + 1}`}
-            aria-current={slide === i}
-            className="flex h-11 items-center px-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]">
-            <span className="h-[2px] transition-all duration-500 motion-reduce:transition-none"
-              style={{ width: slide === i ? "28px" : "12px", background: slide === i ? "#c9962a" : "rgba(255,255,255,0.3)" }} />
-          </button>
-        ))}
-      </div>
       <div className="absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 flex-col items-center gap-2 sm:bottom-8 lg:flex">
         <span className="text-[9px] uppercase tracking-[0.3em] text-white/35">Scroll</span>
         <div className="relative h-10 w-px overflow-hidden bg-white/10">
