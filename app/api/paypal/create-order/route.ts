@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       phone?: string; emailUpdates?: boolean;
     };
 
-  if (!amount || typeof amount !== "number" || amount <= 0) {
+  if (!amount || typeof amount !== "number" || amount <= 0 || !isFinite(amount)) {
     return NextResponse.json({ error: "Invalid amount." }, { status: 400 });
   }
   if (!donorEmail || !donorEmail.includes("@")) {
@@ -86,9 +86,18 @@ export async function POST(request: Request) {
     cache: "no-store",
   });
 
-  const order = await res.json();
+  let order: { id?: string };
+  try {
+    order = await res.json();
+  } catch {
+    console.error("[PayPal Create Order Error] Non-JSON response, status:", res.status);
+    return NextResponse.json(
+      { error: "We couldn't start your PayPal donation right now. Please try again." },
+      { status: 502 },
+    );
+  }
 
-  if (!res.ok) {
+  if (!res.ok || !order.id) {
     console.error("[PayPal Create Order Error]", order);
     return NextResponse.json(
       { error: "We couldn't start your PayPal donation right now. Please try again." },

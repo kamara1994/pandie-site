@@ -22,10 +22,10 @@ export async function POST(request: Request) {
 
   const {
     orderId, donorName, donorEmail, amount, currency,
-    frequency, anonymous, message, phone, emailUpdates,
+    anonymous, message, phone, emailUpdates,
   } = body as {
     orderId: string; donorName?: string; donorEmail?: string;
-    amount?: number; currency?: string; frequency?: string;
+    amount?: number; currency?: string;
     anonymous?: boolean; message?: string; phone?: string; emailUpdates?: boolean;
   };
 
@@ -41,18 +41,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "PayPal authentication failed." }, { status: 500 });
   }
 
-  // Server-side capture — the authoritative payment confirmation
+  // Server-side capture — the authoritative payment confirmation.
+  // return=representation is required: the minimal response omits purchase_units,
+  // which would force the amount fallback below onto client-supplied values.
   const res = await fetch(`${PAYPAL_BASE}/v2/checkout/orders/${orderId}/capture`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
-      Prefer: "return=minimal",
+      Prefer: "return=representation",
     },
     cache: "no-store",
   });
 
-  const capture = await res.json();
+  let capture: Record<string, unknown> & {
+    status?: string;
+    purchase_units?: Array<{ payments?: { captures?: Array<{ id?: string; amount?: { value?: string; currency_code?: string } }> } }>;
+  };
+  try {
+    capture = await res.json();
+  } catch {
+    console.error("[PayPal Capture Error] Non-JSON response, status:", res.status);
+    return NextResponse.json(
+      { error: "Payment capture failed. Please try again." },
+      { status: 502 },
+    );
+  }
 
   if (!res.ok || capture.status !== "COMPLETED") {
     console.error("[PayPal Capture Error]", capture);
@@ -64,6 +78,11 @@ export async function POST(request: Request) {
 
   // Extract verified amounts from PayPal's capture response
   const txnCapture = capture.purchase_units?.[0]?.payments?.captures?.[0];
+  if (!txnCapture?.amount?.value) {
+    // Should not happen with return=representation — if it does, the DB row
+    // below is recording the client-claimed amount, not PayPal's verified one.
+    console.error("[PayPal Capture] Missing verified amount in response for order:", orderId);
+  }
   const transactionId: string = txnCapture?.id ?? orderId;
   const capturedAmount: string = txnCapture?.amount?.value ?? String(amount ?? 0);
   const capturedCurrency: string =

@@ -20,6 +20,13 @@ export async function POST(request: Request) {
 
   const rawBody = await request.text();
 
+  let parsedBody: unknown;
+  try {
+    parsedBody = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
+  }
+
   const transmissionId = request.headers.get("paypal-transmission-id") ?? "";
   const transmissionTime = request.headers.get("paypal-transmission-time") ?? "";
   const certUrl = request.headers.get("paypal-cert-url") ?? "";
@@ -48,7 +55,7 @@ export async function POST(request: Request) {
       transmission_sig: transmissionSig,
       transmission_time: transmissionTime,
       webhook_id: process.env.PAYPAL_WEBHOOK_ID,
-      webhook_event: JSON.parse(rawBody),
+      webhook_event: parsedBody,
     }),
     cache: "no-store",
   });
@@ -59,7 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Webhook verification failed." }, { status: 400 });
   }
 
-  const event = JSON.parse(rawBody) as {
+  const event = parsedBody as {
     id: string;
     event_type: string;
     resource: Record<string, unknown>;
