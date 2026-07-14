@@ -31,12 +31,18 @@ export default function Footer() {
 
   const [nlName, setNlName] = useState("");
   const [nlEmail, setNlEmail] = useState("");
+  const [nlCompany, setNlCompany] = useState(""); // honeypot — humans never see or fill this
   const [nlStatus, setNlStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
   const [nlError, setNlError] = useState("");
 
   const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
     if (nlStatus === "sending") return;
+    if (nlCompany) {
+      // Honeypot tripped: report success to the bot, send nothing.
+      setNlStatus("ok");
+      return;
+    }
     setNlStatus("sending");
     setNlError("");
     try {
@@ -92,8 +98,28 @@ export default function Footer() {
     },
   ];
 
+  // Organization structured data — only facts already published on this page
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NGO",
+    name: "Pandie Foundation",
+    alternateName: "The Mother of All",
+    url: "https://pandiefoundation.org",
+    logo: "https://pandiefoundation.org/logo.png",
+    email: "info@pandiefoundation.org",
+    telephone: "+1-307-257-0001",
+    description:
+      "A humanitarian nonprofit dedicated to protecting and uplifting vulnerable children in Sierra Leone through education, nutrition, medical assistance, and compassionate care.",
+    areaServed: "Sierra Leone",
+    sameAs: socialLinks.map(s => s.href),
+  };
+
   return (
     <footer className="relative overflow-hidden text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -128,7 +154,7 @@ export default function Footer() {
               className="group relative flex w-full max-w-sm shrink-0 justify-center overflow-hidden bg-[#c9962a] px-9 py-4 text-[12px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] sm:w-auto transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b]"
             >
               <span className="relative z-10">Donate Now</span>
-              <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%]" />
+              <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%] motion-reduce:hidden" />
             </Link>
           </div>
         </div>
@@ -173,6 +199,16 @@ export default function Footer() {
                     </p>
                   ) : (
                     <form onSubmit={handleNewsletter} className="mt-4 max-w-xs">
+                      <input
+                        type="text"
+                        name="company"
+                        value={nlCompany}
+                        onChange={e => setNlCompany(e.target.value)}
+                        tabIndex={-1}
+                        autoComplete="off"
+                        aria-hidden="true"
+                        className="absolute -left-[9999px] h-0 w-0 opacity-0"
+                      />
                       <label htmlFor="footer-nl-name" className="sr-only">Your name</label>
                       <input
                         id="footer-nl-name"
@@ -421,7 +457,12 @@ export default function Footer() {
               </p>
               <button
                 type="button"
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                onClick={() =>
+                  window.scrollTo({
+                    top: 0,
+                    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+                  })
+                }
                 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40 transition hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
               >
                 Back to top

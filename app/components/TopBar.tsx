@@ -148,7 +148,10 @@ export default function TopBar() {
       >
         Skip to content
       </a>
-      <header className={`fixed top-0 z-50 w-full transition-transform duration-500 ${hidden && !open && !langOpen ? "-translate-y-full" : "translate-y-0"}`}>
+      <header
+        onFocusCapture={() => setHidden(false)}
+        className={`fixed top-0 w-full transition-transform duration-500 motion-reduce:transition-none ${open ? "z-[150]" : "z-50"} ${hidden && !open && !langOpen ? "-translate-y-full" : "translate-y-0"}`}
+      >
         <div className={`absolute inset-0 backdrop-blur-md transition-all duration-500 ${scrolled ? "bg-[#0a1a10] shadow-[0_8px_40px_rgba(0,0,0,0.55)]" : "bg-[#0a1a10]/92 shadow-[0_4px_30px_rgba(0,0,0,0.35)]"}`} />
         <div className="pointer-events-none absolute inset-0 opacity-[0.14]">
           <Image src="/nav-texture.jpg" alt="" fill className="object-cover" />
@@ -156,7 +159,7 @@ export default function TopBar() {
         <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#c9962a]/70 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
-        <div className={`relative z-10 flex w-full items-center justify-between px-5 transition-[padding] duration-500 sm:px-6 lg:px-20 ${scrolled ? "py-2 sm:py-2.5" : "py-3.5 sm:py-4"}`}>
+        <div className={`relative z-10 flex w-full items-center justify-between px-5 transition-[padding] duration-500 motion-reduce:transition-none sm:px-6 lg:px-20 ${scrolled ? "py-2 sm:py-2.5" : "py-3.5 sm:py-4"}`}>
 
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-3 sm:gap-3.5">
@@ -170,7 +173,7 @@ export default function TopBar() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden items-center gap-7 lg:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-7 lg:flex">
             {links.map(l => (
               <Link key={l.href} href={l.href}
                 aria-current={isActive(l.href) ? "page" : undefined}
@@ -208,7 +211,7 @@ export default function TopBar() {
             <Link href="/donate"
               className="group relative overflow-hidden bg-[#c9962a] px-6 py-2.5 text-[11px] font-bold tracking-[0.18em] text-[#0a1a10] transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b]">
               <span className="relative z-10">{t.nav.donate}</span>
-              <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%]" />
+              <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%] motion-reduce:hidden" />
             </Link>
           </nav>
 
@@ -251,8 +254,11 @@ export default function TopBar() {
         </div>
       </header>
 
-      {/* Mobile / iPad full-screen menu */}
-      <div className={`fixed inset-0 z-[100] flex flex-col bg-[#0a1a10] transition-all duration-500 lg:hidden ${open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`}>
+      {/* Mobile / iPad full-screen menu — inert while closed so hidden links leave the tab order */}
+      <div
+        inert={!open}
+        className={`fixed inset-0 z-[100] flex flex-col bg-[#0a1a10] transition-all duration-500 motion-reduce:transition-none lg:hidden ${open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`}
+      >
         {/* depth: gold radial glow + texture */}
         <div className="pointer-events-none absolute inset-0 opacity-[0.10]">
           <Image src="/nav-texture.jpg" alt="" fill className="object-cover" />
@@ -261,7 +267,7 @@ export default function TopBar() {
         <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#c9962a] to-transparent" />
 
         <div className="relative flex h-full flex-col justify-between px-7 pb-12 pt-24 sm:px-10 md:px-16 md:pt-28">
-          <nav className="flex flex-col">
+          <nav aria-label="Primary" className="flex flex-col">
             {links.map((l, i) => (
               <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
                 aria-current={isActive(l.href) ? "page" : undefined}
