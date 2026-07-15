@@ -78,6 +78,9 @@ export default function TalentHubPage() {
                 <Link href="/programs/talent/football" className="border border-white/20 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 transition hover:border-white/50 hover:text-white">
                   ⚽ Browse Players
                 </Link>
+                <Link href="/talents" className="border border-[#c9962a]/50 bg-[#c9962a]/10 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#e8b84b] transition hover:border-[#e8b84b] hover:bg-[#c9962a]/20">
+                  ✦ Enter the Talent Room
+                </Link>
               </div>
             </div>
 
