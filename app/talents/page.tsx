@@ -204,7 +204,7 @@ export default function TalentRoomPage() {
             </button>
           </div>
 
-          <Link href="/programs/talent" className="tr-fadeup mt-8 text-[12px] uppercase tracking-[0.2em] text-white/40 underline-offset-4 transition hover:text-[#e8b84b] hover:underline">
+          <Link href="/talents/gallery" className="tr-fadeup mt-8 text-[12px] uppercase tracking-[0.2em] text-white/40 underline-offset-4 transition hover:text-[#e8b84b] hover:underline">
             Or browse every talent at once
           </Link>
         </section>
