@@ -19,7 +19,7 @@ export default function SponsorChild({ selectedSponsorship, onSelect, onBack }: 
       <div className="mx-auto max-w-[1100px]">
         <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
           <div className="max-w-3xl">
-            <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c9962a]">
               Sponsor an Individual Child
             </p>
 
@@ -53,7 +53,7 @@ export default function SponsorChild({ selectedSponsorship, onSelect, onBack }: 
                     <div>
                       <p
                         className={`text-sm font-bold uppercase tracking-[0.16em] ${
-                          isSelected ? "text-[#f0c857]" : "text-[#d4a017]"
+                          isSelected ? "text-[#e8b84b]" : "text-[#c9962a]"
                         }`}
                       >
                         {child.supportType}
@@ -88,7 +88,7 @@ export default function SponsorChild({ selectedSponsorship, onSelect, onBack }: 
                       onClick={() => onSelect({ childId: child.id, type: "monthly" })}
                       className={`rounded-xl px-4 py-4 text-sm font-bold uppercase tracking-[0.12em] transition ${
                         isSelected && selectedSponsorship?.type === "monthly"
-                          ? "bg-[#d4a017] text-[#173325]"
+                          ? "bg-[#c9962a] text-[#0a1a10]"
                           : "bg-[#214c34] text-white hover:opacity-90"
                       }`}
                     >
@@ -103,7 +103,7 @@ export default function SponsorChild({ selectedSponsorship, onSelect, onBack }: 
                       onClick={() => onSelect({ childId: child.id, type: "full" })}
                       className={`rounded-xl px-4 py-4 text-sm font-bold uppercase tracking-[0.12em] transition ${
                         isSelected && selectedSponsorship?.type === "full"
-                          ? "bg-[#f0c857] text-[#173325]"
+                          ? "bg-[#e8b84b] text-[#0a1a10]"
                           : "bg-white text-[#214c34] ring-1 ring-[#214c34]/15 hover:bg-[#f8f5ef]"
                       }`}
                     >
@@ -124,9 +124,9 @@ export default function SponsorChild({ selectedSponsorship, onSelect, onBack }: 
               <h3 className="text-2xl font-semibold">Sponsorship interest captured</h3>
               <p className="mt-3 text-sm leading-7 text-white/85">
                 You selected{" "}
-                <span className="font-semibold text-[#f0c857]">{selectedChild.name}</span>{" "}
+                <span className="font-semibold text-[#e8b84b]">{selectedChild.name}</span>{" "}
                 for{" "}
-                <span className="font-semibold text-[#f0c857]">
+                <span className="font-semibold text-[#e8b84b]">
                   {selectedSponsorship.type === "monthly"
                     ? "Monthly Sponsorship"
                     : "Full Sponsorship"}
@@ -144,19 +144,19 @@ export default function SponsorChild({ selectedSponsorship, onSelect, onBack }: 
             </h3>
             <div className="mt-4 grid gap-4 md:grid-cols-3">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#d4a017]">Step 1</p>
+                <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#c9962a]">Step 1</p>
                 <p className="mt-2 text-sm leading-7 text-[#626a67]">
                   Choose an individual child whose story speaks to your heart.
                 </p>
               </div>
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#d4a017]">Step 2</p>
+                <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#c9962a]">Step 2</p>
                 <p className="mt-2 text-sm leading-7 text-[#626a67]">
                   Decide between monthly sponsorship or full sponsorship.
                 </p>
               </div>
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#d4a017]">Step 3</p>
+                <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#c9962a]">Step 3</p>
                 <p className="mt-2 text-sm leading-7 text-[#626a67]">
                   Receive future updates through a safe and respectful sponsorship process.
                 </p>

@@ -1,153 +1,206 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useT } from "../components/AutoTranslate";
+import { useMemo, useState } from "react";
+import DonateHero from "../components/donate/DonateHero";
+import WaysToGive from "../components/donate/WaysToGive";
+import MoneyDonation from "../components/donate/MoneyDonation";
+import ItemDonation from "../components/donate/ItemDonation";
+import SponsorChild from "../components/donate/SponsorChild";
+import VolunteerForm from "../components/donate/VolunteerForm";
+import PartnerForm from "../components/donate/PartnerForm";
+import TrustSection from "../components/donate/TrustSection";
+import {
+  CurrencyCode, DonationTab, FormData, ItemDonationFormData,
+  VolunteerFormData, PartnerFormData, SponsorshipSelection,
+  currencyConfig, sponsoredChildren,
+} from "./types";
 
-function Tx({ children, className }: { children: string; className?: string }) {
-  const t = useT(children);
-  return <span className={className}>{t}</span>;
-}
+const IMPACT_COPY = [
+  { title: "Feed a Child", description: "Provides nutritious meals so a child can learn and grow strong." },
+  { title: "School Support", description: "Covers books, uniforms, and supplies to keep a child in school." },
+  { title: "Medical Care", description: "Funds treatment, checkups, and preventative care for a child in need." },
+  { title: "Full Sponsorship", description: "Wraps a child in education, nutrition, and care for real, lasting change." },
+];
+
+const emptyMoney: FormData = {
+  fullName: "", email: "", phone: "", message: "", anonymous: false, emailUpdates: false,
+};
+const emptyItem: ItemDonationFormData = {
+  fullName: "", email: "", phone: "", country: "", city: "", category: "",
+  itemName: "", quantity: "", condition: "", deliveryMethod: "", preferredDate: "", description: "",
+};
+const emptyVolunteer: VolunteerFormData = {
+  fullName: "", email: "", phone: "", country: "", city: "", skills: "",
+  availability: "", preferredRole: "", supportMode: "", experience: "", motivation: "",
+};
+const emptyPartner: PartnerFormData = {
+  organizationName: "", contactPerson: "", email: "", phone: "", country: "",
+  partnershipType: "", contributionType: "", estimatedSupport: "", message: "",
+};
 
 export default function DonatePage() {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => { setVisible(true); }, []);
+  const [activeTab, setActiveTab] = useState<DonationTab>("money");
 
-  const reveal = (delay = 0): React.CSSProperties => ({
-    opacity: visible ? 1 : 0,
-    transform: visible ? "translateY(0)" : "translateY(20px)",
-    transition: `opacity 0.8s ease ${delay}ms, transform 0.8s ease ${delay}ms`,
-  });
+  // ── Money (Stripe) ────────────────────────────────────────────────
+  const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
+  const [currency, setCurrency] = useState<CurrencyCode>("USD");
+  const [selectedAmount, setSelectedAmount] = useState<string>("50");
+  const [money, setMoney] = useState<FormData>(emptyMoney);
+  const [moneyError, setMoneyError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const impactItems = useMemo(() => {
+    const amts = currencyConfig[currency].amounts;
+    return IMPACT_COPY.map((c, i) => ({ amount: amts[i] ?? null, title: c.title, description: c.description }));
+  }, [currency]);
+
+  async function handleMoneySubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setMoneyError("");
+
+    const amount = parseFloat(selectedAmount);
+    if (!money.fullName.trim() && !money.anonymous) return setMoneyError("Please enter your name, or choose to give anonymously.");
+    if (!money.email.includes("@")) return setMoneyError("Please enter a valid email for your receipt.");
+    if (!amount || amount <= 0) return setMoneyError("Please choose or enter a donation amount.");
+
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount, currency, frequency,
+          donorName: money.fullName, donorEmail: money.email,
+          phone: money.phone, message: money.message,
+          anonymous: money.anonymous, emailUpdates: money.emailUpdates,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Could not start checkout.");
+      window.location.href = data.url;
+    } catch (err) {
+      setMoneyError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
+  }
+
+  // ── Inquiry forms (items / volunteer / partner) ───────────────────
+  const [item, setItem] = useState<ItemDonationFormData>(emptyItem);
+  const [volunteer, setVolunteer] = useState<VolunteerFormData>(emptyVolunteer);
+  const [partner, setPartner] = useState<PartnerFormData>(emptyPartner);
+  const [inquiryError, setInquiryError] = useState("");
+  const [sent, setSent] = useState<DonationTab | null>(null);
+
+  async function submitInquiry(kind: DonationTab, name: string, email: string, details: Record<string, string>) {
+    setInquiryError("");
+    if (!email.includes("@")) { setInquiryError("Please enter a valid email address."); return; }
+    try {
+      const res = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind, name, email, details }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Submission failed.");
+      setSent(kind);
+    } catch (err) {
+      setInquiryError(err instanceof Error ? err.message : "Something went wrong.");
+    }
+  }
+
+  // ── Sponsorship ───────────────────────────────────────────────────
+  const [sponsorship, setSponsorship] = useState<SponsorshipSelection>(null);
+  function handleSponsorSelect(sel: SponsorshipSelection) {
+    setSponsorship(sel);
+    if (!sel) return;
+    // Turn a chosen child into a pre-filled monthly gift on the money tab.
+    const child = sponsoredChildren.find((c) => c.id === sel.childId);
+    const monthly = child ? parseInt(child.monthlyAmount.replace(/[^0-9]/g, ""), 10) : 35;
+    const full = child ? parseInt(child.fullAmount.replace(/[^0-9]/g, ""), 10) : 420;
+    setCurrency("USD");
+    setFrequency(sel.type === "monthly" ? "monthly" : "one-time");
+    setSelectedAmount(String(sel.type === "monthly" ? monthly : full));
+    setActiveTab("money");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  const successBox = (msg: string) => (
+    <section className="bg-[#f4f1ea] px-5 py-16 sm:px-6 sm:py-20 lg:px-20">
+      <div className="mx-auto max-w-xl rounded-2xl border border-[#c9962a]/25 bg-white p-7 text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-10">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0a1a10] text-2xl text-[#e8b84b]">✓</div>
+        <h2 className="mt-6 font-heading text-3xl font-semibold text-[#214c34]">Thank you!</h2>
+        <p className="mt-4 text-[15px] leading-7 text-[#5f6663]">{msg}</p>
+        <button
+          onClick={() => { setSent(null); setActiveTab("money"); }}
+          className="mt-8 w-full bg-[#c9962a] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0a1a10] transition hover:bg-[#e8b84b] sm:w-auto"
+        >
+          Back to giving
+        </button>
+      </div>
+    </section>
+  );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0a1a10]">
-      {/* Background image with warm overlay */}
-      <div className="absolute inset-0">
-        <Image
-          src="/heroimage.jpeg"
-          alt=""
-          fill
-          priority
-          className="object-cover opacity-30"
+    <>
+      <DonateHero />
+      <WaysToGive activeTab={activeTab} onTabChange={(t) => { setActiveTab(t); setSent(null); }} />
+
+      {activeTab === "money" && (
+        <MoneyDonation
+          frequency={frequency}
+          currency={currency}
+          selectedAmount={selectedAmount}
+          formData={money}
+          error={moneyError}
+          isSubmitting={submitting}
+          impactItems={impactItems}
+          onFrequencyChange={setFrequency}
+          onCurrencyChange={setCurrency}
+          onAmountChange={setSelectedAmount}
+          onInputChange={(f, v) => setMoney((s) => ({ ...s, [f]: v }))}
+          onSubmit={handleMoneySubmit}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a10]/85 via-[#0a1a10]/90 to-[#0a1a10]" />
-      </div>
+      )}
 
-      {/* Decorative blur orbs */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-32 top-20 h-96 w-96 rounded-full bg-[#c9962a]/[0.08] blur-[120px]" />
-        <div className="absolute -right-32 bottom-20 h-96 w-96 rounded-full bg-[#c9962a]/[0.05] blur-[120px]" />
-      </div>
+      {activeTab === "items" && (sent === "items" ? successBox("Your item donation offer has been received. Our team will reach out to arrange the details.") : (
+        <ItemDonation
+          formData={item}
+          error={inquiryError}
+          onInputChange={(f, v) => setItem((s) => ({ ...s, [f]: v }))}
+          onSubmit={(e) => { e.preventDefault(); submitInquiry("items", item.fullName, item.email, item as unknown as Record<string, string>); }}
+          onBack={() => setActiveTab("money")}
+        />
+      ))}
 
-      {/* Subtle grid */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+      {activeTab === "sponsor" && (
+        <SponsorChild
+          selectedSponsorship={sponsorship}
+          onSelect={handleSponsorSelect}
+          onBack={() => setActiveTab("money")}
+        />
+      )}
 
-      {/* Content */}
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 py-24 text-center">
+      {activeTab === "volunteer" && (sent === "volunteer" ? successBox("Your volunteer application has been received. We're grateful — our team will be in touch soon.") : (
+        <VolunteerForm
+          formData={volunteer}
+          error={inquiryError}
+          onInputChange={(f, v) => setVolunteer((s) => ({ ...s, [f]: v }))}
+          onSubmit={(e) => { e.preventDefault(); submitInquiry("volunteer", volunteer.fullName, volunteer.email, volunteer as unknown as Record<string, string>); }}
+          onBack={() => setActiveTab("money")}
+        />
+      ))}
 
-        {/* Logo + glow */}
-        <div style={reveal(0)} className="relative mb-10">
-          <div className="absolute inset-0 animate-pulse rounded-full bg-[#c9962a]/30 blur-2xl" />
-          <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-[#c9962a]/60 shadow-[0_0_40px_rgba(201,150,42,0.45)]">
-            <Image src="/logo.png" alt="Pandie Foundation" fill className="object-cover" />
-          </div>
-        </div>
+      {activeTab === "partner" && (sent === "partner" ? successBox("Thank you for your interest in partnering with us. Our partnerships team will reach out shortly.") : (
+        <PartnerForm
+          formData={partner}
+          error={inquiryError}
+          onInputChange={(f, v) => setPartner((s) => ({ ...s, [f]: v }))}
+          onSubmit={(e) => { e.preventDefault(); submitInquiry("partner", partner.contactPerson || partner.organizationName, partner.email, partner as unknown as Record<string, string>); }}
+          onBack={() => setActiveTab("money")}
+        />
+      ))}
 
-        {/* Construction badge */}
-        <div style={reveal(150)}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#c9962a]/40 bg-[#c9962a]/10 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.32em] text-[#c9962a]">
-            <span className="text-base">🔒</span>
-            <Tx>Under Construction</Tx>
-          </span>
-        </div>
-
-        {/* Heading */}
-        <h1
-          style={reveal(300)}
-          className="mt-8 font-heading text-[clamp(40px,6vw,68px)] font-semibold leading-[1.05] text-white"
-        >
-          <Tx>Thank You for</Tx><br />
-          <em className="italic text-[#e8b84b]"><Tx>Your Beautiful Heart</Tx></em>
-        </h1>
-
-        {/* Sweet message */}
-        <p
-          style={reveal(450)}
-          className="mt-8 max-w-xl text-[17px] leading-9 text-white/75"
-        >
-          <Tx>The fact that you came here — ready to give — already means more to us than you can imagine. Our online donation page is being built right now to make sure every gift reaches a child safely and securely.</Tx>
-        </p>
-
-        <p
-          style={reveal(600)}
-          className="mt-5 max-w-xl text-[16px] leading-8 text-white/55"
-        >
-          <Tx>Online giving will open very soon. Until then, if your heart is leading you to help a child today, we would be so honored to hear from you directly.</Tx>
-        </p>
-
-        {/* Email card */}
-        <div
-          style={reveal(750)}
-          className="mt-12 w-full max-w-md rounded-2xl border border-[#c9962a]/25 bg-[#0f2418]/60 p-7 backdrop-blur-sm"
-        >
-          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#c9962a]">
-            <Tx>Donate Today by Email</Tx>
-          </p>
-          <a
-            href="mailto:info@pandiefoundation.org?subject=I want to support Pandie Foundation"
-            className="mt-3 inline-block font-heading text-[22px] font-semibold text-white transition hover:text-[#e8b84b] sm:text-[26px]"
-          >
-            info@pandiefoundation.org
-          </a>
-          <p className="mt-4 text-[13px] leading-6 text-white/45">
-            <Tx>Tell us how you'd like to help — one-time gift, monthly sponsorship, or sponsoring a specific child — and our team will personally guide you through it.</Tx>
-          </p>
-        </div>
-
-        {/* Phone */}
-        <div style={reveal(900)} className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[13px] text-white/50">
-          <span><Tx>or call us</Tx></span>
-          <a href="tel:+13072570001" className="font-semibold text-white/80 transition hover:text-[#c9962a]">
-            +1 (307) 257-0001
-          </a>
-        </div>
-
-        {/* CTAs */}
-        <div style={reveal(1050)} className="mt-12 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/programs"
-            className="group inline-flex items-center gap-2 bg-[#c9962a] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition-all duration-300 hover:bg-[#e8b84b] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(201,150,42,0.45)]"
-          >
-            <Tx>See Our Programs</Tx>
-            <span className="transition-transform group-hover:translate-x-1">→</span>
-          </Link>
-          <Link
-            href="/stories"
-            className="inline-flex items-center gap-2 border border-white/25 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/80 transition hover:border-white/60 hover:text-white"
-          >
-            <Tx>Read Their Stories</Tx>
-          </Link>
-        </div>
-
-        {/* Closing quote */}
-        <p
-          style={reveal(1250)}
-          className="mt-16 max-w-lg text-[13px] italic leading-7 text-white/35"
-        >
-          <Tx>"Every child reached, every meal served, every life lifted — it all begins with a heart like yours that chose to care."</Tx>
-        </p>
-        <p style={reveal(1400)} className="mt-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#c9962a]/70">
-          <Tx>— The Pandie Family</Tx>
-        </p>
-      </div>
-    </main>
+      <TrustSection />
+    </>
   );
 }

@@ -28,7 +28,7 @@ export default function VolunteerForm({
 
         {/* Left – info panel */}
         <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
-          <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
+          <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c9962a]">
             Volunteer With Us
           </p>
 
@@ -254,7 +254,7 @@ export default function VolunteerForm({
 
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center rounded-xl bg-[#d4a017] px-6 py-4 text-sm font-bold uppercase tracking-[0.16em] text-[#173325] transition hover:opacity-90"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-[#c9962a] px-6 py-4 text-sm font-bold uppercase tracking-[0.16em] text-[#0a1a10] transition hover:opacity-90"
             >
               Submit Volunteer Form
             </button>
@@ -263,7 +263,7 @@ export default function VolunteerForm({
           <button
             type="button"
             onClick={onBack}
-            className="mt-6 inline-block text-sm font-semibold uppercase tracking-[0.14em] text-[#214c34] transition hover:text-[#d4a017]"
+            className="mt-6 inline-block text-sm font-semibold uppercase tracking-[0.14em] text-[#214c34] transition hover:text-[#c9962a]"
           >
             ← Back to Donate Money
           </button>

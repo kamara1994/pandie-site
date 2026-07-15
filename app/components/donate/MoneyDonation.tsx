@@ -465,7 +465,7 @@ export default function MoneyDonation({
 
               <Link
                 href="/"
-                className="mt-6 inline-block text-sm font-semibold uppercase tracking-[0.14em] text-[#214c34] transition hover:text-[#d4a017]"
+                className="mt-6 inline-block text-sm font-semibold uppercase tracking-[0.14em] text-[#214c34] transition hover:text-[#c9962a]"
               >
                 ← Back to Home
               </Link>
@@ -479,7 +479,7 @@ export default function MoneyDonation({
         <div className="mx-auto max-w-[1100px]">
           <div className="rounded-2xl bg-[#214c34] p-8 text-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
             <div className="max-w-2xl">
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#f0c857]">
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#e8b84b]">
                 What Your Gift Can Do
               </p>
               <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">
@@ -497,7 +497,7 @@ export default function MoneyDonation({
                   key={item.title}
                   className="rounded-xl bg-white/10 p-6 ring-1 ring-white/10 backdrop-blur-sm"
                 >
-                  <p className="text-2xl font-bold text-[#f0c857]">
+                  <p className="text-2xl font-bold text-[#e8b84b]">
                     {currentCurrency.symbol}{item.amount}
                   </p>
                   <h3 className="mt-3 text-xl font-semibold text-white">
