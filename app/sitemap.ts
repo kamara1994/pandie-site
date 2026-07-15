@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/programs/outreach`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/programs/talent`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${base}/talents`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${base}/potential-in-motion`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/programs/talent/football`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${base}/programs/talent/music`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${base}/programs/talent/academic`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },

@@ -15,7 +15,9 @@ export default function DonatePrompt() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (pathname.startsWith("/donate")) return;
+    // Never prompt on the donate flow, or over the Potential in Motion story —
+    // that page carries its own donation arc and finale CTA.
+    if (pathname.startsWith("/donate") || pathname.startsWith("/potential-in-motion")) return;
     if (sessionStorage.getItem("pandie-donate-prompt")) return;
 
     let shown = false;
