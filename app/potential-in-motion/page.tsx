@@ -244,7 +244,9 @@ export default function PotentialInMotionPage() {
       gsap.set(q(".pim-object"), { x: X(50), y: Y(-14), xPercent: -50, yPercent: -50 });
       gsap.set(q(".pim-obj-svg > g"), { opacity: 0, transformOrigin: "50% 50%" });
       gsap.set(q(".pim-g-ball"), { opacity: 1 });
-      gsap.set(q(".pim-scene"), { autoAlpha: 0, y: 30 });
+      // Pop-up book: each chapter lies flat against the ground plane and
+      // folds upright on entry (hinge at the stage floor).
+      gsap.set(q(".pim-scene"), { autoAlpha: 0, rotateX: -72, transformOrigin: "50% 100%" });
       gsap.set(q(".pim-caption"), { autoAlpha: 0 });
       gsap.set(q(".pim-cap-0"), { autoAlpha: 1 });
       gsap.set(q(".pim-cap-0 .pim-w"), { yPercent: 0, opacity: 1 });
@@ -275,8 +277,9 @@ export default function PotentialInMotionPage() {
         if (out < 100) tl.to(q(`.pim-cap-${i}`), { autoAlpha: 0, duration: 1.2 }, out);
       };
       const scene = (i: number, at: number, out: number) => {
-        tl.to(q(`.pim-sc-${i}`), { autoAlpha: 1, y: 0, duration: 2.4, ease: "power2.out" }, at);
-        if (out < 100) tl.to(q(`.pim-sc-${i}`), { autoAlpha: 0, y: 20, duration: 1.8 }, out);
+        // back.out overshoot = the spring of a paper pop-up settling upright
+        tl.to(q(`.pim-sc-${i}`), { autoAlpha: 1, rotateX: 0, duration: 2.4, ease: "back.out(1.2)" }, at);
+        if (out < 100) tl.to(q(`.pim-sc-${i}`), { autoAlpha: 0, rotateX: -16, duration: 1.8 }, out);
       };
       const morph = (from: string, to: string, at: number) => {
         tl.to(q(".pim-obj-svg"), { scale: 1.35, duration: 1.2, ease: "power2.out" }, at)
@@ -295,7 +298,9 @@ export default function PotentialInMotionPage() {
       const flight = (at: number, dur: number) => {
         tl.to(q(".pim-trail"), { opacity: 0.85, duration: dur * 0.3 }, at)
           .to(q(".pim-trail"), { opacity: 0, duration: dur * 0.3 }, at + dur * 0.7)
-          .to(q(".pim-obj-spin"), { rotate: "+=720", duration: dur }, at)
+          .to(q(".pim-obj-spin"), { rotate: "+=360", duration: dur }, at)
+          // coin-flip on the y axis — the flat SVG reads as a solid object in flight
+          .to(q(".pim-obj-svg"), { rotationY: "+=720", duration: dur }, at)
           .to(q(".pim-shadow"), { scaleX: 0.45, opacity: 0.09, duration: dur / 2 }, at)
           .to(q(".pim-shadow"), { scaleX: 1, opacity: 0.36, duration: dur / 2 }, at + dur / 2);
       };
@@ -403,15 +408,26 @@ export default function PotentialInMotionPage() {
       tl.to({}, { duration: 1 }, 99);
 
       if (!isMobile && window.matchMedia("(pointer: fine)").matches) {
-        const toX = gsap.quickTo(q(".pim-parallax")[0], "x", { duration: 0.9, ease: "power2.out" });
-        const toY = gsap.quickTo(q(".pim-parallax")[0], "y", { duration: 0.9, ease: "power2.out" });
+        // Desktop: the pointer tilts the diorama. Depth planes do the rest —
+        // near hills sweep past far ones, the stage reads as a physical box.
+        const cam = q(".pim-camera")[0];
+        const toRY = gsap.quickTo(cam, "rotationY", { duration: 1.1, ease: "power2.out" });
+        const toRX = gsap.quickTo(cam, "rotationX", { duration: 1.1, ease: "power2.out" });
         const onMove = (e: PointerEvent) => {
-          toX(((e.clientX / window.innerWidth) - 0.5) * -14);
-          toY(((e.clientY / window.innerHeight) - 0.5) * -8);
+          toRY(((e.clientX / window.innerWidth) - 0.5) * 7);
+          toRX(((e.clientY / window.innerHeight) - 0.5) * -5);
         };
         window.addEventListener("pointermove", onMove, { passive: true });
         return () => window.removeEventListener("pointermove", onMove);
       }
+
+      // Mobile has no pointer, so the scroll drives a slow handheld drift —
+      // the depth planes shift against each other as the camera sways.
+      tl.to(q(".pim-camera"), { rotationY: 2.4, rotationX: 1.2, duration: 12 }, 8)
+        .to(q(".pim-camera"), { rotationY: -2.6, duration: 14 }, 26)
+        .to(q(".pim-camera"), { rotationY: 2, rotationX: 0.8, duration: 14 }, 46)
+        .to(q(".pim-camera"), { rotationY: -1.8, duration: 12 }, 62)
+        .to(q(".pim-camera"), { rotationY: 0, rotationX: 0, duration: 12 }, 80);
     }, wrap);
 
     const onLoad = () => ScrollTrigger.refresh();
@@ -483,43 +499,59 @@ export default function PotentialInMotionPage() {
           {tr("Skip story ↓")}
         </a>
 
-        <section className="pim-stage relative h-[100svh] overflow-hidden bg-[#0a1a10]" aria-hidden="true">
+        <section className="pim-stage relative h-[100svh] overflow-hidden bg-[#0a1a10] [perspective:1100px]" aria-hidden="true">
           <style>{`
             .pf-duo { background: linear-gradient(160deg, #e8cd85, #f4eee0); }
             .pf-duo img { filter: grayscale(1) contrast(1.06); mix-blend-mode: multiply; }
             .pf-duo-tint { background: #143424; mix-blend-mode: lighten; }
           `}</style>
-          <div className="pim-parallax absolute inset-[-16px]">
-            {SKY.map(([p, t, b], i) => (
-              <div key={p} className={`pim-sky-${i} absolute inset-0`}
-                style={{ background: `linear-gradient(180deg, ${t} 0%, ${b} 100%)`, opacity: i === 0 ? 1 : 0 }} />
-            ))}
-            <div className="pim-sun absolute left-0 top-0 h-14 w-14 sm:h-20 sm:w-20"
-              style={{ background: "radial-gradient(circle, #ffedbb 0% 42%, #e8cd85 58%, rgba(232,205,133,0) 68%)" }} />
-            <div className="pim-moon absolute right-[16%] top-[14%] h-10 w-10 rounded-full opacity-0"
-              style={{ background: "radial-gradient(circle at 38% 38%, #f4eee0 0 58%, #cfc7ae 70%, rgba(244,238,224,0) 72%)" }} />
-            <div className="pim-stars absolute inset-0 opacity-0">
-              {Array.from({ length: 46 }).map((_, i) => (
-                <span key={i} className="absolute h-[2px] w-[2px] rounded-full bg-white"
-                  style={{ left: `${(i * 29) % 100}%`, top: `${(i * 17) % 48}%`, opacity: 0.25 + ((i * 11) % 65) / 100 }} />
+          {/* The camera: everything inside lives in one shared 3D space. Depth
+              wrappers push each landscape band to its own plane, so tilting the
+              camera produces true parallax — near hills sweep past far ones. */}
+          <div className="pim-camera absolute inset-0 will-change-transform [transform-style:preserve-3d]">
+          <div className="pim-parallax absolute inset-[-16px] [transform-style:preserve-3d]">
+            <div className="absolute inset-0" style={{ transform: "translateZ(-400px) scale(1.364)" }}>
+              {SKY.map(([p, t, b], i) => (
+                <div key={p} className={`pim-sky-${i} absolute inset-0`}
+                  style={{ background: `linear-gradient(180deg, ${t} 0%, ${b} 100%)`, opacity: i === 0 ? 1 : 0 }} />
               ))}
-              <span className="pim-shooting-star absolute left-[12%] top-[10%] h-[2px] w-12 rotate-[21deg] bg-gradient-to-r from-transparent via-white to-transparent opacity-0" />
+              <div className="pim-stars absolute inset-0 opacity-0">
+                {Array.from({ length: 46 }).map((_, i) => (
+                  <span key={i} className="absolute h-[2px] w-[2px] rounded-full bg-white"
+                    style={{ left: `${(i * 29) % 100}%`, top: `${(i * 17) % 48}%`, opacity: 0.25 + ((i * 11) % 65) / 100 }} />
+                ))}
+                <span className="pim-shooting-star absolute left-[12%] top-[10%] h-[2px] w-12 rotate-[21deg] bg-gradient-to-r from-transparent via-white to-transparent opacity-0" />
+              </div>
+              <div className="pim-cloud pim-cloud-1 absolute left-[10%] top-[18%] h-6 w-32 rounded-full bg-white/10 blur-md" />
+              <div className="pim-cloud pim-cloud-2 absolute right-[14%] top-[28%] h-5 w-24 rounded-full bg-white/[0.08] blur-md" />
+            </div>
+            <div className="absolute inset-0" style={{ transform: "translateZ(-300px) scale(1.273)" }}>
+              <div className="pim-sun absolute left-0 top-0 h-14 w-14 sm:h-20 sm:w-20"
+                style={{ background: "radial-gradient(circle, #ffedbb 0% 42%, #e8cd85 58%, rgba(232,205,133,0) 68%)" }} />
+              {/* anchored deeper than the flat design had it — the wrapper's
+                  1.273 depth scale pushes it back out to the old sky position */}
+              <div className="pim-moon absolute right-[23%] top-[26%] h-10 w-10 rounded-full opacity-0"
+                style={{ background: "radial-gradient(circle at 38% 38%, #f4eee0 0 58%, #cfc7ae 70%, rgba(244,238,224,0) 72%)" }} />
+            </div>
+            <div className="absolute inset-0" style={{ transform: "translateZ(-260px) scale(1.236)" }}>
+              <svg className="pim-hill-far absolute bottom-[24%] left-[-6%] w-[120%] blur-[2.2px]" viewBox="0 0 1200 130" preserveAspectRatio="none" style={{ height: "16%" }}>
+                <path d="M0 130 L0 84 Q170 22 380 72 Q580 116 780 54 Q980 6 1200 74 L1200 130 Z" fill="#2c5a3c" />
+              </svg>
+            </div>
+            <div className="absolute inset-0" style={{ transform: "translateZ(-150px) scale(1.136)" }}>
+              <svg className="pim-hill-mid absolute bottom-[19%] left-[-8%] w-[124%] blur-[0.9px]" viewBox="0 0 1200 150" preserveAspectRatio="none" style={{ height: "19%" }}>
+                <path d="M0 150 L0 86 Q240 18 470 82 Q690 138 900 66 Q1060 14 1200 86 L1200 150 Z" fill="#1d4530" />
+              </svg>
+            </div>
+            <div className="absolute inset-0" style={{ transform: "translateZ(-60px) scale(1.055)" }}>
+              <svg className="pim-hill-near absolute bottom-[14%] left-[-11%] w-[130%]" viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ height: "14%" }}>
+                <path d="M0 120 L0 78 Q300 30 620 76 Q920 116 1200 70 L1200 120 Z" fill="#14291d" />
+              </svg>
             </div>
             {Array.from({ length: 14 }).map((_, i) => (
               <span key={i} className="pim-firefly absolute h-1 w-1 rounded-full bg-[#e8cd85] opacity-0 shadow-[0_0_7px_rgba(232,205,133,0.9)]"
                 style={{ left: `${8 + (i * 6.4) % 86}%`, top: `${50 + (i * 7) % 22}%` }} />
             ))}
-            <div className="pim-cloud pim-cloud-1 absolute left-[10%] top-[18%] h-6 w-32 rounded-full bg-white/10 blur-md" />
-            <div className="pim-cloud pim-cloud-2 absolute right-[14%] top-[28%] h-5 w-24 rounded-full bg-white/[0.08] blur-md" />
-            <svg className="pim-hill-far absolute bottom-[24%] left-[-6%] w-[120%] blur-[2.2px]" viewBox="0 0 1200 130" preserveAspectRatio="none" style={{ height: "16%" }}>
-              <path d="M0 130 L0 84 Q170 22 380 72 Q580 116 780 54 Q980 6 1200 74 L1200 130 Z" fill="#2c5a3c" />
-            </svg>
-            <svg className="pim-hill-mid absolute bottom-[19%] left-[-8%] w-[124%] blur-[0.9px]" viewBox="0 0 1200 150" preserveAspectRatio="none" style={{ height: "19%" }}>
-              <path d="M0 150 L0 86 Q240 18 470 82 Q690 138 900 66 Q1060 14 1200 86 L1200 150 Z" fill="#1d4530" />
-            </svg>
-            <svg className="pim-hill-near absolute bottom-[14%] left-[-11%] w-[130%]" viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ height: "14%" }}>
-              <path d="M0 120 L0 78 Q300 30 620 76 Q920 116 1200 70 L1200 120 Z" fill="#14291d" />
-            </svg>
             <div className="pim-ground absolute bottom-0 h-[26%] w-full" style={{ background: "#0d1f15" }} />
           </div>
 
@@ -567,7 +599,7 @@ export default function PotentialInMotionPage() {
             {Array.from({ length: 2 }).map((_, i) => (
               <span key={i} className="pim-ring absolute inset-[-10%] rounded-full border-2 border-[#e8cd85]/70 opacity-0" />
             ))}
-            <div className="pim-obj-spin h-full w-full">
+            <div className="pim-obj-spin h-full w-full [perspective:500px]">
               <svg viewBox="0 0 200 200" className="pim-obj-svg h-full w-full drop-shadow-[0_6px_16px_rgba(0,0,0,0.35)]">
                 <g className="pim-g-ball">
                   <circle cx="100" cy="100" r="62" fill="#f4eee0" stroke="#0a1c11" strokeWidth="4" />
@@ -605,6 +637,18 @@ export default function PotentialInMotionPage() {
             style={{ opacity: 0.36, marginTop: 34 }} />
           <div className="pim-dust-1 absolute h-5 w-14 rounded-[100%] bg-[#e8cd85]/40 blur-[4px] opacity-0" style={{ left: "46%", top: "76%" }} />
           <div className="pim-dust-2 absolute h-4 w-10 rounded-[100%] bg-[#e8cd85]/35 blur-[4px] opacity-0" style={{ left: "47%", top: "76%" }} />
+          </div>{/* /pim-camera */}
+
+          {/* Film pass: vignette pools the light toward the action; the grain is
+              a 100-byte inline SVG — cinema without a single network request. */}
+          <div className="pointer-events-none absolute inset-0 z-20"
+            style={{
+              background: "radial-gradient(ellipse 120% 90% at 50% 42%, transparent 52%, rgba(4,11,9,0.55) 100%)",
+            }} />
+          <div className="pointer-events-none absolute inset-0 z-20 opacity-[0.05]"
+            style={{
+              backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E\")",
+            }} />
 
           <div className="pointer-events-none absolute inset-x-0 top-[13%] z-30 px-6 text-center sm:top-[15%]">
             {CAPS.map((c, i) => (
