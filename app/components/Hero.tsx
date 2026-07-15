@@ -96,6 +96,8 @@ export default function Hero() {
         {/* Mobile-only: gold corner ticks frame the photo */}
         <div className="pointer-events-none absolute left-3 top-3 z-30 h-5 w-5 border-l-[1.5px] border-t-[1.5px] border-[#e8b84b]/70 lg:hidden" />
         <div className="pointer-events-none absolute right-3 top-3 z-30 h-5 w-5 border-r-[1.5px] border-t-[1.5px] border-[#e8b84b]/70 lg:hidden" />
+        <div className="pointer-events-none absolute bottom-3 left-3 z-30 h-5 w-5 border-b-[1.5px] border-l-[1.5px] border-[#e8b84b]/70 lg:hidden" />
+        <div className="pointer-events-none absolute bottom-3 right-3 z-30 h-5 w-5 border-b-[1.5px] border-r-[1.5px] border-[#e8b84b]/70 lg:hidden" />
 
         {/* Mobile-only: soft fade at the photo's base so it melts into the green below */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a1a10] to-transparent lg:hidden" />

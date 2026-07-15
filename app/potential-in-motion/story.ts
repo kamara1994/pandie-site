@@ -14,6 +14,9 @@
 
 export type StoryScene = {
   id: string;
+  kicker: string;
+  quote: string;
+  town: string;
   childName: string;
   program: string;
   headline: string;
@@ -32,6 +35,9 @@ export const STORY_INTRO = {
 export const STORY_SCENES: StoryScene[] = [
   {
     id: "play",
+    kicker: "01 — MAKENI",
+    quote: "For Musa, it starts with a ball.",
+    town: "Makeni",
     childName: "Musa",
     program: "Sport and Mentorship",
     headline: "A chance to play.",
@@ -43,6 +49,9 @@ export const STORY_SCENES: StoryScene[] = [
   },
   {
     id: "voice",
+    kicker: "02 — BO",
+    quote: "For Aminata, it becomes a voice.",
+    town: "Bo",
     childName: "Aminata",
     program: "Music and Creative Expression",
     headline: "A chance to be heard.",
@@ -54,6 +63,9 @@ export const STORY_SCENES: StoryScene[] = [
   },
   {
     id: "learn",
+    kicker: "03 — KENEMA",
+    quote: "For Hawa, it becomes a classroom.",
+    town: "Kenema",
     childName: "Hawa",
     program: "Education and Learning Support",
     headline: "A chance to discover.",
@@ -65,19 +77,22 @@ export const STORY_SCENES: StoryScene[] = [
   },
   {
     id: "heal",
-    childName: "Mariama",
+    kicker: "04 — FREETOWN",
+    quote: "For Ibrahim, it becomes healing.",
+    town: "Freetown",
+    childName: "Ibrahim",
     program: "Health, Care, and Future Careers",
     headline: "A chance to heal.",
     description: "Support today can help a child care for an entire community tomorrow.",
-    // PLACEHOLDER — replace with final approved photo of Mariama
-    image: "/service-medical.jpg",
+    // PLACEHOLDER — replace with final approved photo of Ibrahim
+    image: "/story-protection.jpg",
     objectPosition: "50% 20%",
     objectLabel: "a stethoscope",
   },
 ];
 
 export const STORY_FINALE = {
-  headline: "Now it is in your hands.",
+  headline: "Now it's in your hands.",
   support: "One opportunity can become a future. Help us pass the next opportunity forward.",
   primaryCta: { label: "Donate Now", href: "/donate" },
   secondaryCta: { label: "Meet the Talents", href: "/talents" },

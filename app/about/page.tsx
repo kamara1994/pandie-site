@@ -310,6 +310,8 @@ export default function AboutPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/80 via-transparent to-transparent" />
                 <div className="pointer-events-none absolute left-3 top-3 h-5 w-5 border-l-[1.5px] border-t-[1.5px] border-[#e8b84b]/70" />
                 <div className="pointer-events-none absolute right-3 top-3 h-5 w-5 border-r-[1.5px] border-t-[1.5px] border-[#e8b84b]/70" />
+                <div className="pointer-events-none absolute bottom-3 left-3 h-5 w-5 border-b-[1.5px] border-l-[1.5px] border-[#e8b84b]/70" />
+                <div className="pointer-events-none absolute bottom-3 right-3 h-5 w-5 border-b-[1.5px] border-r-[1.5px] border-[#e8b84b]/70" />
 
                 <div className="absolute bottom-6 left-6 right-6">
                   <RevealLine direction="up">
@@ -412,6 +414,8 @@ export default function AboutPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/90 via-[#0a1a10]/20 to-transparent" />
                 <div className="pointer-events-none absolute left-3 top-3 h-5 w-5 border-l-[1.5px] border-t-[1.5px] border-[#e8b84b]/70" />
                 <div className="pointer-events-none absolute right-3 top-3 h-5 w-5 border-r-[1.5px] border-t-[1.5px] border-[#e8b84b]/70" />
+                <div className="pointer-events-none absolute bottom-3 left-3 h-5 w-5 border-b-[1.5px] border-l-[1.5px] border-[#e8b84b]/70" />
+                <div className="pointer-events-none absolute bottom-3 right-3 h-5 w-5 border-b-[1.5px] border-r-[1.5px] border-[#e8b84b]/70" />
 
                 <div className="absolute bottom-6 left-6 right-6">
                   <RevealLine direction="up">
