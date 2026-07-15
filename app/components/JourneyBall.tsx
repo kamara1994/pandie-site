@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
+import { useLang } from "@/app/context/LanguageContext";
+
 
 // The Magnet: a site-wide floating football (bottom-LEFT — the chatbot owns
 // bottom-right) that bounces gently every ~8s and periodically shows a label
@@ -11,6 +13,9 @@ import { usePathname } from "next/navigation";
 // heart and invites them to meet the talents instead.
 export default function JourneyBall() {
   const pathname = usePathname();
+  const { flat, lang } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
+
   const [chip, setChip] = useState(false);
   // Re-read on every render (navigation re-renders via pathname); the storage
   // event covers cross-tab completion.
@@ -37,7 +42,7 @@ export default function JourneyBall() {
   if (done && pathname.startsWith("/talents")) return null;
 
   const href = done ? "/talents" : "/potential-in-motion";
-  const label = done ? "Meet the talents →" : "Follow the dream →";
+  const label = done ? tr("Meet the talents →") : tr("Follow the dream →");
 
   return (
     <div className="fixed bottom-4 left-4 z-40 flex items-center gap-2.5">

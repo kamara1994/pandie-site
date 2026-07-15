@@ -10,9 +10,12 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import GoldThread from "../components/GoldThread";
+import { useLang } from "@/app/context/LanguageContext";
 import { SPONSOR_TIERS, talentById } from "../talents/gallery/data";
 
 function SponsorInner() {
+  const { flat, lang } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
   const params = useSearchParams();
   const child = talentById(params.get("child") || "");
   const encourage = params.get("encourage") === "1";
@@ -53,7 +56,7 @@ function SponsorInner() {
     <div className="mx-auto max-w-md px-5 py-16 text-center">
       <GoldThread className="mx-auto w-24" />
       <h1 className="mt-5 font-heading text-[clamp(28px,6vw,40px)] font-semibold leading-tight">
-        {child ? <>Sponsor <em className="italic text-[#e8b84b]">{child.firstName}</em></> : "Sponsor a child"}
+        {child ? <>{tr("Sponsor")} <em className="italic text-[#e8b84b]">{child.firstName}</em></> : tr("Sponsor a child")}
       </h1>
       {child && (
         <p className="mt-2 text-[13px] uppercase tracking-[0.16em] text-white/45">
@@ -89,14 +92,14 @@ function SponsorInner() {
         <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
         </svg>
-        Continue to secure giving
+        {tr("Continue to secure giving")}
       </Link>
       <p className="mt-3 text-[11px] leading-5 text-white/40">
         You&apos;ll complete a monthly gift of {SPONSOR_TIERS[tier].amount.replace("/mo", "")} on our secure
         donation page{child ? ` — mention ${child.firstName} in the message box and we'll link your gift` : ""}.
       </p>
       <Link href="/talents/gallery" className="mt-6 inline-block text-[12px] uppercase tracking-[0.16em] text-white/40 transition hover:text-[#e8b84b] focus-visible:outline-2 focus-visible:outline-[#e8b84b]">
-        ← Back to the talents
+        ← {tr("Back to the talents")}
       </Link>
     </div>
   );

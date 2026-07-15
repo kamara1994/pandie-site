@@ -80,7 +80,7 @@ export default function DonatePrompt() {
           {tr("Every Child Deserves Hope")}
         </p>
         <p className="mt-2 text-[14px] leading-6 text-white/70">
-          Are you ready to change a child&apos;s life today?
+          {tr("Are you ready to change a child's life today?")}
         </p>
 
         <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
@@ -99,7 +99,7 @@ export default function DonatePrompt() {
             onClick={() => setOpen(false)}
             className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/50 transition hover:text-white focus-visible:outline-2 focus-visible:outline-[#e8b84b]"
           >
-            Not yet
+            {tr("Not yet")}
           </button>
         </div>
       </div>

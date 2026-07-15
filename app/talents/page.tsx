@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import GoldThread from "../components/GoldThread";
+import { useLang } from "@/app/context/LanguageContext";
 
 // The Talent Room — a cinematic 3D gateway into the Talent Program.
 // Act 1: 3D intro (rotating gold diamond). Act 2: the invitation.
@@ -29,6 +30,8 @@ function usePrefersReducedMotion() {
 }
 
 export default function TalentRoomPage() {
+  const { flat, lang } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
   const reduced = usePrefersReducedMotion();
   const [act, setAct] = useState<"intro" | "ask" | "room">("intro");
   const [face, setFace] = useState(0);
@@ -98,7 +101,7 @@ export default function TalentRoomPage() {
           </div>
 
           <h1 className="mt-10 font-heading text-[clamp(32px,7vw,58px)] font-semibold leading-tight">
-            Every child carries <em className="italic text-[#e8b84b]">a gift</em>.
+            {tr("Every child carries a gift.")}
           </h1>
           <p className="mt-4 max-w-md text-[15px] leading-7 text-white/60">
             Footballers. Singers. Scholars. Inventors. Real young talents from
@@ -108,19 +111,19 @@ export default function TalentRoomPage() {
           {act === "ask" && (
             <div className="tr-fadeup mt-10 w-full max-w-sm">
               <GoldThread className="mx-auto w-24" />
-              <p className="mt-5 font-heading text-2xl font-semibold">Would you like to meet them?</p>
+              <p className="mt-5 font-heading text-2xl font-semibold">{tr("Would you like to meet them?")}</p>
               <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
                 <button
                   onClick={() => setAct("room")}
                   className="flex flex-1 items-center justify-center gap-2 bg-[#c9962a] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0a1a10] transition hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b] sm:flex-none"
                 >
-                  Yes — open the room
+                  {tr("Yes — open the room")}
                 </button>
                 <Link
                   href="/"
                   className="flex items-center justify-center px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white/40 transition hover:text-white"
                 >
-                  Not yet
+                  {tr("Not yet")}
                 </Link>
               </div>
             </div>
@@ -134,11 +137,11 @@ export default function TalentRoomPage() {
           <div className="tr-fadeup text-center">
             <div className="mx-auto flex items-center justify-center gap-3">
               <span className="h-px w-8 bg-[#c9962a]" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c9962a]">The Talent Room</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#c9962a]">{tr("The Talent Room")}</span>
               <span className="h-px w-8 bg-[#c9962a]" />
             </div>
             <h2 className="mt-3 font-heading text-[clamp(26px,5vw,40px)] font-semibold">
-              Four doors. <em className="italic text-[#e8b84b]">Countless futures.</em>
+              {tr("Four doors. Countless futures.")}
             </h2>
           </div>
 
@@ -172,7 +175,7 @@ export default function TalentRoomPage() {
                       <p className="mt-1 text-[12px] uppercase tracking-[0.18em] text-[#e8b84b]/80">{room.sub}</p>
                     </div>
                     <span className="relative mb-2 inline-flex items-center gap-2 bg-[#c9962a] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0a1a10] transition group-hover:bg-[#e8b84b]">
-                      Step inside →
+                      {tr("Step inside →")}
                     </span>
                   </Link>
                 </div>
@@ -205,7 +208,7 @@ export default function TalentRoomPage() {
           </div>
 
           <Link href="/talents/gallery" className="tr-fadeup mt-8 text-[12px] uppercase tracking-[0.2em] text-white/40 underline-offset-4 transition hover:text-[#e8b84b] hover:underline">
-            Or browse every talent at once
+            {tr("Or browse every talent at once")}
           </Link>
         </section>
       )}

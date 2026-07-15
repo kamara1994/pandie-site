@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import GoldThread from "../../components/GoldThread";
+import { useLang } from "@/app/context/LanguageContext";
 import { CATEGORIES, SPONSOR_TIERS, visibleTalents, type Talent } from "./data";
 
 const MAX_PLAYING = 3;
@@ -170,6 +171,8 @@ function ProfileModal({ t, onClose }: { t: Talent; onClose: () => void }) {
 }
 
 function Gallery() {
+  const { flat, lang } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
   const talents = visibleTalents();
   const params = useSearchParams();
   const [cat, setCat] = useState(params.get("cat") || "all");
@@ -201,13 +204,13 @@ function Gallery() {
       <section className="px-5 pb-8 pt-10 text-center sm:pt-14">
         <GoldThread className="mx-auto w-24" />
         <h1 className="mt-5 font-heading text-[clamp(30px,6vw,52px)] font-semibold leading-tight">
-          Every child has <em className="italic text-[#e8b84b]">a talent</em>.
+          {tr("Every child has a talent.")}
         </h1>
         <p className="mx-auto mt-3 max-w-md text-[15px] leading-7 text-white/65">
-          Watch them shine — and help one keep going.
+          {tr("Watch them shine — and help one keep going.")}
         </p>
         <p className="mx-auto mt-3 max-w-sm text-[11px] leading-5 text-white/40">
-          All photos and videos are shared with the consent of each child&apos;s guardian.
+          {tr("All photos and videos are shared with the consent of each child's guardian.")}
         </p>
       </section>
 
@@ -224,7 +227,7 @@ function Gallery() {
                 <svg viewBox="0 0 24 24" className={`h-4 w-4 ${active ? "animate-bounce [animation-iteration-count:1]" : ""}`} fill="currentColor" aria-hidden="true">
                   <path d={c.icon} />
                 </svg>
-                {c.label} <span className="opacity-50">{n}</span>
+                {tr(c.label)} <span className="opacity-50">{n}</span>
                 {active && <span className="absolute inset-x-2 bottom-0 h-[2px] bg-[#c9962a]" />}
               </button>
             );
@@ -246,18 +249,18 @@ function Gallery() {
                 <p className="text-[10px] uppercase tracking-[0.16em] text-white/40">{t.town}</p>
               </div>
               <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#c9962a]">
-                {CATEGORIES.find(c => c.id === t.category)?.label || t.category}
+                {tr(CATEGORIES.find(c => c.id === t.category)?.label || t.category)}
               </p>
               <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-white/70">{t.talentTitle}</p>
               {t.sponsored ? (
                 <Link href={`/sponsor?child=${t.id}&encourage=1`}
                   className="mt-4 flex min-h-[44px] items-center justify-center border border-[#c9962a]/50 px-4 text-[11px] font-bold uppercase tracking-[0.14em] text-[#e8b84b] transition hover:border-[#e8b84b] focus-visible:outline-2 focus-visible:outline-[#e8b84b]">
-                  Send encouragement
+                  {tr("Send encouragement")}
                 </Link>
               ) : (
                 <Link href={`/sponsor?child=${t.id}`}
                   className="mt-4 flex min-h-[44px] items-center justify-center gap-2 bg-[#c9962a] px-4 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0a1a10] transition hover:bg-[#e8b84b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]">
-                  ♥ Sponsor {t.firstName}
+                  ♥ {tr("Sponsor")} {t.firstName}
                 </Link>
               )}
             </div>
@@ -267,14 +270,14 @@ function Gallery() {
 
       {/* safeguarding promise */}
       <section className="border-t border-white/10 px-5 py-10 text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#c9962a]">Our child-safeguarding promise</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#c9962a]">{tr("Our child-safeguarding promise")}</p>
         <p className="mx-auto mt-3 max-w-md text-[13px] leading-6 text-white/60">
           First names and town only. Every photo and video published with guardian consent and the child&apos;s
           own assent. No direct contact between visitors and children — every message passes through the
           foundation. Any child can be removed from this site within 24 hours.
         </p>
         <Link href="/child-safeguarding" className="mt-3 inline-block text-[12px] uppercase tracking-[0.16em] text-[#e8b84b] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-[#e8b84b]">
-          Read the full policy
+          {tr("Read the full policy")}
         </Link>
       </section>
 

@@ -15,6 +15,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import GoldThread from "../components/GoldThread";
 import { STORY_SCENES, STORY_FINALE } from "./story";
+import { useLang } from "@/app/context/LanguageContext";
 
 const REDUCED_MQ = "(prefers-reduced-motion: reduce)";
 function usePrefersReducedMotion(): boolean | null {
@@ -211,14 +212,11 @@ function FinalCallToAction({ replay }: { replay?: () => void }) {
 }
 
 // §3.3 caption copy — canonical; "A chance to…" only as the sub-line
-const CAPS = [
-  { k: "PANDIE FOUNDATION · A SCROLL STORY", q: "Every dream starts with one gift.", s: "Scroll — and follow it" },
-  ...STORY_SCENES.map(s => ({ k: s.kicker, q: s.quote, s: s.headline })),
-  { k: "05", q: "One gift can become any dream.", s: "" },
-  { k: "MAKE A DIFFERENCE TODAY", q: "Now it's in your hands.", s: "" },
-];
+
 
 export default function PotentialInMotionPage() {
+  const { flat, lang } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
   const reduced = usePrefersReducedMotion();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
@@ -420,6 +418,12 @@ export default function PotentialInMotionPage() {
     return () => { window.removeEventListener("load", onLoad); ctx.revert(); };
   }, [reduced]);
 
+  const CAPS = [
+    { k: "PANDIE FOUNDATION · A SCROLL STORY", q: tr("Every dream starts with one gift."), s: tr("Scroll — and follow it") },
+    ...STORY_SCENES.map(s => ({ k: s.kicker, q: tr(s.quote), s: tr(s.headline) })),
+    { k: "05", q: tr("One gift can become any dream."), s: "" },
+    { k: "MAKE A DIFFERENCE TODAY", q: tr("Now it's in your hands."), s: "" },
+  ];
   const activeChapter = Math.min(5, Math.floor(progress * 6));
   const replay = () => window.scrollTo({ top: 0, behavior: window.matchMedia(REDUCED_MQ).matches ? "auto" : "smooth" });
 
@@ -446,7 +450,7 @@ export default function PotentialInMotionPage() {
       <div ref={wrapRef} className="relative">
         <a href="#story-end"
           className="absolute right-4 top-[84px] z-40 border border-white/25 bg-[#0a1c11]/70 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 backdrop-blur-sm transition hover:border-[#c9a24b]/60 hover:text-white focus-visible:outline-2 focus-visible:outline-[#e8cd85] sm:top-[92px]">
-          Skip story ↓
+          {tr("Skip story ↓")}
         </a>
 
         <section className="pim-stage relative h-[100svh] overflow-hidden bg-[#0a1a10]" aria-hidden="true">
@@ -589,7 +593,7 @@ export default function PotentialInMotionPage() {
           </div>
 
           <div className="pim-cue absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-1.5">
-            <span className="text-[9px] uppercase tracking-[0.3em] text-white/60">Scroll to begin</span>
+            <span className="text-[9px] uppercase tracking-[0.3em] text-white/60">{tr("Scroll to begin")}</span>
             <span className="block h-8 w-px bg-gradient-to-b from-[#e8cd85] to-transparent" />
           </div>
         </section>
@@ -597,7 +601,7 @@ export default function PotentialInMotionPage() {
         {progress >= 0.3 && (
           <Link href="/talents"
             className="fixed right-0 top-1/2 z-40 -translate-y-1/2 border border-r-0 border-[#c9a24b]/50 bg-[#0d2015]/95 px-2.5 py-5 text-[10px] font-bold uppercase tracking-[0.22em] text-[#e8cd85] backdrop-blur-sm transition hover:border-[#e8cd85] hover:bg-[#c9a24b]/15 focus-visible:outline-2 focus-visible:outline-[#e8cd85] [writing-mode:vertical-rl]">
-            See their talents ✦
+            {tr("See their talents ✦")}
           </Link>
         )}
 

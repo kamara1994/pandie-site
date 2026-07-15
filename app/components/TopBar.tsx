@@ -34,7 +34,7 @@ export default function TopBar() {
     { href: "/stories",      label: t.nav.stories     },
     { href: "/events",       label: t.nav.events      },
     { href: "/contact",      label: t.nav.contact     },
-    { href: "/potential-in-motion", label: "The Journey" },
+    { href: "/potential-in-motion", label: tr("The Journey") },
   ];
 
   const isActive = (href: string) =>
