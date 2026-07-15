@@ -167,7 +167,7 @@ export default function Footer() {
               href="/donate"
               className="group relative flex w-full max-w-sm shrink-0 justify-center overflow-hidden bg-[#c9962a] px-9 py-4 text-[12px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] sm:w-auto transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8b84b]"
             >
-              <span className="relative z-10">{tr("Donate Now")}</span>
+              <span className="relative z-10 flex items-center gap-2"><svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>{tr("Donate Now")}</span>
               <span className="absolute inset-0 -translate-x-full -skew-x-12 bg-white/25 transition-transform duration-500 group-hover:translate-x-[200%] motion-reduce:hidden" />
             </Link>
           </div>

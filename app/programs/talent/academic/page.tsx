@@ -13,7 +13,7 @@ export default function AcademicPage() {
   const [sponsored, setSponsored] = useState<number[]>([]);
 
   return (
-    <main className="min-h-screen bg-[#f4f1ea]">
+    <div className="min-h-screen bg-[#f4f1ea]">
       <section className="relative overflow-hidden bg-[#0a1a10] px-6 py-24 text-white lg:px-20">
         <div className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#c9962a] to-transparent opacity-60" />
         <div className="relative mx-auto max-w-5xl">
@@ -78,6 +78,6 @@ export default function AcademicPage() {
         <p className="mt-4 text-lg text-white/55 max-w-lg mx-auto">Open the door. Fund a scholarship. Change a family for three generations.</p>
         <Link href="/donate" className="mt-8 inline-block bg-[#c9962a] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b]">Fund a Scholarship</Link>
       </section>
-    </main>
+    </div>
   );
 }

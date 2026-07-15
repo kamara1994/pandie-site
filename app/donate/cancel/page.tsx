@@ -8,7 +8,7 @@ export default function DonateCancelPage() {
   useEffect(() => { setMounted(true); }, []);
 
   return (
-    <main className="min-h-screen bg-[#f4f1ea] text-[#1f2a1f]">
+    <div className="min-h-screen bg-[#f4f1ea] text-[#1f2a1f]">
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-[#0a1a10] py-28 text-white lg:py-36">
         {/* Grid overlay */}
@@ -124,6 +124,6 @@ export default function DonateCancelPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

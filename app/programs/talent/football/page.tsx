@@ -25,7 +25,7 @@ export default function FootballPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#f4f1ea]">
+    <div className="min-h-screen bg-[#f4f1ea]">
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#0a1a10] px-6 py-24 text-white lg:px-20">
         <div className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#c9962a] to-transparent opacity-60" />
@@ -145,6 +145,6 @@ export default function FootballPage() {
         <p className="mt-4 text-lg text-white/55 max-w-lg mx-auto">Your sponsorship gives them boots, coaching, nutrition, and access to scouts. Be the reason they make it.</p>
         <Link href="/donate" className="mt-8 inline-block bg-[#c9962a] px-10 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a1a10] transition hover:bg-[#e8b84b]">Sponsor a Player Today</Link>
       </section>
-    </main>
+    </div>
   );
 }

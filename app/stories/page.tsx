@@ -37,14 +37,14 @@ const stories = [
   { name: "Aminata", age: "10", location: "Bo", program: "Education", image: "/story-featured.jpg", quote: "I want to become a teacher one day.", story: "Aminata loved school but her mother couldn't afford supplies. With Pandie's support she received books, uniforms, and renewed confidence to keep going.", color: "#214c34" },
   { name: "Musa", age: "9", location: "Makeni", program: "Nutrition", image: "/story-nutrition.jpg", quote: "Now I can think clearly in class.", story: "Musa came to school hungry every day. The feeding program gave him daily meals and transformed his ability to concentrate and learn.", color: "#c9962a" },
   { name: "Hawa", age: "11", location: "Kenema", program: "Education", image: "/story-education.jpg", quote: "I raised my hand in class for the first time.", story: "Hawa was determined but lacked materials. Books, supplies, and encouragement from Pandie gave her the confidence to participate fully.", color: "#214c34" },
-  { name: "Mariama", age: "8", location: "Freetown", program: "Medical", image: "/story-medical.jpg", quote: "I feel strong again.", story: "A preventable illness kept Mariama home for weeks. Medical assistance through Pandie got her treated and back in the classroom.", color: "#c9962a" },
+  { name: "Mariama", age: "8", location: "Freetown", program: "Medical", image: "/service-medical.jpg", quote: "I feel strong again.", story: "A preventable illness kept Mariama home for weeks. Medical assistance through Pandie got her treated and back in the classroom.", color: "#c9962a" },
   { name: "Ibrahim", age: "12", location: "Bo", program: "Protection", image: "/story-protection.jpg", quote: "Someone believed in me.", story: "Ibrahim faced neglect at home. The protection program gave him safety, support, and adults who showed up consistently for him.", color: "#214c34" },
   { name: "Kadiatu", age: "7", location: "Makeni", program: "Essentials", image: "/story-essentials.jpg", quote: "I have what I need now.", story: "Basic supplies — a school bag, pencils, a uniform — changed how Kadiatu felt walking into school every single morning.", color: "#c9962a" },
 ];
 
 export default function StoriesPage() {
   return (
-    <main className="min-h-screen bg-[#f4f1ea]">
+    <div className="min-h-screen bg-[#f4f1ea]">
       <section className="relative overflow-hidden bg-[#0a1a10] px-6 py-24 text-white sm:py-32 lg:px-20">
         <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "60px 60px" }} />
         <div className="relative mx-auto max-w-4xl">
@@ -132,6 +132,6 @@ export default function StoriesPage() {
           </div>
         </Reveal>
       </section>
-    </main>
+    </div>
   );
 }

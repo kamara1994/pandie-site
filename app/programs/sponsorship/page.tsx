@@ -52,7 +52,7 @@ export default function SponsorshipPage() {
   useEffect(() => { setMounted(true); }, []);
 
   return (
-    <main className="min-h-screen bg-[#f4f1ea]">
+    <div className="min-h-screen bg-[#f4f1ea]">
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-[#0a1a10] px-6 py-24 text-white lg:px-20">
         <div className="absolute inset-0"><Image src="/story-featured.jpg" alt="" fill className="object-cover opacity-15" /></div>
@@ -186,6 +186,6 @@ export default function SponsorshipPage() {
           </div>
         </Reveal>
       </section>
-    </main>
+    </div>
   );
 }

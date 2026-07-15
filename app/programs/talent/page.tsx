@@ -49,7 +49,7 @@ export default function TalentHubPage() {
   useEffect(() => { setVisible(true); }, []);
 
   return (
-    <main className="min-h-screen bg-[#f4f1ea]">
+    <div className="min-h-screen bg-[#f4f1ea]">
 
       {/* HERO */}
       <section className="relative overflow-hidden bg-[#0a1a10] px-6 py-28 text-white lg:px-20 lg:py-36">
@@ -175,6 +175,6 @@ export default function TalentHubPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

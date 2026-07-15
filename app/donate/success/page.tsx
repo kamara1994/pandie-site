@@ -56,7 +56,7 @@ export default async function DonateSuccessPage({
   const shareUrl = encodeURIComponent("https://pandiefoundation.org/donate");
 
   return (
-    <main className="min-h-screen bg-[#f4f1ea] text-[#1f2a1f]">
+    <div className="min-h-screen bg-[#f4f1ea] text-[#1f2a1f]">
       <ConfettiEffect />
 
       {/* ── Celebration Hero ── */}
@@ -224,6 +224,6 @@ export default async function DonateSuccessPage({
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

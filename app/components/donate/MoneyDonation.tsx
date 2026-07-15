@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CurrencyCode, FormData, currencyConfig } from "../../donate/types";
 import PayPalDonation from "./PayPalDonation";
+import PaymentMarks from "./PaymentMarks";
 
 type ImpactItem = {
   amount: number | null;
@@ -430,6 +431,7 @@ export default function MoneyDonation({
                 <p className="text-center text-xs text-[#9a9490]">
                   🔒 Secured by Stripe · Apple Pay &amp; Google Pay available at checkout
                 </p>
+                <PaymentMarks className="mt-3" />
               </form>
 
               {/*
