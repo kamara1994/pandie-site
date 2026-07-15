@@ -80,5 +80,5 @@ export const STORY_FINALE = {
   headline: "Now it is in your hands.",
   support: "One opportunity can become a future. Help us pass the next opportunity forward.",
   primaryCta: { label: "Donate Now", href: "/donate" },
-  secondaryCta: { label: "Explore Our Programs", href: "/programs" },
+  secondaryCta: { label: "Meet the Talents", href: "/talents" },
 };

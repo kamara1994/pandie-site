@@ -4,6 +4,7 @@ import TopBar from "@/app/components/TopBar";
 import ChatWidget from "@/app/components/ChatWidget";
 import Footer from "@/app/components/Footer";
 import DonatePrompt from "@/app/components/DonatePrompt";
+import JourneyBall from "@/app/components/JourneyBall";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <ChatWidget />
           <DonatePrompt />
+          <JourneyBall />
         </LanguageProvider>
       </body>
     </html>

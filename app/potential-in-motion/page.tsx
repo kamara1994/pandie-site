@@ -145,6 +145,10 @@ export default function PotentialInMotionPage() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    try { localStorage.setItem("pf_journey_seen", "1"); } catch {}
+  }, []);
+
+  useEffect(() => {
     if (reduced !== false) return; // wait for the media query; skip when reduced
     const wrap = wrapRef.current;
     if (!wrap) return;
@@ -186,7 +190,12 @@ export default function PotentialInMotionPage() {
           scrub: 1,
           pin: stage,
           anticipatePin: 1,
-          onUpdate: self => setProgress(self.progress),
+          onUpdate: self => {
+            setProgress(self.progress);
+            if (self.progress > 0.95) {
+              try { localStorage.setItem("pf_journey_done", "1"); } catch {}
+            }
+          },
         },
       });
 
@@ -536,8 +545,18 @@ export default function PotentialInMotionPage() {
           </div>
         </section>
 
+        {/* the bridge: after Musa's kick and Aminata's song, curiosity peaks */}
+        {progress >= 0.3 && (
+          <Link
+            href="/talents"
+            className="fixed right-0 top-1/2 z-40 -translate-y-1/2 border border-r-0 border-[#c9962a]/50 bg-[#0d2015]/95 px-2.5 py-5 text-[10px] font-bold uppercase tracking-[0.22em] text-[#e8b84b] backdrop-blur-sm transition hover:border-[#e8b84b] hover:bg-[#c9962a]/15 focus-visible:outline-2 focus-visible:outline-[#e8b84b] [writing-mode:vertical-rl]"
+          >
+            See their talents ✦
+          </Link>
+        )}
+
         {/* story progress — six chapters */}
-        <div className="pointer-events-none fixed right-3 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-2 sm:flex" aria-hidden="true">
+        <div className="pointer-events-none fixed left-3 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-2 sm:flex" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, i) => (
             <span key={i} className="h-[2px] w-4 transition-all duration-300"
               style={{ background: i <= activeScene && progress > 0.001 ? "#c9962a" : "rgba(255,255,255,0.2)", width: i === activeScene ? 22 : 14 }} />

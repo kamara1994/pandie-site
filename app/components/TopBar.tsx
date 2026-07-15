@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { useLang, LANGUAGES, type LangCode } from "@/app/context/LanguageContext";
 
@@ -21,6 +21,12 @@ export default function TopBar() {
   const desktopLangRef = useRef<HTMLDivElement>(null);
   const mobileLangRef = useRef<HTMLDivElement>(null);
 
+  const journeyNew = useSyncExternalStore(
+    (cb) => { window.addEventListener("storage", cb); return () => window.removeEventListener("storage", cb); },
+    () => { try { return !localStorage.getItem("pf_journey_seen"); } catch { return false; } },
+    () => false,
+  );
+
   const links = [
     { href: "/about",        label: t.nav.about       },
     { href: "/get-involved", label: t.nav.getInvolved },
@@ -28,6 +34,7 @@ export default function TopBar() {
     { href: "/stories",      label: t.nav.stories     },
     { href: "/events",       label: t.nav.events      },
     { href: "/contact",      label: t.nav.contact     },
+    { href: "/potential-in-motion", label: "The Journey" },
   ];
 
   const isActive = (href: string) =>
@@ -187,6 +194,9 @@ export default function TopBar() {
                 {isActive(l.href) && (
                   <span className="absolute -bottom-[5px] left-1/2 h-[3px] w-[3px] -translate-x-1/2 rounded-full bg-[#c9962a] shadow-[0_0_6px_rgba(201,150,42,0.9)]" />
                 )}
+                {l.href === "/potential-in-motion" && journeyNew && (
+                  <span className="absolute -right-2.5 -top-1 h-1.5 w-1.5 animate-pulse rounded-full bg-[#e8b84b] shadow-[0_0_6px_rgba(232,184,75,0.9)] motion-reduce:animate-none" />
+                )}
               </Link>
             ))}
 
@@ -288,6 +298,9 @@ export default function TopBar() {
                 </span>
                 <span className={`flex-1 font-heading text-[34px] font-semibold leading-none transition-colors duration-300 sm:text-[40px] md:text-[46px] ${isActive(l.href) ? "text-[#e8b84b]" : "text-white group-hover:text-[#e8b84b]"}`}>
                   {l.label}
+                  {l.href === "/potential-in-motion" && journeyNew && (
+                    <span className="mb-4 ml-2 inline-block h-2 w-2 animate-pulse rounded-full bg-[#e8b84b] motion-reduce:animate-none" />
+                  )}
                 </span>
                 <span className={`text-2xl transition-transform duration-300 group-hover:translate-x-1 ${isActive(l.href) ? "text-[#e8b84b]" : "text-[#c9962a]"}`}>→</span>
               </Link>
