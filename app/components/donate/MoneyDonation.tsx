@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CurrencyCode, FormData, currencyConfig } from "../../donate/types";
 import PayPalDonation from "./PayPalDonation";
+import { useLang } from "@/app/context/LanguageContext";
 import PaymentMarks from "./PaymentMarks";
 
 type ImpactItem = {
@@ -40,6 +41,8 @@ export default function MoneyDonation({
   onInputChange,
   onSubmit,
 }: Props) {
+  const { flat, lang } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
   const currentCurrency = currencyConfig[currency];
 
   return (
@@ -51,14 +54,11 @@ export default function MoneyDonation({
           {/* Left – Why your donation matters */}
           <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
             <h2 className="text-3xl font-semibold text-[#214c34] sm:text-4xl">
-              Give Hope. Change a Child&apos;s Future.
+              {tr("Give Hope. Change a Child's Future.")}
             </h2>
 
             <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[#5f6663]">
-              Pandie Foundation supports vulnerable children in Sierra Leone through
-              education, nutrition, and basic medical care. Your donation directly
-              helps children stay in school, receive proper meals, access healthcare,
-              and live with dignity and hope.
+              {tr("Pandie Foundation supports vulnerable children in Sierra Leone through education, nutrition, and basic medical care. Your donation directly helps children stay in school, receive proper meals, access healthcare, and live with dignity and hope.")}
             </p>
 
             <div className="mt-10 grid gap-5 sm:grid-cols-2">
@@ -85,7 +85,7 @@ export default function MoneyDonation({
                       }`}
                     >
                       {item.amount === null
-                        ? "Custom"
+                        ? tr("Custom")
                         : `${currentCurrency.symbol}${item.amount}`}
                     </h3>
 
@@ -94,7 +94,7 @@ export default function MoneyDonation({
                         isSelected ? "text-white/85" : "text-[#626a67]"
                       }`}
                     >
-                      {item.description}
+                      {tr(item.description)}
                     </p>
                   </button>
                 );
@@ -103,12 +103,10 @@ export default function MoneyDonation({
 
             <div className="mt-10 rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] p-6">
               <h3 className="text-lg font-semibold text-[#214c34]">
-                Secure &amp; Trusted Giving
+                {tr("Secure & Trusted Giving")}
               </h3>
               <p className="mt-3 text-[15px] leading-7 text-[#626a67]">
-                All card payments are processed securely by Stripe. Apple Pay and
-                Google Pay are available at checkout. Your card details are never
-                stored by Pandie Foundation.
+                {tr("All card payments are processed securely by Stripe. Apple Pay and Google Pay are available at checkout. Your card details are never stored by Pandie Foundation.")}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay"].map(
@@ -129,12 +127,11 @@ export default function MoneyDonation({
           <div className="lg:sticky lg:top-28">
             <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
               <h2 className="text-3xl font-semibold text-[#214c34] sm:text-4xl">
-                Donate Now
+                {tr("Donate Now")}
               </h2>
 
               <p className="mt-3 text-[15px] leading-7 text-[#626a67]">
-                Your donation supports Pandie Foundation&apos;s mission to help vulnerable
-                children in Sierra Leone.
+                {tr("Your donation supports Pandie Foundation's mission to help vulnerable children in Sierra Leone.")}
               </p>
 
               {/* Currency */}
@@ -143,7 +140,7 @@ export default function MoneyDonation({
                   htmlFor="currency-select"
                   className="mb-3 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
                 >
-                  Currency
+                  {tr("Currency")}
                 </label>
                 <select
                   id="currency-select"
@@ -182,7 +179,7 @@ export default function MoneyDonation({
               {/* Frequency */}
               <div className="mt-6">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]">
-                  Donation Type
+                  {tr("Donation Type")}
                 </p>
                 <div className="grid grid-cols-2 rounded-xl bg-[#f5f1e8] p-1">
                   {(["one-time", "monthly"] as const).map((f) => (
@@ -199,7 +196,12 @@ export default function MoneyDonation({
                       {frequency === f && (
                         <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#c9962a]" />
                       )}
-                      {f === "one-time" ? "One-Time" : "Monthly ♻"}
+                      {f === "one-time" ? tr("One-Time") : (
+                        <span className="inline-flex items-center gap-1.5">
+                          {tr("Monthly")} ♻
+                          <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide ${frequency === f ? "bg-[#c9962a] text-[#0a1a10]" : "bg-[#c9962a]/15 text-[#8a6a1e]"}`}>{tr("Most popular")}</span>
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -208,7 +210,7 @@ export default function MoneyDonation({
               {/* Preset amounts */}
               <div className="mt-6">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]">
-                  Select Amount
+                  {tr("Select Amount")}
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   {currentCurrency.amounts.map((amt) => {
@@ -240,14 +242,14 @@ export default function MoneyDonation({
                     htmlFor="donor-name"
                     className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
                   >
-                    Full Name
+                    {tr("Full Name")}
                   </label>
                   <input
                     id="donor-name"
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => onInputChange("fullName", e.target.value)}
-                    placeholder="Enter your full name"
+                    placeholder={tr("Enter your full name")}
                     autoComplete="name"
                     className="w-full rounded-xl border border-[#d6d2c8] bg-white px-4 py-4 text-[#1f2a1f] outline-none transition placeholder:text-[#8b8f8c] focus:border-[#5a7d5d] focus:ring-2 focus:ring-[#5a7d5d]/15"
                   />
@@ -259,14 +261,14 @@ export default function MoneyDonation({
                     htmlFor="donor-email"
                     className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
                   >
-                    Email Address <span className="text-[#214c34]/60 normal-case font-normal">— required for receipt</span>
+                    {tr("Email Address")} <span className="text-[#214c34]/60 normal-case font-normal">{tr("— required for receipt")}</span>
                   </label>
                   <input
                     id="donor-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => onInputChange("email", e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder={tr("Enter your email")}
                     autoComplete="email"
                     className="w-full rounded-xl border border-[#d6d2c8] bg-white px-4 py-4 text-[#1f2a1f] outline-none transition placeholder:text-[#8b8f8c] focus:border-[#5a7d5d] focus:ring-2 focus:ring-[#5a7d5d]/15"
                   />
@@ -278,7 +280,7 @@ export default function MoneyDonation({
                     htmlFor="donor-phone"
                     className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
                   >
-                    Phone <span className="text-[#214c34]/60 normal-case font-normal">— optional</span>
+                    {tr("Phone")} <span className="text-[#214c34]/60 normal-case font-normal">{tr("— optional")}</span>
                   </label>
                   <input
                     id="donor-phone"
@@ -297,7 +299,7 @@ export default function MoneyDonation({
                     htmlFor="donor-amount"
                     className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
                   >
-                    Donation Amount
+                    {tr("Donation Amount")}
                   </label>
                   <div className="relative">
                     <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#5f6663]">
@@ -315,8 +317,8 @@ export default function MoneyDonation({
                   </div>
                   <p className="mt-2 text-sm text-[#6d746f]">
                     {frequency === "monthly"
-                      ? `Charged monthly in ${currency}. Cancel anytime.`
-                      : `One-time donation in ${currency}.`}
+                      ? tr("Charged monthly in {currency}. Cancel anytime.").replace("{currency}", currency)
+                      : tr("One-time donation in {currency}.").replace("{currency}", currency)}
                   </p>
                 </div>
 
@@ -326,13 +328,13 @@ export default function MoneyDonation({
                     htmlFor="donor-message"
                     className="mb-2 block text-sm font-semibold uppercase tracking-[0.12em] text-[#214c34]"
                   >
-                    Message <span className="text-[#214c34]/60 normal-case font-normal">— optional</span>
+                    {tr("Message")} <span className="text-[#214c34]/60 normal-case font-normal">{tr("— optional")}</span>
                   </label>
                   <textarea
                     id="donor-message"
                     value={formData.message}
                     onChange={(e) => onInputChange("message", e.target.value)}
-                    placeholder="Leave an optional message of support"
+                    placeholder={tr("Leave an optional message of support")}
                     rows={3}
                     className="w-full rounded-xl border border-[#d6d2c8] bg-white px-4 py-4 text-[#1f2a1f] outline-none transition placeholder:text-[#8b8f8c] focus:border-[#5a7d5d] focus:ring-2 focus:ring-[#5a7d5d]/15"
                   />
@@ -348,7 +350,7 @@ export default function MoneyDonation({
                       className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#d6d2c8] accent-[#214c34]"
                     />
                     <span className="text-sm leading-6 text-[#5f6663]">
-                      Make my donation anonymous (your name will not be shared)
+                      {tr("Make my donation anonymous (your name will not be shared)")}
                     </span>
                   </label>
 
@@ -377,20 +379,20 @@ export default function MoneyDonation({
 
                 {/* Summary */}
                 <div className="rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] p-4 text-sm text-[#5f6663]">
-                  <p className="font-semibold text-[#214c34]">Donation Summary</p>
+                  <p className="font-semibold text-[#214c34]">{tr("Donation Summary")}</p>
                   <div className="mt-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span>Type</span>
+                      <span>{tr("Type")}</span>
                       <span className="font-medium text-[#214c34]">
                         {frequency === "monthly" ? "Monthly" : "One-Time"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Currency</span>
+                      <span>{tr("Currency")}</span>
                       <span className="font-medium text-[#214c34]">{currency}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Amount</span>
+                      <span>{tr("Amount")}</span>
                       <span className="font-medium text-[#214c34]">
                         {currentCurrency.symbol}{selectedAmount || "0"}
                         {frequency === "monthly" ? "/mo" : ""}
@@ -416,11 +418,11 @@ export default function MoneyDonation({
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
                       </svg>
-                      Preparing Secure Checkout…
+                      {tr("Preparing Secure Checkout…")}
                     </>
                   ) : (
                     <>
-                      {frequency === "monthly" ? "Start Monthly Giving" : "Donate with Card"}
+                      {frequency === "monthly" ? tr("Start Monthly Giving") : tr("Donate with Card")}
                       <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fillRule="evenodd" d="M12.293 4.293a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L15.586 11H3a1 1 0 110-2h12.586l-3.293-3.293a1 1 0 010-1.414z" clipRule="evenodd" />
                       </svg>
@@ -429,7 +431,7 @@ export default function MoneyDonation({
                 </button>
 
                 <p className="text-center text-xs text-[#9a9490]">
-                  🔒 Secured by Stripe · Apple Pay &amp; Google Pay available at checkout
+                  🔒 {tr("Secured by Stripe · Apple Pay & Google Pay available at checkout")}
                 </p>
                 <PaymentMarks className="mt-3" />
               </form>
@@ -482,31 +484,30 @@ export default function MoneyDonation({
           <div className="rounded-2xl bg-[#214c34] p-8 text-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
             <div className="max-w-2xl">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#e8b84b]">
-                What Your Gift Can Do
+                {tr("What Your Gift Can Do")}
               </p>
               <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">
-                Every donation becomes practical help
+                {tr("Every donation becomes practical help")}
               </h2>
               <p className="mt-5 text-lg leading-8 text-white/85">
-                Your generosity supports real needs and creates meaningful
-                change in the lives of vulnerable children.
+                {tr("Your generosity supports real needs and creates meaningful change in the lives of vulnerable children.")}
               </p>
             </div>
 
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {impactItems.slice(0, 3).map((item) => (
                 <div
-                  key={item.title}
+                  key={tr(item.title)}
                   className="rounded-xl bg-white/10 p-6 ring-1 ring-white/10 backdrop-blur-sm"
                 >
                   <p className="text-2xl font-bold text-[#e8b84b]">
                     {currentCurrency.symbol}{item.amount}
                   </p>
                   <h3 className="mt-3 text-xl font-semibold text-white">
-                    {item.title}
+                    {tr(item.title)}
                   </h3>
                   <p className="mt-3 text-sm leading-7 text-white/80">
-                    {item.description}
+                    {tr(item.description)}
                   </p>
                 </div>
               ))}

@@ -1,5 +1,7 @@
 "use client";
 
+import { useLang } from "@/app/context/LanguageContext";
+
 type Tab = "money" | "items" | "sponsor" | "volunteer" | "partner";
 
 type Props = {
@@ -16,6 +18,8 @@ const tabs: { id: Tab; label: string; icon: string; desc: string }[] = [
 ];
 
 export default function WaysToGive({ activeTab, onTabChange }: Props) {
+  const { flat, lang } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
   return (
     <section className="bg-[#f4f1ea] px-6 py-14 lg:px-20">
       <div className="mx-auto max-w-6xl">
@@ -23,11 +27,11 @@ export default function WaysToGive({ activeTab, onTabChange }: Props) {
         <div className="mb-7 text-center sm:mb-10">
           <span className="inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.36em] text-[#c9962a]">
             <span className="h-px w-8 bg-[#c9962a]" />
-            Choose Your Way to Help
+            {tr("Choose Your Way to Help")}
             <span className="h-px w-8 bg-[#c9962a]" />
           </span>
           <h2 className="mt-4 font-heading text-[clamp(28px,3.5vw,44px)] font-semibold text-[#1a2e1f]">
-            How Would You Like to Give?
+            {tr("How Would You Like to Give?")}
           </h2>
         </div>
 
@@ -59,10 +63,10 @@ export default function WaysToGive({ activeTab, onTabChange }: Props) {
 
                 <div className="relative z-10">
                   <p className={`text-[13px] font-bold leading-tight transition-colors duration-300 ${active ? "text-white" : "text-[#1a2e1f] group-hover:text-white"}`}>
-                    {tab.label}
+                    {tr(tab.label)}
                   </p>
                   <p className={`mt-1 text-[11px] transition-colors duration-300 ${active ? "text-[#c9962a]" : "text-[#626a67] group-hover:text-[#c9962a]"}`}>
-                    {tab.desc}
+                    {tr(tab.desc)}
                   </p>
                 </div>
 

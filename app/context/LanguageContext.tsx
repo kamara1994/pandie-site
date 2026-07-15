@@ -74,6 +74,9 @@ export interface Translations {
     about: string[]; stories: string[]; events: string[];
     contact: string[]; getInvolved: string[]; donate: string[];
   };
+  // Donate-funnel strings; components read them via the flat map (tr/useT),
+  // so a loose record type is sufficient here.
+  donateUI: Record<string, string>;
   chatExtra: {
     leadIntro: string; yourEmail: string; submit: string; skip: string;
     thankYouName: string; fillNameEmail: string; validEmail: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLang } from "@/app/context/LanguageContext";
 import DonateHero from "../components/donate/DonateHero";
 import WaysToGive from "../components/donate/WaysToGive";
 import MoneyDonation from "../components/donate/MoneyDonation";
@@ -39,6 +40,8 @@ const emptyPartner: PartnerFormData = {
 };
 
 export default function DonatePage() {
+  const { flat, lang } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
   const [activeTab, setActiveTab] = useState<DonationTab>("money");
 
   // ── Money (Stripe) ────────────────────────────────────────────────
@@ -59,9 +62,9 @@ export default function DonatePage() {
     setMoneyError("");
 
     const amount = parseFloat(selectedAmount);
-    if (!money.fullName.trim() && !money.anonymous) return setMoneyError("Please enter your name, or choose to give anonymously.");
-    if (!money.email.includes("@")) return setMoneyError("Please enter a valid email for your receipt.");
-    if (!amount || amount <= 0) return setMoneyError("Please choose or enter a donation amount.");
+    if (!money.fullName.trim() && !money.anonymous) return setMoneyError(tr("Please enter your name, or choose to give anonymously."));
+    if (!money.email.includes("@")) return setMoneyError(tr("Please enter a valid email for your receipt."));
+    if (!amount || amount <= 0) return setMoneyError(tr("Please choose or enter a donation amount."));
 
     setSubmitting(true);
     try {
@@ -76,7 +79,7 @@ export default function DonatePage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.url) throw new Error(data.error || "Could not start checkout.");
+      if (!res.ok || !data.url) throw new Error(data.error || tr("Could not start checkout."));
       window.location.href = data.url;
     } catch (err) {
       setMoneyError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -128,13 +131,13 @@ export default function DonatePage() {
     <section className="bg-[#f4f1ea] px-5 py-16 sm:px-6 sm:py-20 lg:px-20">
       <div className="mx-auto max-w-xl rounded-2xl border border-[#c9962a]/25 bg-white p-7 text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-10">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0a1a10] text-2xl text-[#e8b84b]">✓</div>
-        <h2 className="mt-6 font-heading text-3xl font-semibold text-[#214c34]">Thank you!</h2>
+        <h2 className="mt-6 font-heading text-3xl font-semibold text-[#214c34]">{tr("Thank you!")}</h2>
         <p className="mt-4 text-[15px] leading-7 text-[#5f6663]">{msg}</p>
         <button
           onClick={() => { setSent(null); setActiveTab("money"); }}
           className="mt-8 w-full bg-[#c9962a] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0a1a10] transition hover:bg-[#e8b84b] sm:w-auto"
         >
-          Back to giving
+          {tr("Back to giving")}
         </button>
       </div>
     </section>
