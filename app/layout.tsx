@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
+import { Cormorant_Garamond, Outfit } from "next/font/google";
 import { LanguageProvider } from "@/app/context/LanguageContext";
 import TopBar from "@/app/components/TopBar";
-import ChatWidget from "@/app/components/ChatWidget";
 import Footer from "@/app/components/Footer";
-import DonatePrompt from "@/app/components/DonatePrompt";
-import JourneyBall from "@/app/components/JourneyBall";
+import LazyWidgets from "@/app/components/LazyWidgets";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,27 +22,37 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@PandieFdn",
   },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/logo.png",
-  },
 };
 
 export const viewport = {
   themeColor: "#0a1a10",
 };
 
+// Self-hosted via next/font: fonts ship from our own domain with zero
+// render-blocking requests to fonts.googleapis.com — critical on slow networks.
+const heading = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300", "400", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-heading",
+  display: "swap",
+});
+const body = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+});
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${heading.variable} ${body.variable}`}>
       <body>
         <LanguageProvider>
           <TopBar />
           <main id="main-content">{children}</main>
           <Footer />
-          <ChatWidget />
-          <DonatePrompt />
-          <JourneyBall />
+          <LazyWidgets />
         </LanguageProvider>
       </body>
     </html>

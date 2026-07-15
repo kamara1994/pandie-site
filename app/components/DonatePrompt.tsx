@@ -5,10 +5,16 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useLang } from "@/app/context/LanguageContext";
 import GoldThread from "./GoldThread";
+import { DONATIONS_LIVE } from "@/app/lib/flags";
 
 // UNICEF-style donation prompt: appears once per session after 20s or ~45%
 // scroll (whichever first), never on the donate flow, always dismissible.
 export default function DonatePrompt() {
+  if (!DONATIONS_LIVE) return null;
+  return <DonatePromptInner />;
+}
+
+function DonatePromptInner() {
   const pathname = usePathname();
   const { flat, lang } = useLang();
   const tr = (s: string) => (lang === "en" ? s : flat.get(s) ?? s);

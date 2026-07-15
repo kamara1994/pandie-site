@@ -17,8 +17,9 @@ const csp = [
   "form-action 'self' https://checkout.stripe.com https://www.paypal.com",
   "img-src 'self' data: blob: https://*.paypal.com https://*.paypalobjects.com https://*.stripe.com",
   "script-src 'self' 'unsafe-inline' https://js.stripe.com https://*.paypal.com https://*.paypalobjects.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com data:",
+  // Fonts are self-hosted via next/font — no Google Fonts grants needed.
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
   "connect-src 'self' https://api.stripe.com https://*.paypal.com https://*.stripe.com",
   "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.paypal.com",
   "upgrade-insecure-requests",
@@ -43,6 +44,17 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Pin the workspace root: a stray package-lock.json in the home directory
+  // otherwise makes Turbopack resolve React from the wrong node_modules,
+  // which breaks prerendering with "useContext of null".
+  turbopack: {
+    root: process.cwd(),
+  },
+  // AVIF first — roughly 30% smaller than WebP for the same quality, which is
+  // the difference between a photo loading or stalling on a 2G/3G connection.
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

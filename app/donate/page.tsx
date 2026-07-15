@@ -10,6 +10,8 @@ import SponsorChild from "../components/donate/SponsorChild";
 import VolunteerForm from "../components/donate/VolunteerForm";
 import PartnerForm from "../components/donate/PartnerForm";
 import TrustSection from "../components/donate/TrustSection";
+import DonationsComingSoon from "../components/donate/DonationsComingSoon";
+import { DONATIONS_LIVE } from "@/app/lib/flags";
 import {
   CurrencyCode, DonationTab, FormData, ItemDonationFormData,
   VolunteerFormData, PartnerFormData, SponsorshipSelection,
@@ -148,7 +150,10 @@ export default function DonatePage() {
       <DonateHero />
       <WaysToGive activeTab={activeTab} onTabChange={(t) => { setActiveTab(t); setSent(null); }} />
 
-      {activeTab === "money" && (
+      {activeTab === "money" && !DONATIONS_LIVE && <DonationsComingSoon />}
+      {activeTab === "sponsor" && !DONATIONS_LIVE && <DonationsComingSoon />}
+
+      {activeTab === "money" && DONATIONS_LIVE && (
         <MoneyDonation
           frequency={frequency}
           currency={currency}
@@ -175,7 +180,7 @@ export default function DonatePage() {
         />
       ))}
 
-      {activeTab === "sponsor" && (
+      {activeTab === "sponsor" && DONATIONS_LIVE && (
         <SponsorChild
           selectedSponsorship={sponsorship}
           onSelect={handleSponsorSelect}

@@ -3,8 +3,13 @@ import { getPayPalAccessToken, PAYPAL_BASE } from "@/app/lib/paypal";
 import { upsertDonation } from "@/app/lib/supabase";
 import { toMinorUnit } from "@/app/lib/currency";
 import { guard } from "@/app/lib/apiGuard";
+import { DONATIONS_LIVE } from "@/app/lib/flags";
 
 export async function POST(request: Request) {
+  if (!DONATIONS_LIVE) {
+    return NextResponse.json({ error: "Online donations are coming soon. Thank you for your patience." }, { status: 503 });
+  }
+
   // Origin check + 16KB cap + 20 capture attempts/min per IP.
   const blocked = guard(request, { bucket: "paypal-capture", limit: 20, windowMs: 60_000, maxBytes: 16 * 1024 });
   if (blocked) return blocked;
