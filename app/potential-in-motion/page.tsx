@@ -254,6 +254,13 @@ export default function PotentialInMotionPage() {
       gsap.set(q(".pim-crowd"), { autoAlpha: 0 });
       gsap.set(q(".pim-hands"), { autoAlpha: 0 });
 
+      // The book opens: on arrival the whole diorama lies tilted back and
+      // swings upright — the one unmissable cue that this world has depth.
+      const intro = gsap.from(q(".pim-camera"), {
+        rotationX: -16, transformOrigin: "50% 100%",
+        duration: 1.5, ease: "power3.out", delay: 0.15,
+      });
+
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
@@ -278,8 +285,8 @@ export default function PotentialInMotionPage() {
       };
       const scene = (i: number, at: number, out: number) => {
         // back.out overshoot = the spring of a paper pop-up settling upright
-        tl.to(q(`.pim-sc-${i}`), { autoAlpha: 1, rotateX: 0, duration: 2.4, ease: "back.out(1.2)" }, at);
-        if (out < 100) tl.to(q(`.pim-sc-${i}`), { autoAlpha: 0, rotateX: -16, duration: 1.8 }, out);
+        tl.to(q(`.pim-sc-${i}`), { autoAlpha: 1, rotateX: 0, duration: 3, ease: "back.out(1.6)" }, at);
+        if (out < 100) tl.to(q(`.pim-sc-${i}`), { autoAlpha: 0, rotateX: -26, duration: 1.8 }, out);
       };
       const morph = (from: string, to: string, at: number) => {
         tl.to(q(".pim-obj-svg"), { scale: 1.35, duration: 1.2, ease: "power2.out" }, at)
@@ -414,19 +421,21 @@ export default function PotentialInMotionPage() {
         const toRY = gsap.quickTo(cam, "rotationY", { duration: 1.1, ease: "power2.out" });
         const toRX = gsap.quickTo(cam, "rotationX", { duration: 1.1, ease: "power2.out" });
         const onMove = (e: PointerEvent) => {
-          toRY(((e.clientX / window.innerWidth) - 0.5) * 7);
-          toRX(((e.clientY / window.innerHeight) - 0.5) * -5);
+          toRY(((e.clientX / window.innerWidth) - 0.5) * 14);
+          toRX(((e.clientY / window.innerHeight) - 0.5) * -9);
         };
-        window.addEventListener("pointermove", onMove, { passive: true });
+        // wait for the book-open intro so the two never fight over the camera
+        intro.eventCallback("onComplete", () =>
+          window.addEventListener("pointermove", onMove, { passive: true }));
         return () => window.removeEventListener("pointermove", onMove);
       }
 
-      // Mobile has no pointer, so the scroll drives a slow handheld drift —
+      // Mobile has no pointer, so the scroll drives a handheld drift —
       // the depth planes shift against each other as the camera sways.
-      tl.to(q(".pim-camera"), { rotationY: 2.4, rotationX: 1.2, duration: 12 }, 8)
-        .to(q(".pim-camera"), { rotationY: -2.6, duration: 14 }, 26)
-        .to(q(".pim-camera"), { rotationY: 2, rotationX: 0.8, duration: 14 }, 46)
-        .to(q(".pim-camera"), { rotationY: -1.8, duration: 12 }, 62)
+      tl.to(q(".pim-camera"), { rotationY: 4.5, rotationX: 2, duration: 12 }, 12)
+        .to(q(".pim-camera"), { rotationY: -5, duration: 14 }, 26)
+        .to(q(".pim-camera"), { rotationY: 4, rotationX: 1.4, duration: 14 }, 46)
+        .to(q(".pim-camera"), { rotationY: -3.6, duration: 12 }, 62)
         .to(q(".pim-camera"), { rotationY: 0, rotationX: 0, duration: 12 }, 80);
     }, wrap);
 
@@ -510,7 +519,7 @@ export default function PotentialInMotionPage() {
               camera produces true parallax — near hills sweep past far ones. */}
           <div className="pim-camera absolute inset-0 will-change-transform [transform-style:preserve-3d]">
           <div className="pim-parallax absolute inset-[-16px] [transform-style:preserve-3d]">
-            <div className="absolute inset-0" style={{ transform: "translateZ(-400px) scale(1.364)" }}>
+            <div className="absolute inset-0" style={{ transform: "translateZ(-400px) scale(1.58)" }}>
               {SKY.map(([p, t, b], i) => (
                 <div key={p} className={`pim-sky-${i} absolute inset-0`}
                   style={{ background: `linear-gradient(180deg, ${t} 0%, ${b} 100%)`, opacity: i === 0 ? 1 : 0 }} />
@@ -533,17 +542,17 @@ export default function PotentialInMotionPage() {
               <div className="pim-moon absolute right-[23%] top-[26%] h-10 w-10 rounded-full opacity-0"
                 style={{ background: "radial-gradient(circle at 38% 38%, #f4eee0 0 58%, #cfc7ae 70%, rgba(244,238,224,0) 72%)" }} />
             </div>
-            <div className="absolute inset-0" style={{ transform: "translateZ(-260px) scale(1.236)" }}>
+            <div className="absolute inset-0" style={{ transform: "translateZ(-260px) scale(1.38)" }}>
               <svg className="pim-hill-far absolute bottom-[24%] left-[-6%] w-[120%] blur-[2.2px]" viewBox="0 0 1200 130" preserveAspectRatio="none" style={{ height: "16%" }}>
                 <path d="M0 130 L0 84 Q170 22 380 72 Q580 116 780 54 Q980 6 1200 74 L1200 130 Z" fill="#2c5a3c" />
               </svg>
             </div>
-            <div className="absolute inset-0" style={{ transform: "translateZ(-150px) scale(1.136)" }}>
+            <div className="absolute inset-0" style={{ transform: "translateZ(-150px) scale(1.2)" }}>
               <svg className="pim-hill-mid absolute bottom-[19%] left-[-8%] w-[124%] blur-[0.9px]" viewBox="0 0 1200 150" preserveAspectRatio="none" style={{ height: "19%" }}>
                 <path d="M0 150 L0 86 Q240 18 470 82 Q690 138 900 66 Q1060 14 1200 86 L1200 150 Z" fill="#1d4530" />
               </svg>
             </div>
-            <div className="absolute inset-0" style={{ transform: "translateZ(-60px) scale(1.055)" }}>
+            <div className="absolute inset-0" style={{ transform: "translateZ(-60px) scale(1.1)" }}>
               <svg className="pim-hill-near absolute bottom-[14%] left-[-11%] w-[130%]" viewBox="0 0 1200 120" preserveAspectRatio="none" style={{ height: "14%" }}>
                 <path d="M0 120 L0 78 Q300 30 620 76 Q920 116 1200 70 L1200 120 Z" fill="#14291d" />
               </svg>
