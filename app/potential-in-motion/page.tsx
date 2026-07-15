@@ -220,6 +220,7 @@ export default function PotentialInMotionPage() {
   const reduced = usePrefersReducedMotion();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+  const scrollLenRef = useRef(5400);
 
   useEffect(() => {
     try { localStorage.setItem("pf_journey_seen", "1"); } catch {}
@@ -256,6 +257,7 @@ export default function PotentialInMotionPage() {
         scrollTrigger: {
           trigger: wrap, start: "top top",
           end: isMobile ? "+=3600" : "+=5400",
+          onRefresh: () => { scrollLenRef.current = isMobile ? 3600 : 5400; },
           scrub: 1, pin: stage, anticipatePin: 1,
           onUpdate: self => {
             setProgress(self.progress);
@@ -425,7 +427,35 @@ export default function PotentialInMotionPage() {
     { k: "MAKE A DIFFERENCE TODAY", q: tr("Now it's in your hands."), s: "" },
   ];
   const activeChapter = Math.min(5, Math.floor(progress * 6));
-  const replay = () => window.scrollTo({ top: 0, behavior: window.matchMedia(REDUCED_MQ).matches ? "auto" : "smooth" });
+  const smooth = () => (window.matchMedia(REDUCED_MQ).matches ? "auto" : "smooth") as ScrollBehavior;
+  const replay = () => window.scrollTo({ top: 0, behavior: smooth() });
+  // Jump to a chapter: pin starts at the wrapper top; chapter i begins at i/6.
+  // Land in the heart of each chapter, not on its boundary/flight.
+  const CHAPTER_POS = [0.02, 0.15, 0.38, 0.58, 0.72, 0.93];
+  const jumpTo = (i: number) => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const top = wrap.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + CHAPTER_POS[i] * scrollLenRef.current, behavior: smooth() });
+  };
+
+  // Arrow keys step through the chapters while the story is on screen.
+  useEffect(() => {
+    if (reduced !== false) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const wrap = wrapRef.current;
+      if (!wrap) return;
+      const r = wrap.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > window.innerHeight) return; // story not on screen
+      const cur = Math.min(5, Math.floor(progress * 6));
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); jumpTo(Math.min(5, cur + 1)); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); jumpTo(Math.max(0, cur - 1)); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced, progress]);
 
   // scene compositions: child pose, prop, which side the child anchors
   const SCENES: ["kick" | "sing" | "receive" | "stand", "home" | "tree" | "school" | "clinic", "l" | "r"][] =
@@ -605,11 +635,14 @@ export default function PotentialInMotionPage() {
           </Link>
         )}
 
-        <div className="pointer-events-none fixed left-3 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-2.5 sm:flex" aria-hidden="true">
+        <div className="fixed left-2 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-1 sm:flex">
           {Array.from({ length: 6 }).map((_, i) => (
-            <span key={i} className="h-[7px] w-[7px] rounded-full transition-all duration-300"
-              style={{ background: i <= activeChapter && progress > 0.001 ? "#c9a24b" : "rgba(255,255,255,0.22)",
-                boxShadow: i === activeChapter && progress > 0.001 ? "0 0 8px rgba(201,162,75,0.8)" : "none" }} />
+            <button key={i} onClick={() => jumpTo(i)} aria-label={`Chapter ${i + 1}`}
+              className="flex h-6 w-6 items-center justify-center focus-visible:outline-2 focus-visible:outline-[#e8cd85]">
+              <span className="h-[7px] w-[7px] rounded-full transition-all duration-300"
+                style={{ background: i <= activeChapter && progress > 0.001 ? "#c9a24b" : "rgba(255,255,255,0.22)",
+                  boxShadow: i === activeChapter && progress > 0.001 ? "0 0 8px rgba(201,162,75,0.8)" : "none" }} />
+            </button>
           ))}
         </div>
       </div>

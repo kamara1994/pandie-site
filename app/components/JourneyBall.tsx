@@ -25,10 +25,14 @@ export default function JourneyBall() {
     () => false,
   );
 
-  // Label chip: shows 6s shortly after load, then reappears every 45s.
+  // Label chip: shows 6s shortly after load, then reappears every 45s with a
+  // rotating message. Stays quiet while any dialog (donation prompt) is open.
+  const [msgIdx, setMsgIdx] = useState(0);
   useEffect(() => {
     let hide: ReturnType<typeof setTimeout>;
     const show = () => {
+      if (document.querySelector('[role="dialog"]')) return; // manners
+      setMsgIdx(i => i + 1);
       setChip(true);
       hide = setTimeout(() => setChip(false), 6000);
     };
@@ -42,7 +46,10 @@ export default function JourneyBall() {
   if (done && pathname.startsWith("/talents")) return null;
 
   const href = done ? "/talents" : "/potential-in-motion";
-  const label = done ? tr("Meet the talents →") : tr("Follow the dream →");
+  const messages = done
+    ? [tr("Meet the talents →"), tr("Every child has a talent.")]
+    : [tr("Follow the dream →"), tr("Every dream starts with one gift.")];
+  const label = messages[msgIdx % messages.length];
 
   return (
     <div className="fixed bottom-4 left-4 z-40 flex items-center gap-2.5">
@@ -72,6 +79,9 @@ export default function JourneyBall() {
         aria-label={done ? "Meet the talents" : "Follow the dream — the journey story"}
         className="group relative block h-14 w-14 rounded-full border-[1.5px] border-[#c9962a]/70 bg-[#0d2015] shadow-[0_10px_30px_rgba(0,0,0,0.45)] transition hover:border-[#e8b84b] hover:shadow-[0_10px_34px_rgba(201,150,42,0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8b84b]"
       >
+        {chip && (
+          <span className="absolute inset-[-6px] animate-ping rounded-full border border-[#e8cd85]/60 motion-reduce:hidden" style={{ animationIterationCount: 3 }} />
+        )}
         <span className="pf-ball-idle absolute inset-0 flex items-center justify-center">
           {done ? (
             <svg viewBox="0 0 24 24" className="h-7 w-7" fill="#c9962a" aria-hidden="true">
