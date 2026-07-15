@@ -343,24 +343,14 @@ export default function PotentialInMotionPage() {
     };
   }, [reduced]);
 
-  // Wait for the media query on the client before choosing a mode (no
-  // hydration mismatch: the server renders neither branch's animation state).
-  if (reduced === null) return <div className="min-h-[100svh] bg-[#0a1a10]" />;
-
-  if (reduced) {
-    return (
-      <div>
-        <ReducedMotionStory />
-        <FinalCallToAction />
-      </div>
-    );
-  }
-
   const activeScene = Math.min(5, Math.floor(progress * 6));
 
+  // The readable narrative and the final CTA are server-rendered in every
+  // mode; only the animated-vs-static presentation waits for the client's
+  // prefers-reduced-motion answer (no hydration mismatch either way).
   return (
     <div>
-      {/* Screen-reader narrative: the full story as readable text */}
+      {/* Screen-reader / SEO narrative: the full story as readable text */}
       <article className="sr-only">
         <h1>{STORY_INTRO.headline}</h1>
         <p>{STORY_INTRO.support}</p>
@@ -373,6 +363,9 @@ export default function PotentialInMotionPage() {
         <p>{STORY_FINALE.headline} {STORY_FINALE.support}</p>
       </article>
 
+      {reduced === null && <div className="min-h-[100svh] bg-[#0a1a10]" />}
+      {reduced === true && <ReducedMotionStory />}
+      {reduced === false && (
       <div ref={wrapRef} className="relative">
         {/* Skip link: visible, above the story */}
         <a
@@ -551,6 +544,7 @@ export default function PotentialInMotionPage() {
           ))}
         </div>
       </div>
+      )}
 
       <FinalCallToAction />
     </div>
