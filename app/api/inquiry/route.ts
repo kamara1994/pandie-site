@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guard, isEmail, clampStr } from "@/app/lib/apiGuard";
+import { deliverMessage } from "@/app/lib/messages";
 
 // Non-payment giving inquiries (item donations, volunteering, partnerships,
 // sponsorship interest). Forwards to the n8n operations pipeline.
@@ -41,25 +42,13 @@ export async function POST(req: Request) {
       details,
     };
 
-    const webhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
-    if (!webhookUrl) {
-      console.error("[inquiry] N8N_CHAT_WEBHOOK_URL is not configured");
+    const ok = await deliverMessage({ source: `inquiry_${kind}`, name, email, payload });
+    if (!ok) {
       return NextResponse.json(
         { error: "We couldn't submit that right now. Please email info@pandiefoundation.org and we'll help you personally." },
         { status: 503 },
       );
     }
-
-    const res = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      return NextResponse.json({ error: "Submission failed. Please try again." }, { status: 502 });
-    }
-
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Inquiry error:", err);

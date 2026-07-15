@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guard, isEmail, clampStr } from "@/app/lib/apiGuard";
+import { deliverMessage } from "@/app/lib/messages";
 
 export async function POST(req: Request) {
   // Origin check + 16KB cap + 30/min per IP (this route is called per chat message).
@@ -20,33 +21,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const webhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
-    if (!webhookUrl) {
-      // Don't leak configuration state to the client.
-      console.error("[chat-message] N8N_CHAT_WEBHOOK_URL is not configured");
+    const ok = await deliverMessage({
+      source: "chat_message",
+      name, email, message,
+      payload: { site: "Pandie Foundation Website" },
+    });
+    if (!ok) {
       return NextResponse.json(
         { error: "Messaging is temporarily unavailable. Please email info@pandiefoundation.org." },
         { status: 503 },
       );
     }
-
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        source: "Pandie Foundation Website",
-        type: "chat_message",
-        submittedAt: new Date().toISOString(),
-        name,
-        email,
-        message,
-      }),
-    });
-
-    if (!response.ok) {
-      return NextResponse.json({ error: "Could not send your message. Please try again." }, { status: 502 });
-    }
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Chat message error:", error);
