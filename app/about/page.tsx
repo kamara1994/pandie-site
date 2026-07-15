@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "../components/AutoTranslate";
+import GoldThread from "../components/GoldThread";
 
 // ── Animation Hooks ───────────────────────────────────────────────────────────
 function useReveal(threshold = 0.15) {
@@ -52,7 +53,7 @@ function RevealLine({
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-out ${
+      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${
         visible
           ? "opacity-100 translate-y-0 translate-x-0 scale-100"
           : hidden
@@ -100,7 +101,7 @@ function StaggeredLine({
   const text = useT(line);
   return (
     <p
-      className={`transition-all duration-700 ease-out ${className} ${
+      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${className} ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
       style={{ transitionDelay: `${baseDelay + i * 120}ms` }}
@@ -127,11 +128,11 @@ function SwingHeading({
 
   return (
     <div ref={ref}>
-      <Tag className={`${className} flex flex-wrap gap-x-3 gap-y-1`}>
+      <Tag className={`${className} font-heading flex flex-wrap gap-x-3 gap-y-1`}>
         {translated.split(" ").map((word, i) => (
           <span
             key={i}
-            className={`inline-block transition-all duration-500 ease-out ${
+            className={`inline-block transition-all duration-500 ease-out motion-reduce:transition-none ${
               visible
                 ? "opacity-100 translate-y-0 rotate-0"
                 : "opacity-0 translate-y-6 rotate-3"
@@ -195,12 +196,14 @@ function CountUp({
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-[#f4f1ea] text-[#1f2a1f]">
+    <div className="min-h-screen bg-[#f4f1ea] text-[#1f2a1f]">
       {/* ── Hero Banner ── */}
-      <section className="bg-[#0f1f17] px-5 py-20 text-white sm:py-28 lg:px-8 xl:px-12">
+      <section className="relative overflow-hidden bg-[#0a1a10] px-5 pb-16 pt-28 text-white sm:pb-24 sm:pt-32 lg:px-8 xl:px-12">
+        <div className="pointer-events-none absolute -right-1/4 -top-1/3 h-[70vw] w-[70vw] rounded-full bg-[radial-gradient(circle,rgba(201,150,42,0.10),transparent_70%)] sm:h-[45vw] sm:w-[45vw]" />
+        <p aria-hidden="true" className="pointer-events-none absolute -bottom-6 right-0 select-none font-heading text-[34vw] italic leading-none text-white/[0.03] lg:text-[220px]">Pandie</p>
         <div className="mx-auto w-full max-w-[1100px]">
           <RevealLine direction="fade">
-            <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#f0c857]">
+            <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#e8b84b]">
               <Tx>About Pandie Foundation</Tx>
             </p>
           </RevealLine>
@@ -229,10 +232,11 @@ export default function AboutPage() {
       {/* ── Impact Numbers ── */}
       <section className="px-5 py-16 lg:px-8 xl:px-12">
         <div className="mx-auto max-w-[1100px]">
-          <div className="rounded-2xl bg-[#214c34] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.15)] sm:p-12">
+          <div className="relative overflow-hidden rounded-2xl bg-[#0a1a10] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.2)] ring-1 ring-[#c9962a]/15 sm:p-12">
+            <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#c9962a]/70 to-transparent" />
             <div className="text-center">
               <RevealLine direction="up">
-                <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#f0c857]">
+                <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#e8b84b]">
                   <Tx>Our Impact</Tx>
                 </p>
               </RevealLine>
@@ -246,7 +250,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-10 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-6 lg:grid-cols-4">
               {[
                 { target: 500, suffix: "+", label: "Children Supported", desc: "and counting" },
                 { target: 6, suffix: "", label: "Active Programs", desc: "across Sierra Leone" },
@@ -254,11 +258,11 @@ export default function AboutPage() {
                 { target: 100, suffix: "%", label: "Donation Transparency", desc: "every cent accounted for" },
               ].map((stat, i) => (
                 <RevealLine key={stat.label} delay={i * 120} direction="up">
-                  <div className="rounded-xl bg-white/10 p-6 text-center ring-1 ring-white/10">
-                    <p className="text-5xl font-bold text-[#f0c857]">
+                  <div className="h-full rounded-xl bg-white/[0.06] p-4 text-center ring-1 ring-white/10 sm:p-6">
+                    <p className="font-heading text-4xl font-semibold text-[#e8b84b] sm:text-5xl">
                       <CountUp target={stat.target} suffix={stat.suffix} />
                     </p>
-                    <p className="mt-3 text-lg font-semibold text-white">
+                    <p className="mt-3 text-[15px] font-semibold text-white sm:text-lg">
                       <Tx>{stat.label}</Tx>
                     </p>
                     <p className="mt-1 text-sm text-white/60"><Tx>{stat.desc}</Tx></p>
@@ -275,7 +279,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[900px] text-center">
           <StaggeredText
             baseDelay={0}
-            className="text-2xl font-semibold leading-10 text-[#214c34] sm:text-3xl sm:leading-[1.6]"
+            className="font-heading text-[26px] font-semibold leading-[1.45] text-[#214c34] sm:text-3xl sm:leading-[1.6]"
             lines={[
               '"Our mission is simple but urgent:',
               "to ensure that no child is denied the chance to grow, learn, and thrive",
@@ -296,18 +300,20 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[1100px]">
           <div className="overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
             <div className="grid lg:grid-cols-[0.75fr_1.25fr]">
-              <div className="relative min-h-[380px] bg-[#0f1f17] lg:min-h-[500px]">
+              <div className="relative min-h-[380px] bg-[#0a1a10] lg:min-h-[500px]">
                 <Image
                   src="/founder02.jpg"
                   alt="Joseph Allan Kamara — Founder of Pandie Foundation"
                   fill
                   className="object-cover object-top"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0f1f17]/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/80 via-transparent to-transparent" />
+                <div className="pointer-events-none absolute left-3 top-3 h-5 w-5 border-l-[1.5px] border-t-[1.5px] border-[#e8b84b]/70" />
+                <div className="pointer-events-none absolute right-3 top-3 h-5 w-5 border-r-[1.5px] border-t-[1.5px] border-[#e8b84b]/70" />
 
                 <div className="absolute bottom-6 left-6 right-6">
                   <RevealLine direction="up">
-                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f0c857]">
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8b84b]">
                       <Tx>Foundation Founder</Tx>
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-white">
@@ -323,9 +329,9 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              <div className="px-8 py-12 sm:px-10 lg:px-12 lg:py-14">
+              <div className="px-6 py-10 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
                 <RevealLine direction="right">
-                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
+                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c9962a]">
                     <Tx>A Message From the Founder</Tx>
                   </p>
                 </RevealLine>
@@ -376,7 +382,7 @@ export default function AboutPage() {
                 <RevealLine delay={1800} direction="up">
                   <div className="mt-8 flex items-center gap-4">
                     <div className="h-px flex-1 bg-[#e7dfd0]" />
-                    <p className="text-sm font-bold italic text-[#d4a017]">
+                    <p className="text-sm font-bold italic text-[#c9962a]">
                       Joseph Allan Kamara
                     </p>
                     <p className="text-sm text-[#8b8f8c]">
@@ -394,7 +400,7 @@ export default function AboutPage() {
       {/* ── Mother's Story ── */}
       <section className="px-5 pb-16 lg:px-8 xl:px-12">
         <div className="mx-auto max-w-[1100px]">
-          <div className="overflow-hidden rounded-2xl bg-[#214c34] shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+          <div className="overflow-hidden rounded-2xl bg-[#0a1a10] shadow-[0_20px_60px_rgba(0,0,0,0.2)] ring-1 ring-[#c9962a]/15">
             <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
               <div className="relative min-h-[360px] lg:min-h-[520px]">
                 <Image
@@ -403,11 +409,13 @@ export default function AboutPage() {
                   fill
                   className="object-cover object-top"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#214c34]/90 via-[#214c34]/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a10]/90 via-[#0a1a10]/20 to-transparent" />
+                <div className="pointer-events-none absolute left-3 top-3 h-5 w-5 border-l-[1.5px] border-t-[1.5px] border-[#e8b84b]/70" />
+                <div className="pointer-events-none absolute right-3 top-3 h-5 w-5 border-r-[1.5px] border-t-[1.5px] border-[#e8b84b]/70" />
 
                 <div className="absolute bottom-6 left-6 right-6">
                   <RevealLine direction="up">
-                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f0c857]">
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8b84b]">
                       <Tx>In Honor Of</Tx>
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-white">
@@ -420,9 +428,9 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              <div className="px-8 py-12 text-white sm:px-10 lg:px-12 lg:py-14">
+              <div className="px-6 py-10 text-white sm:px-10 sm:py-12 lg:px-12 lg:py-14">
                 <RevealLine direction="right">
-                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#f0c857]">
+                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#e8b84b]">
                     <Tx>The Name Behind the Foundation</Tx>
                   </p>
                 </RevealLine>
@@ -465,7 +473,7 @@ export default function AboutPage() {
                     <p className="text-base italic leading-8 text-white/80">
                       <Tx>"She believed that every child mattered — not just her own — and that true kindness is measured by how we care for those who have the least."</Tx>
                     </p>
-                    <p className="mt-3 text-sm font-semibold text-[#f0c857]">
+                    <p className="mt-3 text-sm font-semibold text-[#e8b84b]">
                       <Tx>— Joseph Allan Kamara, Founder</Tx>
                     </p>
                   </div>
@@ -482,7 +490,7 @@ export default function AboutPage() {
           <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-12">
             <div className="text-center">
               <RevealLine direction="up">
-                <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
+                <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c9962a]">
                   <Tx>Our Journey</Tx>
                 </p>
               </RevealLine>
@@ -513,8 +521,8 @@ export default function AboutPage() {
                       item.side === "right" ? "lg:flex-row-reverse" : ""
                     }`}
                   >
-                    <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#214c34] ring-4 ring-[#f4f1ea] lg:absolute lg:left-1/2 lg:-translate-x-1/2">
-                      <div className="h-3 w-3 rounded-full bg-[#f0c857]" />
+                    <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0a1a10] ring-4 ring-[#f4f1ea] lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+                      <div className="h-2.5 w-2.5 rotate-45 bg-[#c9962a]" />
                     </div>
 
                     <RevealLine
@@ -526,7 +534,7 @@ export default function AboutPage() {
                           item.side === "right" ? "lg:mr-auto" : "lg:ml-auto"
                         }`}
                       >
-                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d4a017]">
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#c9962a]">
                           <Tx>{item.year}</Tx>
                         </p>
                         <h3 className="mt-2 text-lg font-semibold text-[#214c34]">
@@ -550,7 +558,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[1100px]">
           <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-12">
             <RevealLine direction="up">
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c9962a]">
                 <Tx>The Reality We Face</Tx>
               </p>
             </RevealLine>
@@ -576,16 +584,20 @@ export default function AboutPage() {
 
             <div className="mt-12 grid gap-6 md:grid-cols-3">
               {[
-                { emoji: "📚", title: "A Child Who Wants to Learn", lines: ["She wakes before sunrise and walks miles to school,", "only to sit in a classroom with no textbooks,", "with no guarantee she can return tomorrow", "if her family cannot pay the fees."], delay: 0 },
-                { emoji: "🍽️", title: "A Child Who Goes to Bed Hungry", lines: ["He is nine years old and already knows", "what it feels like to concentrate through hunger.", "Some days, the only thing between him and an empty stomach", "is a single cup of rice."], delay: 200 },
-                { emoji: "💊", title: "A Child Who Needs Medical Care", lines: ["She has had a fever for a week.", "Her mother knows what to do but cannot afford the medicine.", "She prays and watches and waits —", "because the alternative is unthinkable."], delay: 400 },
+                { icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253", title: "A Child Who Wants to Learn", lines: ["She wakes before sunrise and walks miles to school,", "only to sit in a classroom with no textbooks,", "with no guarantee she can return tomorrow", "if her family cannot pay the fees."], delay: 0 },
+                { icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z", title: "A Child Who Goes to Bed Hungry", lines: ["He is nine years old and already knows", "what it feels like to concentrate through hunger.", "Some days, the only thing between him and an empty stomach", "is a single cup of rice."], delay: 200 },
+                { icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z", title: "A Child Who Needs Medical Care", lines: ["She has had a fever for a week.", "Her mother knows what to do but cannot afford the medicine.", "She prays and watches and waits —", "because the alternative is unthinkable."], delay: 400 },
               ].map((item) => (
                 <div
                   key={item.title}
                   className="rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] p-6"
                 >
                   <RevealLine delay={item.delay} direction="up">
-                    <p className="text-4xl">{item.emoji}</p>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0a1a10]">
+                      <svg className="h-5 w-5 text-[#e8b84b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                      </svg>
+                    </div>
                     <h3 className="mt-4 text-lg font-semibold text-[#214c34]">
                       <Tx>{item.title}</Tx>
                     </h3>
@@ -603,7 +615,7 @@ export default function AboutPage() {
             </div>
 
             <RevealLine delay={600} direction="up">
-              <div className="mt-8 rounded-xl bg-[#214c34] p-6 text-white">
+              <div className="mt-8 rounded-xl bg-[#0a1a10] p-6 text-white ring-1 ring-[#c9962a]/20">
                 <StaggeredText
                   baseDelay={700}
                   className="text-[17px] leading-8 text-white/90"
@@ -625,8 +637,8 @@ export default function AboutPage() {
           <div className="grid gap-6 md:grid-cols-2">
             <RevealLine direction="left">
               <div className="h-full rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#214c34]">
-                  <svg className="h-6 w-6 text-[#f0c857]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0a1a10]">
+                  <svg className="h-6 w-6 text-[#e8b84b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
@@ -652,8 +664,8 @@ export default function AboutPage() {
 
             <RevealLine direction="right">
               <div className="h-full rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-10">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#d4a017]">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#c9962a]">
+                  <svg className="h-6 w-6 text-[#0a1a10]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
@@ -686,7 +698,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[1100px]">
           <div className="rounded-2xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-12">
             <RevealLine direction="up">
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c9962a]">
                 <Tx>What We Do</Tx>
               </p>
             </RevealLine>
@@ -719,8 +731,8 @@ export default function AboutPage() {
               ].map((item) => (
                 <RevealLine key={item.title} delay={item.delay} direction="up">
                   <div className="h-full rounded-xl border border-[#e7dfd0] bg-[#fcfaf6] p-6">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#214c34]">
-                      <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0a1a10]">
+                      <svg className="h-5 w-5 text-[#e8b84b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                       </svg>
                     </div>
@@ -739,7 +751,7 @@ export default function AboutPage() {
               <div className="mt-8 text-center">
                 <Link
                   href="/programs"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#214c34] px-7 py-4 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#d4a017] hover:text-[#173325]"
+                  className="inline-flex w-full items-center justify-center gap-2 bg-[#0a1a10] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:-translate-y-px hover:bg-[#c9962a] hover:text-[#0a1a10] hover:shadow-[0_6px_24px_rgba(201,150,42,0.35)] sm:w-auto"
                 >
                   <Tx>Explore All Programs</Tx>
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -757,7 +769,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[1100px]">
           <div className="mb-8 text-center">
             <RevealLine direction="up">
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#d4a017]">
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c9962a]">
                 <Tx>Our Values</Tx>
               </p>
             </RevealLine>
@@ -796,9 +808,13 @@ export default function AboutPage() {
       {/* ── Emotional CTA ── */}
       <section className="px-5 pb-20 lg:px-8 xl:px-12">
         <div className="mx-auto max-w-[1100px]">
-          <div className="rounded-2xl bg-[#214c34] p-10 text-center text-white shadow-[0_20px_60px_rgba(0,0,0,0.15)] sm:p-14">
+          <div className="relative overflow-hidden rounded-2xl bg-[#0a1a10] p-7 text-center text-white shadow-[0_20px_60px_rgba(0,0,0,0.25)] ring-1 ring-[#c9962a]/15 sm:p-14">
+            <div className="pointer-events-none absolute -right-1/4 -top-1/3 h-[60vw] w-[60vw] rounded-full bg-[radial-gradient(circle,rgba(201,150,42,0.10),transparent_70%)] sm:h-[35vw] sm:w-[35vw]" />
             <RevealLine direction="up">
-              <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#f0c857]">
+              <GoldThread className="mx-auto mb-5 w-24" />
+            </RevealLine>
+            <RevealLine direction="up">
+              <p className="text-sm font-bold uppercase tracking-[0.26em] text-[#e8b84b]">
                 <Tx>Will You Answer the Call?</Tx>
               </p>
             </RevealLine>
@@ -837,13 +853,13 @@ export default function AboutPage() {
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                   href="/donate"
-                  className="inline-flex items-center justify-center rounded-xl bg-[#d4a017] px-10 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#173325] transition hover:opacity-90"
+                  className="inline-flex w-full items-center justify-center bg-[#c9962a] px-10 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#0a1a10] transition-all duration-300 hover:-translate-y-px hover:bg-[#e8b84b] hover:shadow-[0_6px_24px_rgba(201,150,42,0.45)] sm:w-auto"
                 >
                   <Tx>Donate Now — Change a Life</Tx>
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center justify-center rounded-xl border border-white/30 px-10 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:bg-white/10"
+                  className="inline-flex w-full items-center justify-center border border-white/30 px-10 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition hover:border-[#c9962a]/60 hover:bg-white/5 sm:w-auto"
                 >
                   <Tx>Get Involved</Tx>
                 </Link>
@@ -858,6 +874,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
