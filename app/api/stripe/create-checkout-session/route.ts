@@ -86,7 +86,10 @@ export async function POST(request: Request) {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  // Production-safe fallback: a missing env var must never send a donor to localhost.
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.NODE_ENV === "production" ? "https://pandiefoundation.org" : "http://localhost:3000");
 
   const safeDonorName = anonymous ? "Anonymous" : String(donorName || "").slice(0, 500);
 
