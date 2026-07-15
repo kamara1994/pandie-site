@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLang } from "@/app/context/LanguageContext";
+import GoldThread from "./GoldThread";
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -92,6 +93,10 @@ export default function Hero() {
           ))}
         </div>
 
+        {/* Mobile-only: gold corner ticks frame the photo */}
+        <div className="pointer-events-none absolute left-3 top-3 z-30 h-5 w-5 border-l-[1.5px] border-t-[1.5px] border-[#e8b84b]/70 lg:hidden" />
+        <div className="pointer-events-none absolute right-3 top-3 z-30 h-5 w-5 border-r-[1.5px] border-t-[1.5px] border-[#e8b84b]/70 lg:hidden" />
+
         {/* Mobile-only: soft fade at the photo's base so it melts into the green below */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a1a10] to-transparent lg:hidden" />
       </div>
@@ -100,6 +105,7 @@ export default function Hero() {
       <div className="absolute inset-0 hidden lg:block lg:bg-gradient-to-r lg:from-[#0a1a10]/95 lg:via-[#0a1a10]/70 lg:to-[#0a1a10]/20" />
       <div className="absolute inset-0 hidden bg-gradient-to-t via-transparent to-transparent lg:block lg:from-[#0a1a10]/85" />
       <div className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#c9962a] to-transparent opacity-60" />
+      <div className="pointer-events-none absolute -left-1/4 top-[42%] h-[55vw] w-[55vw] rounded-full bg-[radial-gradient(circle,rgba(201,150,42,0.09),transparent_70%)] lg:hidden" />
 
       <div className="relative z-10 flex flex-col px-6 pb-16 pt-7 sm:px-12 sm:pb-20 lg:min-h-[100svh] lg:justify-center lg:px-20 lg:py-0 lg:pt-0 xl:px-28">
         <div className="max-w-3xl">
@@ -146,8 +152,10 @@ export default function Hero() {
             </Link>
           </div>
 
-          <div className="mt-12 flex flex-wrap gap-8 border-t border-white/10 pt-8 transition-all duration-700 motion-reduce:transition-none sm:mt-16 sm:gap-10 sm:pt-10"
+          <div className="mt-12 transition-all duration-700 motion-reduce:transition-none sm:mt-16"
             style={{ opacity: visible ? 1 : 0, transitionDelay: "700ms" }}>
+            <GoldThread />
+            <div className="mt-8 flex flex-wrap gap-8 sm:mt-10 sm:gap-10">
             {[
               { num: children,  suffix: "+", label: t.hero.stat1Label },
               { num: education, suffix: "+", label: t.hero.stat2Label },
@@ -160,6 +168,7 @@ export default function Hero() {
                 <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">{label}</p>
               </div>
             ))}
+            </div>
           </div>
         </div>
       </div>

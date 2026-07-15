@@ -165,8 +165,10 @@ export default function TopBar() {
 
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-3 sm:gap-3.5">
-            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-white/20 transition-all duration-300 group-hover:border-[#c9962a]/50 group-hover:shadow-[0_0_18px_rgba(201,150,42,0.35)] sm:h-11 sm:w-11 md:h-12 md:w-12">
-              <Image src="/logo.png" alt="Pandie Foundation logo" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            <div className="rounded-full bg-[conic-gradient(from_200deg,#c9962a,#e8b84b,#7a5a1f,#c9962a)] p-[1.5px] transition-shadow duration-300 group-hover:shadow-[0_0_18px_rgba(201,150,42,0.4)]">
+              <div className="relative h-10 w-10 overflow-hidden rounded-full sm:h-11 sm:w-11 md:h-12 md:w-12">
+                <Image src="/logo.png" alt="Pandie Foundation logo" fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+              </div>
             </div>
             <div className="leading-none">
               <p className="text-[17px] font-bold tracking-wide text-white transition-colors duration-300 group-hover:text-[#e8b84b] sm:text-[18px] md:text-[20px]">Pandie</p>
@@ -266,6 +268,7 @@ export default function TopBar() {
           <Image src="/nav-texture.jpg" alt="" fill className="object-cover" />
         </div>
         <div className="pointer-events-none absolute -top-1/4 right-0 h-[60vh] w-[60vh] rounded-full bg-[radial-gradient(circle,rgba(201,150,42,0.16),transparent_70%)]" />
+        <p aria-hidden="true" className="pointer-events-none absolute bottom-36 right-2 select-none font-heading text-[38vw] italic leading-none text-white/[0.03]">Pandie</p>
         <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#c9962a] to-transparent" />
 
         <div className="relative flex h-full flex-col justify-between px-7 pb-12 pt-24 sm:px-10 md:px-16 md:pt-28">

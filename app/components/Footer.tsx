@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useLang } from "@/app/context/LanguageContext";
+import GoldThread from "./GoldThread";
 
 export default function Footer() {
   const { flat, lang } = useLang();
@@ -25,12 +26,13 @@ export default function Footer() {
       <span className="after:mt-3 after:block after:h-px after:w-8 after:bg-gradient-to-r after:from-[#c9962a]/70 after:to-transparent">
         {label}
       </span>
-      <svg
-        width="10" height="10" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"
-        className={`shrink-0 transition-transform duration-300 lg:hidden ${openSec === id ? "rotate-180" : ""}`}
-      >
-        <path d="M0 2l4 4 4-4H0z" />
-      </svg>
+      {/* span wrapper: the unlayered `svg { display:block }` in globals.css would
+          override Tailwind's layered lg:hidden if it sat on the svg itself */}
+      <span className={`shrink-0 transition-transform duration-300 lg:hidden ${openSec === id ? "rotate-180" : ""}`}>
+        <svg width="10" height="10" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true">
+          <path d="M0 2l4 4 4-4H0z" />
+        </svg>
+      </span>
     </button>
   );
   const sectionBodyCls = (id: string) => `${openSec === id ? "block" : "hidden"} lg:block`;
@@ -141,13 +143,19 @@ export default function Footer() {
       <div className="absolute inset-x-0 top-0 z-20 h-[1.5px] bg-gradient-to-r from-transparent via-[#c9962a]/70 to-transparent" />
       <div className="pointer-events-none absolute -top-1/4 right-0 z-10 h-[60vh] w-[60vh] rounded-full bg-[radial-gradient(circle,rgba(201,150,42,0.10),transparent_70%)]" />
 
+      {/* Giant serif watermark — the quiet signature behind the grid */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-10 z-[5] select-none overflow-hidden">
+        <p className="text-center font-heading text-[32vw] italic leading-none text-white/[0.03] lg:text-[260px]">Pandie</p>
+      </div>
+
       {/* Content */}
       <div className="relative z-10">
 
         <div className="border-b border-white/10 px-5 py-12 lg:px-8 xl:px-12">
           <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-8 text-center sm:flex-row sm:text-left">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#e8b84b]">
+              <GoldThread className="mx-auto w-24 sm:mx-0" />
+              <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.28em] text-[#e8b84b]">
                 {tr("Make a Difference Today")}
               </p>
               <p className="mt-3 font-heading text-4xl font-semibold leading-none text-white sm:text-5xl">
