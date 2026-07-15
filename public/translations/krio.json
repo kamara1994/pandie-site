@@ -561,5 +561,18 @@
     "noLanguagesFound": "Wi nɔ fɛn ɛni langwej",
     "switchLanguage": "Chenj langwej",
     "toggleMenu": "Opin di mɛnyu"
+  },
+  "chatExtra": {
+    "leadIntro": "Bifo wi kontinyu — a go lek fɔ gɛt yu nem ɛn yu imel so wi tim go ebul fala yu ɔp? 💛",
+    "yourEmail": "Yu imel",
+    "submit": "Sɛn am",
+    "skip": "Pas am",
+    "thankYouName": "Tɛnki, {name}! 💛 Naw, aw a go ebul ɛp yu tide?",
+    "fillNameEmail": "Duya rayt yu nem ɛn yu imel.",
+    "validEmail": "Duya put imel adrɛs we kɔrekt.",
+    "wentWrongEmail": "Sɔntin nɔ go rayt. Duya rayt to wi dairekt na info@pandiefoundation.org.",
+    "troubleReach": "Sɔri, a bin gɛt prɔblɛm. Yu kin stil rich wi na info@pandiefoundation.org 💛",
+    "fullName": "Yu ful nem",
+    "convoIncluded": "Wi go sɛn yu tok-tok wit am"
   }
 }

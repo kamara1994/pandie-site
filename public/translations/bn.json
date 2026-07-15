@@ -561,5 +561,18 @@
     "noLanguagesFound": "কোনো ভাষা পাওয়া যায়নি",
     "switchLanguage": "ভাষা পরিবর্তন করুন",
     "toggleMenu": "মেনু খুলুন"
+  },
+  "chatExtra": {
+    "leadIntro": "এগিয়ে যাওয়ার আগে — আপনার নাম ও ইমেইল দেবেন কি, যাতে আমাদের দল যোগাযোগ করতে পারে? 💛",
+    "yourEmail": "আপনার ইমেইল",
+    "submit": "পাঠান",
+    "skip": "এড়িয়ে যান",
+    "thankYouName": "ধন্যবাদ, {name}! 💛 এবার বলুন, আজ আমি কীভাবে সাহায্য করতে পারি?",
+    "fillNameEmail": "অনুগ্রহ করে আপনার নাম ও ইমেইল লিখুন।",
+    "validEmail": "অনুগ্রহ করে একটি সঠিক ইমেইল ঠিকানা দিন।",
+    "wentWrongEmail": "কিছু ভুল হয়েছে। সরাসরি info@pandiefoundation.org-এ লিখুন।",
+    "troubleReach": "দুঃখিত, একটি সমস্যা হয়েছে। আপনি info@pandiefoundation.org-এও যোগাযোগ করতে পারেন 💛",
+    "fullName": "পূর্ণ নাম",
+    "convoIncluded": "আপনার কথোপকথন সংযুক্ত থাকবে"
   }
 }

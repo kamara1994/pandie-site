@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/app/context/LanguageContext";
 
@@ -8,7 +9,8 @@ type Message = { role: "user" | "assistant"; content: string };
 type View = "chat" | "handoff" | "handoff-done";
 
 export default function ChatWidget() {
-  const { t, lang } = useLang();
+  const { t, lang , flat } = useLang();
+  const tr = (x: string) => (lang === "en" ? x : flat.get(x) ?? x);
   const [open, setOpen]           = useState(false);
   const [view, setView]           = useState<View>("chat");
   const [messages, setMessages]   = useState<Message[]>([]);
@@ -17,7 +19,6 @@ export default function ChatWidget() {
   const [isTyping, setIsTyping]   = useState(false);
   const [showTooltip, setShowTooltip]   = useState(false);
   const [hasGreeted, setHasGreeted]     = useState(false);
-  const [donatePopup, setDonatePopup]   = useState(false);
   const [prevLang, setPrevLang]         = useState(lang);
 
   // Lead capture
@@ -147,7 +148,7 @@ export default function ChatWidget() {
     } catch {
       setMessages([...history, {
         role: "assistant",
-        content: "Sorry, I had trouble with that. You can also reach us at info@pandiefoundation.org 💛",
+        content: tr("Sorry, I had trouble with that. You can also reach us at info@pandiefoundation.org 💛"),
       }]);
     } finally {
       setStreaming(false);
@@ -171,8 +172,8 @@ export default function ChatWidget() {
   };
 
   const submitHandoff = async () => {
-    if (!hName.trim() || !hEmail.trim()) { setHError("Please fill in your name and email."); return; }
-    if (!hEmail.includes("@")) { setHError("Please enter a valid email address."); return; }
+    if (!hName.trim() || !hEmail.trim()) { setHError(tr("Please fill in your name and email.")); return; }
+    if (!hEmail.includes("@")) { setHError(tr("Please enter a valid email address.")); return; }
     setHError("");
     setHSending(true);
     try {
@@ -183,7 +184,7 @@ export default function ChatWidget() {
       });
       setView("handoff-done");
     } catch {
-      setHError("Something went wrong. Please email info@pandiefoundation.org directly.");
+      setHError(tr("Something went wrong. Please email info@pandiefoundation.org directly."));
     } finally {
       setHSending(false);
     }
@@ -327,26 +328,26 @@ export default function ChatWidget() {
                         <Image src="/logo.png" alt="Pamela" fill className="object-cover" />
                       </div>
                       <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-[#0f2418] px-4 py-3 space-y-2.5">
-                        <p className="text-[13px] text-white/80 leading-relaxed">Before we continue — may I have your name and email so our team can follow up? 💛</p>
+                        <p className="text-[13px] text-white/80 leading-relaxed">{tr("Before we continue — may I have your name and email so our team can follow up? 💛")}</p>
                         <input
                           value={leadName} onChange={e => setLeadName(e.target.value)}
-                          placeholder="Your name"
+                          placeholder={tr("Your name")}
                           className="w-full rounded-lg bg-white/[0.08] px-3 py-2 text-[12px] text-white placeholder:text-white/30 outline-none focus:bg-white/[0.12]"
                         />
                         <input
                           value={leadEmail} onChange={e => setLeadEmail(e.target.value)}
-                          type="email" placeholder="Your email"
+                          type="email" placeholder={tr("Your email")}
                           onKeyDown={e => e.key === "Enter" && submitLead()}
                           className="w-full rounded-lg bg-white/[0.08] px-3 py-2 text-[12px] text-white placeholder:text-white/30 outline-none focus:bg-white/[0.12]"
                         />
                         <div className="flex gap-2">
                           <button onClick={submitLead}
                             className="flex-1 rounded-lg bg-[#c9962a] py-2 text-[11px] font-bold text-[#0a1a10] transition hover:bg-[#e8b84b]">
-                            Submit →
+                            {tr("Submit")} →
                           </button>
                           <button onClick={() => { setLeadStep("idle"); setLeadCaptured(true); }}
                             className="rounded-lg border border-white/10 px-3 py-2 text-[11px] text-white/30 transition hover:text-white/60">
-                            Skip
+                            {tr("Skip")}
                           </button>
                         </div>
                       </div>
@@ -359,7 +360,7 @@ export default function ChatWidget() {
                         <Image src="/logo.png" alt="Pamela" fill className="object-cover" />
                       </div>
                       <div className="max-w-[78%] rounded-2xl rounded-tl-sm bg-[#0f2418] px-4 py-3 text-[13px] text-white/80">
-                        Thank you, {leadName}! 💛 Now, how can I help you today?
+                        {tr("Thank you, {name}! 💛 Now, how can I help you today?").replace("{name}", leadName)}
                       </div>
                     </div>
                   )}
@@ -379,28 +380,18 @@ export default function ChatWidget() {
                   </div>
                 )}
 
-                {/* Donate popup */}
-                {donatePopup && (
-                  <div className="mx-4 mb-2 rounded-xl border border-[#c9962a]/30 bg-[#0f2418] px-4 py-3 text-center">
-                    <p className="text-[13px] font-bold text-[#c9962a]">🔒 Coming Soon!</p>
-                    <p className="mt-1 text-[12px] text-white/60 leading-relaxed">
-                      Online donations are launching soon! To donate now, email us at{" "}
-                      <a href="mailto:info@pandiefoundation.org" className="text-[#c9962a] underline">
-                        info@pandiefoundation.org
-                      </a>
-                    </p>
-                    <button onClick={() => setDonatePopup(false)} className="mt-2 text-[11px] text-white/30 hover:text-white">Dismiss</button>
-                  </div>
-                )}
-
-                {/* Donate button */}
+                {/* Donate button — the live donate flow */}
                 <div className="shrink-0 px-4 pb-2">
-                  <button
-                    onClick={() => setDonatePopup(true)}
-                    className="w-full rounded-xl border border-[#c9962a]/40 bg-[#c9962a]/10 py-2.5 text-[12px] font-bold text-[#c9962a] transition hover:bg-[#c9962a]/20 flex items-center justify-center gap-2"
+                  <Link
+                    href="/donate"
+                    onClick={() => setOpen(false)}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#c9962a] py-2.5 text-[12px] font-bold text-[#0a1a10] transition hover:bg-[#e8b84b]"
                   >
-                    <span>🔒</span> {t.chat.donateBtn} <span className="text-[10px] opacity-60">(Coming Soon)</span>
-                  </button>
+                    <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    {t.chat.donateBtn}
+                  </Link>
                 </div>
 
                 {/* Input bar */}
@@ -436,7 +427,7 @@ export default function ChatWidget() {
                 <div className="space-y-4">
                   <div>
                     <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">{t.handoff.nameLbl}</label>
-                    <input value={hName} onChange={e => setHName(e.target.value)} placeholder="Full name"
+                    <input value={hName} onChange={e => setHName(e.target.value)} placeholder={tr("Full name")}
                       className="w-full rounded-xl border border-white/8 bg-white/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/25 outline-none transition focus:border-[#c9962a]/60" />
                   </div>
                   <div>
@@ -446,7 +437,7 @@ export default function ChatWidget() {
                   </div>
                   {messages.filter(m => m.role === "user").length > 0 && (
                     <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/30 mb-1">Your conversation will be included</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/30 mb-1">{tr("Your conversation will be included")}</p>
                       <p className="text-[12px] text-white/40 line-clamp-2">{messages.filter(m => m.role === "user").slice(-1)[0]?.content}</p>
                     </div>
                   )}

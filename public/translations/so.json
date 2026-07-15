@@ -561,5 +561,18 @@
     "noLanguagesFound": "Luqado lama helin",
     "switchLanguage": "Beddel luqadda",
     "toggleMenu": "Fur menu-ga"
+  },
+  "chatExtra": {
+    "leadIntro": "Intaanan sii wadin — ma heli karaa magacaaga iyo iimaylkaaga si kooxdayadu kula soo xiriirto? 💛",
+    "yourEmail": "Iimaylkaaga",
+    "submit": "Dir",
+    "skip": "Ka bood",
+    "thankYouName": "Mahadsanid, {name}! 💛 Haddaba, sideen kuu caawin karaa maanta?",
+    "fillNameEmail": "Fadlan buuxi magacaaga iyo iimaylkaaga.",
+    "validEmail": "Fadlan geli ciwaan iimayl oo sax ah.",
+    "wentWrongEmail": "Khalad ayaa dhacay. Fadlan si toos ah ugu qor info@pandiefoundation.org.",
+    "troubleReach": "Waan ka xumahay, dhibaato ayaa dhacday. Waxaad sidoo kale nagala soo xiriiri kartaa info@pandiefoundation.org 💛",
+    "fullName": "Magaca oo dhamaystiran",
+    "convoIncluded": "Wadahadalkaaga waa lagu dari doonaa"
   }
 }

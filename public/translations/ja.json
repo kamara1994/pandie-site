@@ -561,5 +561,18 @@
     "noLanguagesFound": "言語が見つかりません",
     "switchLanguage": "言語を切り替える",
     "toggleMenu": "メニューを開く"
+  },
+  "chatExtra": {
+    "leadIntro": "続ける前に、チームからご連絡できるよう、お名前とメールアドレスを教えていただけますか？💛",
+    "yourEmail": "メールアドレス",
+    "submit": "送信",
+    "skip": "スキップ",
+    "thankYouName": "ありがとうございます、{name}さん！💛 それでは、本日はどのようなご用件でしょうか？",
+    "fillNameEmail": "お名前とメールアドレスをご入力ください。",
+    "validEmail": "有効なメールアドレスを入力してください。",
+    "wentWrongEmail": "問題が発生しました。info@pandiefoundation.org まで直接ご連絡ください。",
+    "troubleReach": "申し訳ありません、問題が発生しました。info@pandiefoundation.org でもご連絡いただけます 💛",
+    "fullName": "氏名",
+    "convoIncluded": "会話の内容が添付されます"
   }
 }

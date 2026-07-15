@@ -561,5 +561,18 @@
     "noLanguagesFound": "Ahụghị asụsụ ọ bụla",
     "switchLanguage": "Gbanwee asụsụ",
     "toggleMenu": "Mepee menu"
+  },
+  "chatExtra": {
+    "leadIntro": "Tupu anyị aga n'ihu — enwere m ike ịnweta aha gị na ozi-e gị ka ndị otu anyị wee kpọtụrụ gị? 💛",
+    "yourEmail": "Ozi-e gị",
+    "submit": "Zipu",
+    "skip": "Gafere",
+    "thankYouName": "Daalụ, {name}! 💛 Ugbu a, kedu ka m ga-esi nyere gị aka taa?",
+    "fillNameEmail": "Biko dejupụta aha gị na ozi-e gị.",
+    "validEmail": "Biko tinye adreesị ozi-e ziri ezi.",
+    "wentWrongEmail": "Ihe adịghị mma mere. Biko degara anyị ozi-e ozugbo na info@pandiefoundation.org.",
+    "troubleReach": "Ndo, enwere m nsogbu. Ị nwekwara ike ịkpọtụrụ anyị na info@pandiefoundation.org 💛",
+    "fullName": "Aha zuru ezu",
+    "convoIncluded": "A ga-agbakwunye mkparịta ụka gị"
   }
 }

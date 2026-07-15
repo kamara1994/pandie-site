@@ -74,6 +74,11 @@ export interface Translations {
     about: string[]; stories: string[]; events: string[];
     contact: string[]; getInvolved: string[]; donate: string[];
   };
+  chatExtra: {
+    leadIntro: string; yourEmail: string; submit: string; skip: string;
+    thankYouName: string; fillNameEmail: string; validEmail: string;
+    wentWrongEmail: string; troubleReach: string; fullName: string; convoIncluded: string;
+  };
   footer: {
     ctaEyebrow: string; ctaHeading: string; donateNow: string; mission: string;
     newsletterHeading: string; namePlaceholder: string; emailPlaceholder: string;

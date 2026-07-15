@@ -561,5 +561,18 @@
     "noLanguagesFound": "언어를 찾을 수 없습니다",
     "switchLanguage": "언어 변경",
     "toggleMenu": "메뉴 열기"
+  },
+  "chatExtra": {
+    "leadIntro": "계속하기 전에, 저희 팀이 연락드릴 수 있도록 성함과 이메일을 알려주시겠어요? 💛",
+    "yourEmail": "이메일",
+    "submit": "보내기",
+    "skip": "건너뛰기",
+    "thankYouName": "감사합니다, {name}님! 💛 그럼 오늘 무엇을 도와드릴까요?",
+    "fillNameEmail": "성함과 이메일을 입력해 주세요.",
+    "validEmail": "올바른 이메일 주소를 입력해 주세요.",
+    "wentWrongEmail": "문제가 발생했습니다. info@pandiefoundation.org로 직접 메일을 보내주세요.",
+    "troubleReach": "죄송합니다, 문제가 있었어요. info@pandiefoundation.org로도 연락하실 수 있습니다 💛",
+    "fullName": "성명",
+    "convoIncluded": "대화 내용이 함께 전달됩니다"
   }
 }

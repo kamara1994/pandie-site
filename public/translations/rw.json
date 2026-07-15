@@ -561,5 +561,18 @@
     "noLanguagesFound": "Nta rurimi rwabonetse",
     "switchLanguage": "Hindura ururimi",
     "toggleMenu": "Fungura menu"
+  },
+  "chatExtra": {
+    "leadIntro": "Mbere yo gukomeza — nakwaka izina ryawe na imeyili kugira ngo ikipe yacu ibashe kukugeraho? 💛",
+    "yourEmail": "Imeyili yawe",
+    "submit": "Ohereza",
+    "skip": "Simbuka",
+    "thankYouName": "Urakoze, {name}! 💛 None se, nakugirira iki uyu munsi?",
+    "fillNameEmail": "Nyamuneka uzuza izina ryawe na imeyili.",
+    "validEmail": "Nyamuneka andika aderesi ya imeyili yemewe.",
+    "wentWrongEmail": "Habaye ikibazo. Nyamuneka twandikire ako kanya kuri info@pandiefoundation.org.",
+    "troubleReach": "Mbabarira, habaye ikibazo. Ushobora no kutugeraho kuri info@pandiefoundation.org 💛",
+    "fullName": "Amazina yombi",
+    "convoIncluded": "Ikiganiro cyawe kizometaniswa"
   }
 }

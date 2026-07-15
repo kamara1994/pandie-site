@@ -561,5 +561,18 @@
     "noLanguagesFound": "Dil bulunamadı",
     "switchLanguage": "Dili değiştir",
     "toggleMenu": "Menüyü aç"
+  },
+  "chatExtra": {
+    "leadIntro": "Devam etmeden önce — ekibimizin size ulaşabilmesi için adınızı ve e-postanızı alabilir miyim? 💛",
+    "yourEmail": "E-postanız",
+    "submit": "Gönder",
+    "skip": "Atla",
+    "thankYouName": "Teşekkürler, {name}! 💛 Peki, bugün size nasıl yardımcı olabilirim?",
+    "fillNameEmail": "Lütfen adınızı ve e-postanızı girin.",
+    "validEmail": "Lütfen geçerli bir e-posta adresi girin.",
+    "wentWrongEmail": "Bir şeyler ters gitti. Lütfen doğrudan info@pandiefoundation.org adresine yazın.",
+    "troubleReach": "Üzgünüm, bir sorun oluştu. Bize info@pandiefoundation.org adresinden de ulaşabilirsiniz 💛",
+    "fullName": "Ad soyad",
+    "convoIncluded": "Konuşmanız eklenecek"
   }
 }

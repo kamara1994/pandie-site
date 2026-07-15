@@ -561,5 +561,18 @@
     "noLanguagesFound": "Geen talen gevonden",
     "switchLanguage": "Taal wijzigen",
     "toggleMenu": "Menu openen"
+  },
+  "chatExtra": {
+    "leadIntro": "Voordat we verdergaan — mag ik je naam en e-mail zodat ons team contact kan opnemen? 💛",
+    "yourEmail": "Je e-mail",
+    "submit": "Versturen",
+    "skip": "Overslaan",
+    "thankYouName": "Dank je, {name}! 💛 Waarmee kan ik je vandaag helpen?",
+    "fillNameEmail": "Vul je naam en e-mail in.",
+    "validEmail": "Voer een geldig e-mailadres in.",
+    "wentWrongEmail": "Er ging iets mis. Mail ons direct op info@pandiefoundation.org.",
+    "troubleReach": "Sorry, dat lukte even niet. Je kunt ons ook bereiken via info@pandiefoundation.org 💛",
+    "fullName": "Volledige naam",
+    "convoIncluded": "Je gesprek wordt meegestuurd"
   }
 }

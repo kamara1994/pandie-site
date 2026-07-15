@@ -561,5 +561,18 @@
     "noLanguagesFound": "ምንም ቋንቋ አልተገኘም",
     "switchLanguage": "ቋንቋ ይቀይሩ",
     "toggleMenu": "ምናሌ ክፈት"
+  },
+  "chatExtra": {
+    "leadIntro": "ከመቀጠላችን በፊት — ቡድናችን እንዲያገኝዎት ስምዎን እና ኢሜይልዎን ማግኘት እችላለሁ? 💛",
+    "yourEmail": "ኢሜይልዎ",
+    "submit": "ላክ",
+    "skip": "ዝለል",
+    "thankYouName": "አመሰግናለሁ፣ {name}! 💛 ታዲያ ዛሬ እንዴት ልርዳዎት?",
+    "fillNameEmail": "እባክዎ ስምዎን እና ኢሜይልዎን ይሙሉ።",
+    "validEmail": "እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ።",
+    "wentWrongEmail": "የሆነ ስህተት ተከስቷል። እባክዎ በቀጥታ ወደ info@pandiefoundation.org ይጻፉ።",
+    "troubleReach": "ይቅርታ፣ ችግር ገጥሞኛል። በ info@pandiefoundation.org በኩልም ሊያገኙን ይችላሉ 💛",
+    "fullName": "ሙሉ ስም",
+    "convoIncluded": "ውይይትዎ ተያይዞ ይላካል"
   }
 }

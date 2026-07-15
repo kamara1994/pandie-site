@@ -561,5 +561,18 @@
     "noLanguagesFound": "Hakuna lugha zilizopatikana",
     "switchLanguage": "Badilisha lugha",
     "toggleMenu": "Fungua menyu"
+  },
+  "chatExtra": {
+    "leadIntro": "Kabla hatujaendelea — naomba jina lako na barua pepe ili timu yetu iweze kuwasiliana nawe? 💛",
+    "yourEmail": "Barua pepe yako",
+    "submit": "Tuma",
+    "skip": "Ruka",
+    "thankYouName": "Asante, {name}! 💛 Sasa, naweza kukusaidiaje leo?",
+    "fillNameEmail": "Tafadhali jaza jina lako na barua pepe.",
+    "validEmail": "Tafadhali weka anwani sahihi ya barua pepe.",
+    "wentWrongEmail": "Hitilafu imetokea. Tafadhali tuandikie moja kwa moja info@pandiefoundation.org.",
+    "troubleReach": "Samahani, nimepata tatizo. Unaweza pia kutufikia kupitia info@pandiefoundation.org 💛",
+    "fullName": "Jina kamili",
+    "convoIncluded": "Mazungumzo yako yataambatishwa"
   }
 }

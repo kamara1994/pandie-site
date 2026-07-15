@@ -561,5 +561,18 @@
     "noLanguagesFound": "未找到语言",
     "switchLanguage": "切换语言",
     "toggleMenu": "打开菜单"
+  },
+  "chatExtra": {
+    "leadIntro": "在继续之前——可以留下您的姓名和邮箱吗？方便我们的团队跟进。💛",
+    "yourEmail": "您的邮箱",
+    "submit": "提交",
+    "skip": "跳过",
+    "thankYouName": "谢谢您，{name}！💛 那么，今天我能帮您什么？",
+    "fillNameEmail": "请填写您的姓名和邮箱。",
+    "validEmail": "请输入有效的邮箱地址。",
+    "wentWrongEmail": "出了点问题。请直接发邮件至 info@pandiefoundation.org。",
+    "troubleReach": "抱歉，刚才出了点问题。您也可以通过 info@pandiefoundation.org 联系我们 💛",
+    "fullName": "全名",
+    "convoIncluded": "您的对话将一并附上"
   }
 }

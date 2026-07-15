@@ -561,5 +561,18 @@
     "noLanguagesFound": "لم يتم العثور على لغات",
     "switchLanguage": "تغيير اللغة",
     "toggleMenu": "فتح القائمة"
+  },
+  "chatExtra": {
+    "leadIntro": "قبل أن نتابع — هل يمكنني الحصول على اسمك وبريدك الإلكتروني ليتمكن فريقنا من التواصل معك؟ 💛",
+    "yourEmail": "بريدك الإلكتروني",
+    "submit": "إرسال",
+    "skip": "تخطي",
+    "thankYouName": "شكرًا لك، {name}! 💛 والآن، كيف يمكنني مساعدتك اليوم؟",
+    "fillNameEmail": "يرجى إدخال اسمك وبريدك الإلكتروني.",
+    "validEmail": "يرجى إدخال بريد إلكتروني صحيح.",
+    "wentWrongEmail": "حدث خطأ ما. يرجى مراسلتنا مباشرة على info@pandiefoundation.org.",
+    "troubleReach": "عذرًا، واجهت مشكلة. يمكنك أيضًا التواصل معنا على info@pandiefoundation.org 💛",
+    "fullName": "الاسم الكامل",
+    "convoIncluded": "سيتم إرفاق محادثتك"
   }
 }

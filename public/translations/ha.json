@@ -561,5 +561,18 @@
     "noLanguagesFound": "Ba a sami harsuna ba",
     "switchLanguage": "Canza harshe",
     "toggleMenu": "Buɗe menu"
+  },
+  "chatExtra": {
+    "leadIntro": "Kafin mu ci gaba — zan iya samun sunanka da imel dinka don tawagarmu ta tuntube ka? 💛",
+    "yourEmail": "Imel dinka",
+    "submit": "Aika",
+    "skip": "Tsallake",
+    "thankYouName": "Na gode, {name}! 💛 To, ta yaya zan taimake ka a yau?",
+    "fillNameEmail": "Da fatan za a cika sunanka da imel dinka.",
+    "validEmail": "Da fatan za a shigar da ingantaccen adireshin imel.",
+    "wentWrongEmail": "Wani abu ya faskara. Da fatan za a aika imel kai tsaye zuwa info@pandiefoundation.org.",
+    "troubleReach": "Yi hakuri, na fuskanci matsala. Kana iya tuntubar mu ta info@pandiefoundation.org 💛",
+    "fullName": "Cikakken suna",
+    "convoIncluded": "Za a haɗa tattaunawarka"
   }
 }

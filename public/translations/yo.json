@@ -561,5 +561,18 @@
     "noLanguagesFound": "Kò rí èdè kankan",
     "switchLanguage": "Yí èdè padà",
     "toggleMenu": "Ṣí mẹ́nù"
+  },
+  "chatExtra": {
+    "leadIntro": "Kí a tó tẹ̀síwájú — ṣé mo lè gba orúkọ àti ímeèlì rẹ kí ẹgbẹ́ wa lè kàn sí ọ? 💛",
+    "yourEmail": "Ímeèlì rẹ",
+    "submit": "Fi ránṣẹ́",
+    "skip": "Fò ó",
+    "thankYouName": "O ṣeun, {name}! 💛 Báwo ni mo ṣe lè ràn ọ́ lọ́wọ́ lónìí?",
+    "fillNameEmail": "Jọ̀wọ́ kọ orúkọ àti ímeèlì rẹ.",
+    "validEmail": "Jọ̀wọ́ tẹ àdírẹ́sì ímeèlì tó tọ́.",
+    "wentWrongEmail": "Nǹkan kan ṣàṣìṣe. Jọ̀wọ́ kọ ímeèlì tààrà sí info@pandiefoundation.org.",
+    "troubleReach": "Má bínú, ìṣòro kan wáyé. O tún lè kàn sí wa ní info@pandiefoundation.org 💛",
+    "fullName": "Orúkọ ní kíkún",
+    "convoIncluded": "A ó so ìjíròrò rẹ mọ́ ọn"
   }
 }

@@ -561,5 +561,18 @@
     "noLanguagesFound": "Không tìm thấy ngôn ngữ",
     "switchLanguage": "Đổi ngôn ngữ",
     "toggleMenu": "Mở menu"
+  },
+  "chatExtra": {
+    "leadIntro": "Trước khi tiếp tục — bạn cho mình xin tên và email để đội ngũ của chúng tôi liên hệ lại nhé? 💛",
+    "yourEmail": "Email của bạn",
+    "submit": "Gửi",
+    "skip": "Bỏ qua",
+    "thankYouName": "Cảm ơn bạn, {name}! 💛 Nào, hôm nay mình có thể giúp gì cho bạn?",
+    "fillNameEmail": "Vui lòng điền tên và email của bạn.",
+    "validEmail": "Vui lòng nhập địa chỉ email hợp lệ.",
+    "wentWrongEmail": "Đã xảy ra lỗi. Vui lòng gửi email trực tiếp tới info@pandiefoundation.org.",
+    "troubleReach": "Xin lỗi, mình gặp chút trục trặc. Bạn cũng có thể liên hệ chúng tôi qua info@pandiefoundation.org 💛",
+    "fullName": "Họ và tên",
+    "convoIncluded": "Cuộc trò chuyện của bạn sẽ được đính kèm"
   }
 }

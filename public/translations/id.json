@@ -561,5 +561,18 @@
     "noLanguagesFound": "Bahasa tidak ditemukan",
     "switchLanguage": "Ganti bahasa",
     "toggleMenu": "Buka menu"
+  },
+  "chatExtra": {
+    "leadIntro": "Sebelum kita lanjut — boleh minta nama dan email Anda agar tim kami bisa menindaklanjuti? 💛",
+    "yourEmail": "Email Anda",
+    "submit": "Kirim",
+    "skip": "Lewati",
+    "thankYouName": "Terima kasih, {name}! 💛 Nah, ada yang bisa saya bantu hari ini?",
+    "fillNameEmail": "Mohon isi nama dan email Anda.",
+    "validEmail": "Mohon masukkan alamat email yang valid.",
+    "wentWrongEmail": "Terjadi kesalahan. Silakan email langsung ke info@pandiefoundation.org.",
+    "troubleReach": "Maaf, ada kendala. Anda juga bisa menghubungi kami di info@pandiefoundation.org 💛",
+    "fullName": "Nama lengkap",
+    "convoIncluded": "Percakapan Anda akan disertakan"
   }
 }
