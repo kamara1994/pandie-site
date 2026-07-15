@@ -18,28 +18,38 @@ export default function DonatePrompt() {
     // Never prompt on the donate flow, or over the Potential in Motion story —
     // that page carries its own donation arc and finale CTA.
     if (pathname.startsWith("/donate") || pathname.startsWith("/potential-in-motion")) return;
-    if (sessionStorage.getItem("pandie-donate-prompt")) return;
+    if (open) return; // only schedule while closed
+    // Donors never see the prompt again (flag set on the donate success page).
+    try { if (localStorage.getItem("pf_donated") === "1") return; } catch {}
 
-    let shown = false;
+    const MAX_SHOWS = 3;      // per session
+    const FIRST_MS = 12000;   // first invitation
+    const REPEAT_MS = 45000;  // gentle return after "Not yet"
+    const count = () => Number(sessionStorage.getItem("pandie-donate-prompt") || 0);
+
+    let timer: ReturnType<typeof setTimeout>;
     const show = () => {
-      if (shown) return;
-      shown = true;
-      sessionStorage.setItem("pandie-donate-prompt", "1");
+      if (count() >= MAX_SHOWS) return;
+      try { if (localStorage.getItem("pf_donated") === "1") return; } catch {}
+      sessionStorage.setItem("pandie-donate-prompt", String(count() + 1));
       setOpen(true);
-      cleanup();
+      window.removeEventListener("scroll", onScroll);
     };
     const onScroll = () => {
       const scrolled = window.scrollY + window.innerHeight;
       if (scrolled > document.documentElement.scrollHeight * 0.45) show();
     };
-    const timer = setTimeout(show, 20000);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    const cleanup = () => {
+    const schedule = () => {
+      if (count() >= MAX_SHOWS) return;
+      timer = setTimeout(show, count() === 0 ? FIRST_MS : REPEAT_MS);
+    };
+    schedule();
+    if (count() === 0) window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
       clearTimeout(timer);
       window.removeEventListener("scroll", onScroll);
     };
-    return cleanup;
-  }, [pathname]);
+  }, [pathname, open]);
 
   // Esc dismisses
   useEffect(() => {

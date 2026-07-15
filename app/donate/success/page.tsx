@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Stripe from "stripe";
 import ConfettiEffect from "@/app/components/ConfettiEffect";
+import DonatedFlag from "@/app/components/DonatedFlag";
 
 const ZERO_DECIMAL = new Set([
   "BIF","CLP","DJF","GNF","JPY","KMF","KRW","MGA",
@@ -57,6 +58,7 @@ export default async function DonateSuccessPage({
 
   return (
     <div className="min-h-screen bg-[#f4f1ea] text-[#1f2a1f]">
+      <DonatedFlag />
       <ConfettiEffect />
 
       {/* ── Celebration Hero ── */}
